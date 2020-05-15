@@ -1,4 +1,11 @@
-import { controlOptsMap, controlGroupOptsMap, controlGroupValueMap, formCtrlMap, formCtrlIdsMap } from './utils/state';
+import {
+  controlOptsMap,
+  controlGroupOptsMap,
+  controlGroupValueMap,
+  ctrlMap,
+  ctrlIdsMap,
+  ctrlElmAttrsMap,
+} from './utils/state';
 import { isString, isNumber } from './utils/helpers';
 import {
   ReactiveFormControl,
@@ -11,11 +18,17 @@ import { sharedOnInputHandler, sharedOnInvalidHandler } from './handlers';
 export const control = (form: ReactiveForm, value: any, ctrlOpts: ReactiveFormControlOptions = {}) => {
   normalizeIdAndName(form, ctrlOpts);
 
+  // create a map used by the containers to add attributes to the control element
+  const attrMap = new Map<string, string>();
+
   // create the object to be used as a property spread in the render()
   const props: ReactiveControlProperties = {
     // get the reference to this form control element
     // and remember it so we can look up the form control by the element
-    ref: (ctrlElm) => formCtrlMap.set(ctrlElm, ctrl),
+    ref: (ctrlElm) => {
+      ctrlMap.set(ctrlElm, ctrl);
+      attrMap.forEach((attrValue, attrName) => ctrlElm.setAttribute(attrName, attrValue));
+    },
 
     // add the shared event listeners
     onInput: sharedOnInputHandler,
@@ -34,6 +47,9 @@ export const control = (form: ReactiveForm, value: any, ctrlOpts: ReactiveFormCo
   // create the form control that'll be used as a weakmap key
   const ctrl: ReactiveFormControl = () => props;
 
+  // remember the internal map to remember all the attributes to add
+  ctrlElmAttrsMap.set(ctrl, attrMap);
+
   // remember the control options for this form control
   controlOptsMap.set(ctrl, ctrlOpts);
 
@@ -45,14 +61,23 @@ export const control = (form: ReactiveForm, value: any, ctrlOpts: ReactiveFormCo
 export const controlGroup = (form: ReactiveForm, selectedValue: any, ctrlOpts: ReactiveFormControlOptions) => {
   normalizeIdAndName(form, ctrlOpts);
 
+  // create a map used by the containers to add attributes to the control element
+  const attrMap = new Map<string, string>();
+
   // create the object to be used as a property spread in the render()
   const props: ReactiveControlProperties = {
     id: ctrlOpts.id,
     role: 'group',
+    ref: (ctrlElm) => {
+      attrMap.forEach((attrValue, attrName) => ctrlElm.setAttribute(attrName, attrValue));
+    },
   };
 
   // create the form control that'll be used as a weakmap key
   const ctrl: ReactiveFormControl = () => props;
+
+  // remember the internal map to remember all the attributes to add
+  ctrlElmAttrsMap.set(ctrl, attrMap);
 
   // remember the control options for this form control
   controlGroupOptsMap.set(ctrl, ctrlOpts);
@@ -74,7 +99,7 @@ const normalizeIdAndName = (form: ReactiveForm, ctrlOpts: ReactiveFormControlOpt
     if (isString(ctrlOpts.name)) {
       ctrlOpts.id = ctrlOpts.name;
     } else {
-      let id = formCtrlIdsMap.get(form);
+      let id = ctrlIdsMap.get(form);
       id = isNumber(id) ? id++ : 0;
       ctrlOpts.id = form.id + '-' + id;
     }

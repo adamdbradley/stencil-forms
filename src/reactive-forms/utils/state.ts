@@ -1,10 +1,10 @@
 import type { ReactiveFormControl, ControlElement, ReactiveFormControlOptions, ReactiveForm } from './types';
 
-export const formCtrlIdsMap = new WeakMap<ReactiveForm, number>();
+export const ctrlIdsMap = new WeakMap<ReactiveForm, number>();
 
-export const formCtrlMap = new WeakMap<ControlElement, ReactiveFormControl>();
+export const ctrlMap = new WeakMap<ControlElement, ReactiveFormControl>();
 
-export const ctrlElmMap = new WeakMap<ReactiveFormControl, ControlElement>();
+export const ctrlElmAttrsMap = new WeakMap<ReactiveFormControl, Map<string, string>>();
 
 export const controlOptsMap = new WeakMap<ReactiveFormControl, ReactiveFormControlOptions>();
 
