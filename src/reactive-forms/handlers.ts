@@ -1,6 +1,6 @@
 import { formCtrlMap, inputEvDebounceMap } from './utils/state';
 import { checkValidity } from './validation';
-import type { ControlElement, ReactiveFormControl } from './utils/types';
+import type { ControlElement, ReactiveFormControlOptions } from './utils/types';
 import { isNumber, isFunction, isPromise } from './utils/helpers';
 
 export const sharedOnInvalidHandler = (_ev: Event) => {
@@ -9,45 +9,48 @@ export const sharedOnInvalidHandler = (_ev: Event) => {
 
 export const sharedOnInputHandler = (ev: KeyboardEvent) => {
   const ctrlElm = ev.currentTarget as ControlElement;
-  const formCtrl = formCtrlMap.get(ctrlElm);
-  if (isNumber(formCtrl.debounceInput)) {
+
+  // the actual returned object is an arrow fn that return the control properties
+  // that will be assigned to the control element but also assigned to the arrow fn
+  // is all of the original control options, which is why this is weird
+  // technically this is a callable fn, but we're using it for all the properties on it
+  const opts = formCtrlMap.get(ctrlElm) as ReactiveFormControlOptions;
+
+  if (isNumber(opts.debounce)) {
     clearTimeout(inputEvDebounceMap.get(ctrlElm));
   }
 
-  const validityResults = checkValidity(formCtrl, ctrlElm, ev);
+  const validityResults = checkValidity(opts, ctrlElm, ev);
   if (isPromise(validityResults)) {
-    validityResults.then((isValid) => afterInputValidity(ev, ctrlElm, formCtrl, isValid));
+    validityResults.then((isValid) => afterInputValidity(ev, ctrlElm, opts, isValid));
   } else {
-    afterInputValidity(ev, ctrlElm, formCtrl, validityResults);
+    afterInputValidity(ev, ctrlElm, opts, validityResults);
   }
 };
 
 const afterInputValidity = (
   ev: KeyboardEvent,
   ctrlElm: ControlElement,
-  formCtrl: ReactiveFormControl,
+  opts: ReactiveFormControlOptions,
   isValid: boolean,
 ) => {
-  if (isValid) {
-  }
-
-  if (ev.key === 'Enter' || isFunction(formCtrl.onEnter)) {
+  if (ev.key === 'Enter' || isFunction(opts.onEnterKey)) {
     if (isValid) {
-      formCtrl.onEnter(ctrlElm.value, ctrlElm.validity, ev);
+      opts.onEnterKey(ctrlElm.value, ctrlElm.validity, ev);
     } else {
       ev.preventDefault();
       ev.stopPropagation();
     }
-  } else if (ev.key === 'Escape' || isFunction(formCtrl.onEscape)) {
-    formCtrl.onEscape(ctrlElm.value, ctrlElm.validity, ev);
-  } else if (isFunction(formCtrl.onInput)) {
-    if (isNumber(formCtrl.debounceInput)) {
+  } else if (ev.key === 'Escape' || isFunction(opts.onEscapeKey)) {
+    opts.onEscapeKey(ctrlElm.value, ctrlElm.validity, ev);
+  } else if (isFunction(opts.onValueChange)) {
+    if (isNumber(opts.debounce)) {
       inputEvDebounceMap.set(
         ctrlElm,
-        setTimeout(() => formCtrl.onInput(ctrlElm.value, ctrlElm.validity, ev), formCtrl.debounceInput),
+        setTimeout(() => opts.onValueChange(ctrlElm.value, ctrlElm.validity, ev), opts.debounce),
       );
     } else {
-      formCtrl.onInput(ctrlElm.value, ctrlElm.validity, ev);
+      opts.onValueChange(ctrlElm.value, ctrlElm.validity, ev);
     }
   }
 };

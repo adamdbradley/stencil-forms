@@ -1,44 +1,38 @@
 export interface ReactiveForm extends ReactiveFormOptions {}
 
 export interface ReactiveFormOptions {
-  id?: string;
+  id: string;
 }
 
-export type ReactiveFormValidateResults = string[] | string | undefined | null;
+export type ReactiveFormValidateResults = string | undefined | null;
 
 export interface ReactiveSubmit {}
 
-export interface ReactiveFormControlOptions {
-  debounceBlur?: number;
-  debounceFocus?: number;
-  debounceInput?: number;
+export interface ReactiveFormBindOptions {
+  changeEventName?: string;
+  debounce?: number;
   id?: string;
   name?: string;
   onBlur?: (value: any, validity: ValidityState, ev: FocusEvent) => void;
   onDirty?: (value: any, validity: ValidityState, ev: KeyboardEvent) => void;
-  onEnter?: (value: any, validity: ValidityState, ev: KeyboardEvent) => void;
-  onEscape?: (value: any, validity: ValidityState, ev: KeyboardEvent) => void;
+  onEnterKey?: (value: any, validity: ValidityState, ev: KeyboardEvent) => void;
+  onEscapeKey?: (value: any, validity: ValidityState, ev: KeyboardEvent) => void;
   onFocus?: (value: any, validity: ValidityState, ev: FocusEvent) => void;
-  onInput?: (value: any, validity: ValidityState, ev: KeyboardEvent) => void;
-  onChange?: (value: any, validity: ValidityState, ev: UIEvent) => void;
-  onInvalid?: (validity: ValidityState, ev: UIEvent) => void;
-  onValid?: (validity: ValidityState, ev: UIEvent) => void;
+  onInvalid?: (value: any, validity: ValidityState, ev: UIEvent) => void;
+  onValid?: (value: any, validity: ValidityState, ev: UIEvent) => void;
   validate?: (value: any, ev: Event) => ReactiveFormValidateResults | Promise<ReactiveFormValidateResults>;
 }
 
-export interface ReactiveFormControl extends ReactiveFormControlOptions {}
+export type OnValueChange = (value: any, validity: ValidityState, ev: UIEvent) => void;
 
-export interface ReactiveFormControlGroup extends ReactiveFormControl {}
+export interface ReactiveFormControlOptions extends ReactiveFormBindOptions {
+  onValueChange?: OnValueChange;
+}
 
-/** @internal */
-export type ControlElement = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
-
-/** @internal */
-export type ControlProperties = {
+export type ReactiveControlProperties = {
   checked?: boolean;
+  htmlForm?: string;
   id?: string;
-  max?: string;
-  min?: string;
   name?: string;
   onBlur?: (ev: FocusEvent) => void;
   onClick?: (ev: Event) => void;
@@ -46,7 +40,11 @@ export type ControlProperties = {
   onInput?: (ev: KeyboardEvent) => void;
   onInvalid?: (ev: Event) => void;
   ref?: (elm: ControlElement) => void;
-  step?: string;
-  type?: string;
+  role?: string;
   value?: string;
 };
+
+export type ReactiveFormControl = () => ReactiveControlProperties;
+
+/** @internal */
+export type ControlElement = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;

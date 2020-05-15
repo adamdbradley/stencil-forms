@@ -1,31 +1,25 @@
-import type { ControlElement, ReactiveFormControl, ReactiveFormValidateResults } from './utils/types';
+import type {
+  ControlElement,
+  ReactiveFormControl,
+  ReactiveFormValidateResults,
+  ReactiveFormControlOptions,
+} from './utils/types';
 import { isFunction, isPromise, isString } from './utils/helpers';
 
-export const checkValidity = (formCtrl: ReactiveFormControl, ctrlElm: ControlElement, ev: Event) => {
-  if (ctrlElm && isFunction(ctrlElm.checkValidity) && isFunction(formCtrl.validate)) {
-    const validateResults = formCtrl.validate(ctrlElm.value, ev);
+export const checkValidity = (opts: ReactiveFormControlOptions, ctrlElm: ControlElement, ev: Event) => {
+  if (ctrlElm && isFunction(ctrlElm.checkValidity) && isFunction(opts.validate)) {
+    const validateResults = opts.validate(ctrlElm.value, ev);
     if (isPromise(validateResults)) {
-      return validateResults.then(checkValidateResults);
+      return validateResults.then((validateResults) => checkValidateResults(validateResults, ctrlElm));
     }
-    return checkValidateResults(validateResults);
+    return checkValidateResults(validateResults, ctrlElm);
   }
   return true;
 };
 
-const checkValidateResults = (validateResults: ReactiveFormValidateResults) => {
-  if (validateResults != null) {
-    if (isString(validateResults)) {
-      // if (validateMsg && validateMsg !== '') {
-      //   ctrlElm.setCustomValidity(validateMsg);
-      // } else {
-      //   ctrlElm.setCustomValidity('');
-      // }
-      // ctrlElm.validity.valid;
-      // if (ctrlElm.checkValidity()) {
-      // } else {
-      //   return false;
-      // }
-    }
+const checkValidateResults = (validateResults: ReactiveFormValidateResults, ctrlElm: ControlElement) => {
+  if (isString(validateResults) && validateResults !== '') {
+    ctrlElm.setCustomValidity('');
   }
   return true;
 };

@@ -1,16 +1,5 @@
 import { Component, h, Host, Prop } from '@stencil/core';
-import {
-  labelFor,
-  labelForGroup,
-  descriptionFor,
-  checkbox,
-  radioGroup,
-  radio,
-  reactiveForm,
-  text,
-  errorMessageFor,
-  validationMessageFor,
-} from '../reactive-forms';
+import { input, labelFor, descriptionFor, reactiveForm, errorFor, validationMessageFor } from '../reactive-forms';
 
 @Component({
   tag: 'my-component',
@@ -22,24 +11,23 @@ export class MyComponent {
   @Prop() favoriteCar = '';
 
   render() {
-    const { form, control, controlGroup, submit } = reactiveForm();
+    const { form, bind, control, controlBoolean, controlGroup, submit } = reactiveForm({ id: 'user-info' });
 
-    const firstName = control(this.firstName, {
-      onInput: (value) => (this.firstName = value),
-    });
+    const firstName = bind(this, 'firstName');
 
     const lastName = control(this.lastName, {
       id: 'last-name',
-      onInput: (value) => (this.lastName = value),
+      debounce: 500,
+      onValueChange: (value) => (this.lastName = value),
     });
 
-    const vegetarian = control(this.vegetarian, {
+    const vegetarian = controlBoolean(this.vegetarian, {
       name: 'vegetarian',
-      onChange: (value) => (this.vegetarian = value),
+      onValueChange: (value) => (this.vegetarian = value),
     });
 
-    const favoriteCar = controlGroup(this.firstName, {
-      onChange: (value) => (this.favoriteCar = value),
+    const favoriteCar = controlGroup(this.favoriteCar, {
+      onValueChange: (value) => (this.favoriteCar = value),
     });
 
     return (
@@ -53,10 +41,10 @@ export class MyComponent {
               <p {...descriptionFor(firstName)}>What's your first name?</p>
             </div>
             <div>
-              <input {...text(firstName)} />
+              <input {...firstName()} />
             </div>
-            <div>
-              <div {...errorMessageFor(firstName)}>{validationMessageFor(firstName)}</div>
+            <div {...errorFor(firstName)}>
+              <div>{validationMessageFor(firstName)}</div>
             </div>
           </section>
 
@@ -68,10 +56,10 @@ export class MyComponent {
               <p {...descriptionFor(lastName)}>What's your last name?</p>
             </div>
             <div>
-              <input {...text(lastName)} />
+              <input {...input(lastName)} />
             </div>
-            <div>
-              <div {...errorMessageFor(lastName)}>{validationMessageFor(lastName)}</div>
+            <div {...errorFor(firstName)}>
+              <div>{validationMessageFor(firstName)}</div>
             </div>
           </section>
 
@@ -83,34 +71,34 @@ export class MyComponent {
               <p {...descriptionFor(vegetarian)}>Are you a vegetarian?</p>
             </div>
             <div>
-              <input {...checkbox(vegetarian)} />
+              <input type="checkbox" {...input(vegetarian)} />
             </div>
-            <div>
-              <div {...errorMessageFor(vegetarian)}>{validationMessageFor(vegetarian)}</div>
+            <div {...errorFor(firstName)}>
+              <div>{validationMessageFor(firstName)}</div>
             </div>
           </section>
 
-          <section {...radioGroup(favoriteCar)}>
+          <section {...input(favoriteCar)}>
             <div>
-              <label {...labelForGroup(favoriteCar)}>Favorite Car</label>
+              <p {...labelFor(favoriteCar)}>Favorite Car</p>
             </div>
             <div>
               <p {...descriptionFor(favoriteCar)}>What's your favorite car?</p>
             </div>
             <div>
               <label {...labelFor(favoriteCar, 'mustang')}>Mustang</label>
-              <input {...radio(favoriteCar, 'mustang')} />
+              <input type="radio" {...input(favoriteCar, 'mustang')} />
             </div>
             <div>
               <label {...labelFor(favoriteCar, 'camaro')}>Camaro</label>
-              <input {...radio(favoriteCar, 'camaro')} />
+              <input type="radio" {...input(favoriteCar, 'camaro')} />
             </div>
             <div>
               <label {...labelFor(favoriteCar, 'challenger')}>Challenger</label>
-              <input {...radio(favoriteCar, 'challenger')} />
+              <input type="radio" {...input(favoriteCar, 'challenger')} />
             </div>
-            <div>
-              <div {...errorMessageFor(vegetarian)}>{validationMessageFor(vegetarian)}</div>
+            <div {...errorFor(favoriteCar)}>
+              <div>{validationMessageFor(favoriteCar)}</div>
             </div>
           </section>
 
