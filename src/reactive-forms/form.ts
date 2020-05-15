@@ -10,10 +10,6 @@ import { isString, toDashCase } from './utils/helpers';
 export const reactiveForm = (formOpts: ReactiveFormOptions) => {
   const form: ReactiveForm = { ...formOpts };
 
-  const submit = {
-    type: 'submit',
-  };
-
   const bind = <T extends any, PropName extends keyof T>(
     instance: T,
     propName: PropName,
@@ -40,7 +36,6 @@ export const reactiveForm = (formOpts: ReactiveFormOptions) => {
     controlBoolean: (value: any, ctrlOpts?: ReactiveFormControlOptions) => control(form, value, ctrlOpts),
     controlGroup: (value: any, ctrlOpts?: ReactiveFormControlOptions) => controlGroup(form, value, ctrlOpts),
     form: () => form,
-    submit: () => submit,
   };
 };
 

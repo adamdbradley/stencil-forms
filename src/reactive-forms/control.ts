@@ -68,9 +68,7 @@ export const controlGroup = (form: ReactiveForm, selectedValue: any, ctrlOpts: R
   const props: ReactiveControlProperties = {
     id: ctrlOpts.id,
     role: 'group',
-    ref: (ctrlElm) => {
-      attrMap.forEach((attrValue, attrName) => ctrlElm.setAttribute(attrName, attrValue));
-    },
+    ref: (ctrlElm) => attrMap.forEach((attrValue, attrName) => ctrlElm.setAttribute(attrName, attrValue)),
   };
 
   // create the form control that'll be used as a weakmap key
@@ -105,6 +103,7 @@ const normalizeIdAndName = (form: ReactiveForm, ctrlOpts: ReactiveFormControlOpt
     }
   }
 
+  // if "name" isn't set, then use the "id"
   if (!isString(ctrlOpts.name)) {
     ctrlOpts.name = ctrlOpts.id;
   }

@@ -11,7 +11,7 @@ export class MyComponent {
   @Prop() favoriteCar = '';
 
   render() {
-    const { form, bind, control, controlBoolean, controlGroup, submit } = reactiveForm({ id: 'user-info' });
+    const { form, bind, control, controlBoolean, controlGroup } = reactiveForm({ id: 'user-info' });
 
     const firstName = bind(this, 'firstName');
 
@@ -56,7 +56,7 @@ export class MyComponent {
               <p {...descriptionFor(lastName)}>What's your last name?</p>
             </div>
             <div>
-              <input {...input(lastName)} />
+              <input {...lastName()} />
             </div>
             <div {...errorFor(firstName)}>
               <div>{validationMessageFor(firstName)}</div>
@@ -71,14 +71,14 @@ export class MyComponent {
               <p {...descriptionFor(vegetarian)}>Are you a vegetarian?</p>
             </div>
             <div>
-              <input type="checkbox" {...input(vegetarian)} />
+              <input type="checkbox" {...vegetarian()} />
             </div>
             <div {...errorFor(firstName)}>
               <div>{validationMessageFor(firstName)}</div>
             </div>
           </section>
 
-          <section {...input(favoriteCar)}>
+          <section {...favoriteCar()}>
             <div>
               <p {...labelFor(favoriteCar)}>Favorite Car</p>
             </div>
@@ -103,8 +103,7 @@ export class MyComponent {
           </section>
 
           <section>
-            <button type="reset">Reset</button>
-            <button {...submit()}>Submit</button>
+            <button type="submit">Submit</button>
           </section>
         </form>
       </Host>
