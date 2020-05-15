@@ -87,15 +87,15 @@ export class MyComponent {
             </div>
             <div>
               <label {...labelFor(favoriteCar, 'mustang')}>Mustang</label>
-              <input type="radio" {...input(favoriteCar, 'mustang')} />
+              <input type="radio" {...favoriteCar('mustang')} />
             </div>
             <div>
               <label {...labelFor(favoriteCar, 'camaro')}>Camaro</label>
-              <input type="radio" {...input(favoriteCar, 'camaro')} />
+              <input type="radio" {...favoriteCar('camaro')} />
             </div>
             <div>
               <label {...labelFor(favoriteCar, 'challenger')}>Challenger</label>
-              <input type="radio" {...input(favoriteCar, 'challenger')} />
+              <input type="radio" {...favoriteCar('challenger')} />
             </div>
             <div {...errorFor(favoriteCar)}>
               <div>{validationMessageFor(favoriteCar)}</div>
