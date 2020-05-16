@@ -95,8 +95,8 @@ render() {
   return (
     <Host>
       <section {...favoriteCar()}>
-        <div {...labelFor(favoriteCar)}>Favorite Car</div>
-        <div {...descriptionFor(favoriteCar)}>What's your favorite car?</div>
+        <h2 {...labelFor(favoriteCar)}>Favorite Car</h2>
+        <p {...descriptionFor(favoriteCar)}>What's your favorite car?</p>
         <div>
           <label {...labelFor(favoriteCar, 'mustang')}>Mustang</label>
           <input type="radio" {...favoriteCar('mustang')} />
@@ -117,8 +117,8 @@ render() {
 
 ```html
 <section id="favoritecar" role="group" aria-labelledby="favoritecar-lbl" aria-describedby="favoritecar-desc">
-  <div id="favoritecar-lbl">Favorite Car</div>
-  <div id="favoritecar-desc">What's your favorite car?</div>
+  <h2 id="favoritecar-lbl">Favorite Car</h2>
+  <p id="favoritecar-desc">What's your favorite car?</p>
   <div>
     <label id="favoritecar-mustang-lbl" for="favoritecar-mustang">Mustang</label>
     <input type="radio" id="favoritecar-mustang" value="mustang" aria-labelledby="favoritecar-mustang-lbl">
@@ -131,7 +131,6 @@ render() {
     <label id="favoritecar-challenger-lbl" for="favoritecar-challenger">Challenger</label>
     <input type="radio" id="favoritecar-challenger" value="challenger" aria-labelledby="favoritecar-challenger-lbl">
   </div>
-  <div>
 </section>
 ```
 
