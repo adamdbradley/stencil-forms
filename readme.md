@@ -49,30 +49,20 @@ export class MyForm {
 ## Labels and Accessibility
 
 ```tsx
-import { Component, h, Host, Prop } from '@stencil/core';
-import { bind, labelFor } from '@stencil/forms';
+render() {
+  const firstName = bind(this, 'firstName');
 
-@Component({
-  tag: 'my-form',
-})
-export class MyForm {
-  @Prop() firstName = 'Marty';
-
-  render() {
-    const firstName = bind(this, 'firstName');
-
-    return (
-      <Host>
-        <label {...labelFor(firstName)}>
-            First Name
-        </label>
-        <p {...descriptionFor(pkgName)}>
-            Please add your first name below:
-        </p>
-        <input {...firstName()} />
-      </Host>
-    );
-  }
+  return (
+    <Host>
+      <label {...labelFor(firstName)}>
+        First Name
+      </label>
+      <p {...descriptionFor(pkgName)}>
+        Please add your first name below:
+      </p>
+      <input {...firstName()} />
+    </Host>
+  );
 }
 ```
 
@@ -80,4 +70,47 @@ export class MyForm {
 <label id="firstname-lbl" for="firstname">First Name</label>
 <p id="firstname-desc">Please add your first name below:</p>
 <input id="firstname" name="firstName" aria-describedby="firstname-desc" aria-labelledby="firstname-lbl" value="Marty">
+```
+
+## Checkbox
+
+```tsx
+render() {
+  const vegetarian = bindBoolean(this, 'vegetarian');
+
+  return (
+    <Host>
+      <input type="checkbox" {...vegetarian()} />
+    </Host>
+  );
+}
+```
+
+## Radio Group
+
+```tsx
+render() {
+  const favoriteCar = groupBoolean(this, 'favoriteCar');
+
+  return (
+    <Host>
+      <section {...favoriteCar()}>
+        <div {...labelFor(favoriteCar)}>Favorite Car</div>
+        <div {...descriptionFor(favoriteCar)}>What's your favorite car? {this.favoriteCar}</div>
+        <div>
+          <label {...labelFor(favoriteCar, 'mustang')}>Mustang</label>
+          <input type="radio" {...favoriteCar('mustang')} />
+        </div>
+        <div>
+          <label {...labelFor(favoriteCar, 'camaro')}>Camaro</label>
+          <input type="radio" {...favoriteCar('camaro')} />
+        </div>
+        <div>
+          <label {...labelFor(favoriteCar, 'challenger')}>Challenger</label>
+          <input type="radio" {...favoriteCar('challenger')} />
+        </div>
+      </section>
+    </Host>
+  );
+}
 ```
