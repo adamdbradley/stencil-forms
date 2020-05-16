@@ -1,17 +1,26 @@
-import type { ReactiveFormControl, ControlElement, ReactiveFormControlOptions, ReactiveForm } from './types';
+import type {
+  ReactiveFormControl,
+  ControlElement,
+  ReactiveFormControlOptions,
+  ReactiveFormControlGroup,
+} from './types';
 
-export const ctrlIdsMap = new WeakMap<ReactiveForm, number>();
+export const ctrlMap = new WeakMap<ControlElement, ReactiveFormControl | ReactiveFormControlGroup>();
 
-export const ctrlMap = new WeakMap<ControlElement, ReactiveFormControl>();
+export const ctrlElmAttrsMap = new WeakMap<ReactiveFormControl | ReactiveFormControlGroup, Map<string, string>>();
 
-export const ctrlElmAttrsMap = new WeakMap<ReactiveFormControl, Map<string, string>>();
+export const ctrlGroupItemsMap = new WeakMap<ReactiveFormControl | ReactiveFormControl>();
 
-export const controlOptsMap = new WeakMap<ReactiveFormControl, ReactiveFormControlOptions>();
+export const ctrlOptsMap = new WeakMap<ReactiveFormControl, ReactiveFormControlOptions>();
 
-export const controlBooleanOptsMap = new WeakMap<ReactiveFormControl, ReactiveFormControlOptions>();
+export const ctrlBooleanOptsMap = new WeakMap<
+  ReactiveFormControl | ReactiveFormControlGroup,
+  ReactiveFormControlOptions
+>();
 
-export const controlGroupOptsMap = new WeakMap<ReactiveFormControl, ReactiveFormControlOptions>();
-
-export const controlGroupValueMap = new WeakMap<ReactiveFormControl, any>();
+export const ctrlGroupsElmAttrsMap = new WeakMap<
+  ReactiveFormControl | ReactiveFormControlGroup,
+  Map<string, Map<string, string>>
+>();
 
 export const inputEvDebounceMap = new WeakMap<ControlElement, any>();

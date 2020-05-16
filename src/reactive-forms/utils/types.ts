@@ -26,13 +26,14 @@ export interface ReactiveFormBindOptions {
 export type OnValueChange = (value: any, validity: ValidityState, ev: UIEvent) => void;
 
 export interface ReactiveFormControlOptions extends ReactiveFormBindOptions {
+  id: string;
   onValueChange?: OnValueChange;
 }
 
 export type ReactiveControlProperties = {
   checked?: boolean;
   htmlForm?: string;
-  id?: string;
+  id: string;
   name?: string;
   onBlur?: (ev: FocusEvent) => void;
   onClick?: (ev: Event) => void;
@@ -45,6 +46,8 @@ export type ReactiveControlProperties = {
 };
 
 export type ReactiveFormControl = () => ReactiveControlProperties;
+
+export type ReactiveFormControlGroup = (groupItemId?: string, groupItemValue?: string) => ReactiveControlProperties;
 
 /** @internal */
 export type ControlElement = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;

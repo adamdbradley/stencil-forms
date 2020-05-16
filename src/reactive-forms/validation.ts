@@ -24,6 +24,6 @@ const checkValidateResults = (validateResults: ReactiveFormValidateResults, ctrl
   return true;
 };
 
-export const validationMessageFor = (_ctrl: ReactiveFormControl) => {
+export const validationMessage = (_ctrl: ReactiveFormControl) => {
   // const ctrlElm = ctrlElmMap.get(formCtrl);
 };

@@ -1,4 +1,4 @@
-import { ctrlMap, inputEvDebounceMap } from './utils/state';
+import { ctrlMap, ctrlOptsMap, inputEvDebounceMap } from './utils/state';
 import { checkValidity } from './validation';
 import type { ControlElement, ReactiveFormControlOptions } from './utils/types';
 import { isNumber, isFunction, isPromise } from './utils/helpers';
@@ -9,12 +9,8 @@ export const sharedOnInvalidHandler = (_ev: Event) => {
 
 export const sharedOnInputHandler = (ev: KeyboardEvent) => {
   const ctrlElm = ev.currentTarget as ControlElement;
-
-  // the actual returned object is an arrow fn that return the control properties
-  // that will be assigned to the control element but also assigned to the arrow fn
-  // is all of the original control options, which is why this is weird
-  // technically this is a callable fn, but we're using it for all the properties on it
-  const opts = ctrlMap.get(ctrlElm) as ReactiveFormControlOptions;
+  const ctrl = ctrlMap.get(ctrlElm);
+  const opts = ctrlOptsMap.get(ctrl);
 
   if (isNumber(opts.debounce)) {
     clearTimeout(inputEvDebounceMap.get(ctrlElm));

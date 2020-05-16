@@ -1,5 +1,15 @@
 import { Component, h, Host, Prop } from '@stencil/core';
-import { input, labelFor, descriptionFor, reactiveForm, errorFor, validationMessageFor } from '../reactive-forms';
+import {
+  form,
+  bind,
+  control,
+  controlBoolean,
+  controlGroup,
+  labelFor,
+  descriptionFor,
+  validationFor,
+  validationMessage,
+} from '../reactive-forms';
 
 @Component({
   tag: 'my-component',
@@ -11,8 +21,6 @@ export class MyComponent {
   @Prop() favoriteCar = '';
 
   render() {
-    const { form, bind, control, controlBoolean, controlGroup } = reactiveForm({ id: 'user-info' });
-
     const firstName = bind(this, 'firstName');
 
     const lastName = control(this.lastName, {
@@ -22,11 +30,13 @@ export class MyComponent {
     });
 
     const vegetarian = controlBoolean(this.vegetarian, {
-      name: 'vegetarian',
+      id: 'vegetarian',
+      name: 'vegetarian-name',
       onValueChange: (value) => (this.vegetarian = value),
     });
 
     const favoriteCar = controlGroup(this.favoriteCar, {
+      id: 'fav-car',
       onValueChange: (value) => (this.favoriteCar = value),
     });
 
@@ -43,8 +53,8 @@ export class MyComponent {
             <div>
               <input {...firstName()} />
             </div>
-            <div {...errorFor(firstName)}>
-              <div>{validationMessageFor(firstName)}</div>
+            <div {...validationFor(firstName)}>
+              <div>{validationMessage(firstName)}</div>
             </div>
           </section>
 
@@ -58,8 +68,8 @@ export class MyComponent {
             <div>
               <input {...lastName()} />
             </div>
-            <div {...errorFor(firstName)}>
-              <div>{validationMessageFor(firstName)}</div>
+            <div {...validationFor(firstName)}>
+              <div>{validationMessage(lastName)}</div>
             </div>
           </section>
 
@@ -73,8 +83,8 @@ export class MyComponent {
             <div>
               <input type="checkbox" {...vegetarian()} />
             </div>
-            <div {...errorFor(firstName)}>
-              <div>{validationMessageFor(firstName)}</div>
+            <div {...validationFor(vegetarian)}>
+              <div>{validationMessage(vegetarian)}</div>
             </div>
           </section>
 
@@ -97,8 +107,8 @@ export class MyComponent {
               <label {...labelFor(favoriteCar, 'challenger')}>Challenger</label>
               <input type="radio" {...favoriteCar('challenger')} />
             </div>
-            <div {...errorFor(favoriteCar)}>
-              <div>{validationMessageFor(favoriteCar)}</div>
+            <div {...validationFor(favoriteCar)}>
+              <div>{validationMessage(favoriteCar)}</div>
             </div>
           </section>
 

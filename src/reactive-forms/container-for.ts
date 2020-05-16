@@ -1,59 +1,63 @@
-import { controlGroupOptsMap, ctrlElmAttrsMap } from './utils/state';
+import { ctrlGroupsElmAttrsMap, ctrlElmAttrsMap } from './utils/state';
 import { isString } from './utils/helpers';
 import type { ReactiveFormControl } from './utils/types';
 
-export const descriptionFor = (ctrl: ReactiveFormControl) => {
-  const inputId = ctrl().id;
-  const containerId = inputId + '-dsc';
-  const attrsMap = ctrlElmAttrsMap.get(ctrl);
+const labellingFor = (
+  ctrl: ReactiveFormControl,
+  attrName: string,
+  labellingIdSuffix: string,
+  groupItemValue: string,
+) => {
+  const ctrlId = ctrl().id;
+  const ctrlGroupElmAttrsMap = ctrlGroupsElmAttrsMap.get(ctrl);
+  const ctrlElmAttrs = ctrlElmAttrsMap.get(ctrl);
 
-  if (attrsMap) {
-    attrsMap.set('aria-describedby', containerId);
-  }
+  // props object for the labelling element
+  const labellingProps: any = {};
 
-  return {
-    id: containerId,
-  };
-};
+  if (ctrlGroupElmAttrsMap) {
+    // this ctrl is a control group
+    if (isString(groupItemValue)) {
+      // labelling element for a group item input
+      const groupItemId = ctrlId + '-' + groupItemValue;
 
-export const errorFor = (ctrl: ReactiveFormControl) => {
-  const inputId = ctrl().id;
-  const containerId = inputId + '-err';
-  const attrsMap = ctrlElmAttrsMap.get(ctrl);
+      let ctrlGroupElmAttrs = ctrlGroupElmAttrsMap.get(groupItemId);
+      if (!ctrlGroupElmAttrs) {
+        ctrlGroupElmAttrs = new Map();
+        ctrlGroupElmAttrsMap.set(groupItemId, ctrlGroupElmAttrs);
+      }
 
-  if (attrsMap) {
-    attrsMap.set('aria-errormessage', containerId);
-  }
-
-  return {
-    id: containerId,
-  };
-};
-
-export const labelFor = (ctrl: ReactiveFormControl, groupItemId?: string) => {
-  const ctrlProps = ctrl();
-  const groupOpts = controlGroupOptsMap.get(ctrl);
-  const attrsMap = ctrlElmAttrsMap.get(ctrl);
-  const labelProps: any = {};
-
-  if (groupOpts) {
-    if (isString(groupItemId)) {
-      // label for an group item
-      labelProps.id = ctrlProps.id + '-' + groupItemId + '-lbl';
-      labelProps.htmlFor = ctrlProps.id + '-' + groupItemId;
+      ctrlGroupElmAttrs.set(attrName, (labellingProps.id = groupItemId + labellingIdSuffix));
+      setLabellingElmAttr(labellingProps, attrName, groupItemId);
     } else {
-      // label for a group container
-      labelProps.id = ctrlProps.id + '-lbl';
+      // labelling element for the wrapping group
+      ctrlElmAttrs.set(attrName, (labellingProps.id = ctrlId + labellingIdSuffix));
     }
   } else {
-    // label for a control
-    labelProps.id = ctrlProps.id + '-lbl';
-    labelProps.htmlFor = ctrlProps.id;
+    // labelling element for a normal control
+    ctrlElmAttrs.set(attrName, (labellingProps.id = ctrlId + labellingIdSuffix));
+    setLabellingElmAttr(labellingProps, attrName, ctrlId);
   }
 
-  if (attrsMap) {
-    attrsMap.set('aria-labelledby', labelProps.id);
-  }
-
-  return labelProps;
+  // return props for the container element
+  return labellingProps;
 };
+
+const setLabellingElmAttr = (props: any, attrName: string, attrValue: string) => {
+  if (attrName === 'aria-labelledby') {
+    props.ref = (elm: HTMLElement) => {
+      if (elm.nodeName === 'LABEL') {
+        elm.setAttribute('for', attrValue);
+      }
+    };
+  }
+};
+
+export const descriptionFor = (ctrl: ReactiveFormControl, groupItemValue?: string) =>
+  labellingFor(ctrl, 'aria-describedby', '-desc', groupItemValue);
+
+export const validationFor = (ctrl: ReactiveFormControl, groupItemValue?: string) =>
+  labellingFor(ctrl, 'aria-errormessage', '-err', groupItemValue);
+
+export const labelFor = (ctrl: ReactiveFormControl, groupItemValue?: string) =>
+  labellingFor(ctrl, 'aria-labelledby', '-lbl', groupItemValue);
