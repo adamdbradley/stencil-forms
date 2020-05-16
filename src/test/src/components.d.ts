@@ -6,7 +6,7 @@
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 export namespace Components {
-    interface MyComponent {
+    interface MyForm {
         "favoriteCar": string;
         "firstName": string;
         "lastName": string;
@@ -14,32 +14,32 @@ export namespace Components {
     }
 }
 declare global {
-    interface HTMLMyComponentElement extends Components.MyComponent, HTMLStencilElement {
+    interface HTMLMyFormElement extends Components.MyForm, HTMLStencilElement {
     }
-    var HTMLMyComponentElement: {
-        prototype: HTMLMyComponentElement;
-        new (): HTMLMyComponentElement;
+    var HTMLMyFormElement: {
+        prototype: HTMLMyFormElement;
+        new (): HTMLMyFormElement;
     };
     interface HTMLElementTagNameMap {
-        "my-component": HTMLMyComponentElement;
+        "my-form": HTMLMyFormElement;
     }
 }
 declare namespace LocalJSX {
-    interface MyComponent {
+    interface MyForm {
         "favoriteCar"?: string;
         "firstName"?: string;
         "lastName"?: string;
         "vegetarian"?: boolean;
     }
     interface IntrinsicElements {
-        "my-component": MyComponent;
+        "my-form": MyForm;
     }
 }
 export { LocalJSX as JSX };
 declare module "@stencil/core" {
     export namespace JSX {
         interface IntrinsicElements {
-            "my-component": LocalJSX.MyComponent & JSXBase.HTMLAttributes<HTMLMyComponentElement>;
+            "my-form": LocalJSX.MyForm & JSXBase.HTMLAttributes<HTMLMyFormElement>;
         }
     }
 }

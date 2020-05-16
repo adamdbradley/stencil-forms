@@ -13,7 +13,5 @@
     "jsx": "react",
     "jsxFactory": "h",
     "outDir": "dist"
-  },
-  "include": ["src"],
-  "exclude": ["src/test"]
+  }
 }

@@ -1,9 +1,4 @@
-import type {
-  ControlElement,
-  ReactiveFormControl,
-  ReactiveFormValidateResults,
-  ReactiveFormControlOptions,
-} from './utils/types';
+import { ControlElement, ReactiveFormControl, ReactiveFormControlOptions, ReactiveFormValidateResults } from './types';
 import { isFunction, isPromise, isString } from './utils/helpers';
 
 export const checkValidity = (

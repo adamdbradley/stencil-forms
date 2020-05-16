@@ -1,6 +1,6 @@
 import { control, controlBoolean, controlGroup } from './control';
 import { toDashCase } from './utils/helpers';
-import type { ReactiveFormBindOptions, ReactiveFormControlOptions } from './utils/types';
+import { ReactiveFormBindOptions, ReactiveFormControlOptions } from './types';
 
 export const bind = <T extends any, PropName extends keyof T>(
   instance: T,

@@ -1,7 +1,7 @@
-import { ctrlMap, ctrlOptsMap, inputEvDebounceMap } from './utils/state';
 import { checkValidity } from './validation';
-import type { ControlElement, ReactiveFormControlOptions } from './utils/types';
-import { isNumber, isFunction, isBooleanInput } from './utils/helpers';
+import { ControlElement, ReactiveFormControlOptions } from './types';
+import { ctrlMap, ctrlOptsMap, inputEvDebounceMap as debounceMap } from './utils/state';
+import { isBooleanInput, isFunction, isNumber } from './utils/helpers';
 
 export const sharedOnInvalidHandler = (_ev: Event) => {
   // const ctrlElm = ev.currentTarget as ControlElement;
@@ -14,7 +14,7 @@ export const sharedOnValueChangeHandler = (ev: KeyboardEvent) => {
   const value = isBooleanInput(ctrlElm) ? ctrlElm.checked : ctrlElm.value;
 
   if (isNumber(opts.debounce)) {
-    clearTimeout(inputEvDebounceMap.get(ctrlElm));
+    clearTimeout(debounceMap.get(ctrlElm));
   }
 
   checkValidity(opts, ctrlElm, value, ev, afterInputValidity);
@@ -32,7 +32,7 @@ const afterInputValidity = (
     opts.onEscapeKey(value, ctrlElm.validity, ev);
   } else if (isFunction(opts.onValueChange)) {
     if (isNumber(opts.debounce)) {
-      inputEvDebounceMap.set(
+      debounceMap.set(
         ctrlElm,
         setTimeout(() => opts.onValueChange(value, ctrlElm.validity, ev), opts.debounce),
       );

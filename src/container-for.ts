@@ -1,6 +1,6 @@
-import { ctrlGroupsElmAttrsMap, ctrlElmAttrsMap } from './utils/state';
+import { ctrlElmAttrsMap, ctrlGroupsElmAttrsMap } from './utils/state';
 import { isString } from './utils/helpers';
-import type { ReactiveFormControl } from './utils/types';
+import { ReactiveFormControl } from './types';
 
 const labellingFor = (
   ctrl: ReactiveFormControl,

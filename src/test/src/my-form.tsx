@@ -9,15 +9,15 @@ import {
   descriptionFor,
   validationFor,
   validationMessage,
-} from '../reactive-forms';
+} from '../../index';
 
 @Component({
-  tag: 'my-component',
+  tag: 'my-form',
 })
-export class MyComponent {
+export class MyForm {
   @Prop() firstName = 'Marty';
   @Prop() lastName = 'McFly';
-  @Prop() vegetarian = true;
+  @Prop() vegetarian = false;
   @Prop() favoriteCar = '';
 
   render() {

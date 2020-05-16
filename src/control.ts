@@ -1,13 +1,12 @@
-import { ctrlOptsMap, ctrlGroupsElmAttrsMap, ctrlMap, ctrlElmAttrsMap } from './utils/state';
+import { ctrlElmAttrsMap, ctrlGroupsElmAttrsMap, ctrlMap, ctrlOptsMap } from './utils/state';
 import { isString } from './utils/helpers';
-import type {
-  ReactiveFormControl,
-  ReactiveFormControlOptions,
+import {
   ReactiveControlProperties,
+  ReactiveFormControl,
   ReactiveFormControlGroup,
-  ControlElement,
-} from './utils/types';
-import { sharedOnValueChangeHandler, sharedOnInvalidHandler } from './handlers';
+  ReactiveFormControlOptions,
+} from './types';
+import { sharedOnInvalidHandler, sharedOnValueChangeHandler } from './handlers';
 
 const controlInput = (value: any, isBooleanValue: boolean, ctrlOpts: ReactiveFormControlOptions) => {
   normalizeCtrlOpts(ctrlOpts, isBooleanValue);
@@ -50,7 +49,7 @@ const controlInput = (value: any, isBooleanValue: boolean, ctrlOpts: ReactiveFor
   // remember the control options for this form control
   ctrlOptsMap.set(ctrl, ctrlOpts);
 
-  // return form control is used as a key
+  // return control is used as a key
   // and what's called to get all of the props
   return ctrl;
 };
@@ -134,7 +133,7 @@ const groupItem = (
     [ctrlOpts.changeEventName]: sharedOnValueChangeHandler,
 
     // ref for <input type="radio">
-    ref: (groupItemElm: ControlElement) => {
+    ref: (groupItemElm) => {
       ctrlMap.set(groupItemElm, ctrl);
       ctrlOptsMap.set(ctrl, ctrlOpts);
       groupItemAttrMap.get(id).forEach((attrValue, attrName) => groupItemElm.setAttribute(attrName, attrValue));
@@ -149,5 +148,7 @@ const normalizeCtrlOpts = (ctrlOpts: ReactiveFormControlOptions, isBooleanValue:
   if (!isString(ctrlOpts.name)) {
     ctrlOpts.name = ctrlOpts.id;
   }
-  ctrlOpts.changeEventName = isBooleanValue ? 'onChange' : 'onInput';
+  if (!isString(ctrlOpts.changeEventName)) {
+    ctrlOpts.changeEventName = isBooleanValue ? 'onChange' : 'onInput';
+  }
 };
