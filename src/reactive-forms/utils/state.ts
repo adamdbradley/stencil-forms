@@ -5,22 +5,25 @@ import type {
   ReactiveFormControlGroup,
 } from './types';
 
-export const ctrlMap = new WeakMap<ControlElement, ReactiveFormControl | ReactiveFormControlGroup>();
+export const ctrlMap = /*@__PURE__*/ new WeakMap<ControlElement, ReactiveFormControl | ReactiveFormControlGroup>();
 
-export const ctrlElmAttrsMap = new WeakMap<ReactiveFormControl | ReactiveFormControlGroup, Map<string, string>>();
+export const ctrlElmAttrsMap = /*@__PURE__*/ new WeakMap<
+  ReactiveFormControl | ReactiveFormControlGroup,
+  Map<string, string>
+>();
 
-export const ctrlGroupItemsMap = new WeakMap<ReactiveFormControl | ReactiveFormControl>();
+export const ctrlGroupItemsMap = /*@__PURE__*/ new WeakMap<ReactiveFormControl | ReactiveFormControl>();
 
-export const ctrlOptsMap = new WeakMap<ReactiveFormControl, ReactiveFormControlOptions>();
+export const ctrlOptsMap = /*@__PURE__*/ new WeakMap<ReactiveFormControl, ReactiveFormControlOptions>();
 
-export const ctrlBooleanOptsMap = new WeakMap<
+export const ctrlBooleanOptsMap = /*@__PURE__*/ new WeakMap<
   ReactiveFormControl | ReactiveFormControlGroup,
   ReactiveFormControlOptions
 >();
 
-export const ctrlGroupsElmAttrsMap = new WeakMap<
+export const ctrlGroupsElmAttrsMap = /*@__PURE__*/ new WeakMap<
   ReactiveFormControl | ReactiveFormControlGroup,
   Map<string, Map<string, string>>
 >();
 
-export const inputEvDebounceMap = new WeakMap<ControlElement, any>();
+export const inputEvDebounceMap = /*@__PURE__*/ new WeakMap<ControlElement, any>();

@@ -36,6 +36,7 @@ export type ReactiveControlProperties = {
   id: string;
   name?: string;
   onBlur?: (ev: FocusEvent) => void;
+  onChange?: (ev: Event) => void;
   onClick?: (ev: Event) => void;
   onFocus?: (ev: FocusEvent) => void;
   onInput?: (ev: KeyboardEvent) => void;

@@ -23,8 +23,7 @@ const labellingFor = (
 
       let ctrlGroupElmAttrs = ctrlGroupElmAttrsMap.get(groupItemId);
       if (!ctrlGroupElmAttrs) {
-        ctrlGroupElmAttrs = new Map();
-        ctrlGroupElmAttrsMap.set(groupItemId, ctrlGroupElmAttrs);
+        ctrlGroupElmAttrsMap.set(groupItemId, (ctrlGroupElmAttrs = new Map()));
       }
 
       ctrlGroupElmAttrs.set(attrName, (labellingProps.id = groupItemId + labellingIdSuffix));

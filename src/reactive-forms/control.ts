@@ -1,15 +1,16 @@
 import { ctrlOptsMap, ctrlGroupsElmAttrsMap, ctrlMap, ctrlElmAttrsMap } from './utils/state';
 import { isString } from './utils/helpers';
-import {
+import type {
   ReactiveFormControl,
   ReactiveFormControlOptions,
   ReactiveControlProperties,
   ReactiveFormControlGroup,
+  ControlElement,
 } from './utils/types';
-import { sharedOnInputHandler, sharedOnInvalidHandler } from './handlers';
+import { sharedOnValueChangeHandler, sharedOnInvalidHandler } from './handlers';
 
 const controlInput = (value: any, isBooleanValue: boolean, ctrlOpts: ReactiveFormControlOptions) => {
-  normalizeCtrlOpts(ctrlOpts);
+  normalizeCtrlOpts(ctrlOpts, isBooleanValue);
 
   // create a map used by the containers to add attributes to the control element
   const attrMap = new Map<string, string>();
@@ -24,8 +25,8 @@ const controlInput = (value: any, isBooleanValue: boolean, ctrlOpts: ReactiveFor
     },
 
     // add the shared event listeners
-    onInput: sharedOnInputHandler,
     onInvalid: sharedOnInvalidHandler,
+    [ctrlOpts.changeEventName]: sharedOnValueChangeHandler,
 
     // set the "id"
     id: ctrlOpts.id,
@@ -59,7 +60,7 @@ export const control = (value: any, ctrlOpts: ReactiveFormControlOptions) => con
 export const controlBoolean = (value: any, ctrlOpts: ReactiveFormControlOptions) => controlInput(value, true, ctrlOpts);
 
 export const controlGroup = (selectedValue: any, ctrlOpts: ReactiveFormControlOptions) => {
-  normalizeCtrlOpts(ctrlOpts);
+  normalizeCtrlOpts(ctrlOpts, true);
 
   // create a map used by the containers to add attributes to the control element
   const attrMap = new Map<string, string>();
@@ -77,7 +78,7 @@ export const controlGroup = (selectedValue: any, ctrlOpts: ReactiveFormControlOp
   const ctrl: ReactiveFormControlGroup = (groupItemValue?: any) => {
     if (isString(groupItemValue)) {
       // group item, like <input type="radio">
-      return groupItem(selectedValue, ctrlOpts, groupItemAttrMap, groupItemValue);
+      return groupItem(selectedValue, ctrl, ctrlOpts, groupItemAttrMap, groupItemValue);
     }
 
     // group container, like <div role="group">
@@ -99,6 +100,7 @@ export const controlGroup = (selectedValue: any, ctrlOpts: ReactiveFormControlOp
 
 const groupItem = (
   selectedValue: any,
+  ctrl: ReactiveFormControlGroup,
   ctrlOpts: ReactiveFormControlOptions,
   groupItemAttrMap: Map<string, Map<string, string>>,
   value: string,
@@ -129,8 +131,12 @@ const groupItem = (
     // however, it's always false if "selectedValue" is null or undefined
     checked: selectedValue != null ? String(selectedValue) === value : false,
 
+    [ctrlOpts.changeEventName]: sharedOnValueChangeHandler,
+
     // ref for <input type="radio">
-    ref: (groupItemElm: HTMLElement) => {
+    ref: (groupItemElm: ControlElement) => {
+      ctrlMap.set(groupItemElm, ctrl);
+      ctrlOptsMap.set(ctrl, ctrlOpts);
       groupItemAttrMap.get(id).forEach((attrValue, attrName) => groupItemElm.setAttribute(attrName, attrValue));
     },
   };
@@ -138,9 +144,10 @@ const groupItem = (
   return props;
 };
 
-const normalizeCtrlOpts = (ctrlOpts: ReactiveFormControlOptions) => {
+const normalizeCtrlOpts = (ctrlOpts: ReactiveFormControlOptions, isBooleanValue: boolean) => {
   // if "name" isn't set, then use the "id"
   if (!isString(ctrlOpts.name)) {
     ctrlOpts.name = ctrlOpts.id;
   }
+  ctrlOpts.changeEventName = isBooleanValue ? 'onChange' : 'onInput';
 };

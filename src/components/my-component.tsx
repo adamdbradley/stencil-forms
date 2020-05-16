@@ -15,9 +15,9 @@ import {
   tag: 'my-component',
 })
 export class MyComponent {
-  @Prop() firstName = '';
-  @Prop() lastName = '';
-  @Prop() vegetarian = false;
+  @Prop() firstName = 'Marty';
+  @Prop() lastName = 'McFly';
+  @Prop() vegetarian = true;
   @Prop() favoriteCar = '';
 
   render() {
@@ -47,54 +47,44 @@ export class MyComponent {
             <div>
               <label {...labelFor(firstName)}>First Name</label>
             </div>
-            <div>
-              <p {...descriptionFor(firstName)}>What's your first name?</p>
-            </div>
+            <div {...descriptionFor(firstName)}>What's your first name? {this.firstName}</div>
             <div>
               <input {...firstName()} />
             </div>
-            <div {...validationFor(firstName)}>
-              <div>{validationMessage(firstName)}</div>
-            </div>
+            <div {...validationFor(firstName)}>{validationMessage(firstName)}</div>
           </section>
+
+          <hr />
 
           <section>
             <div>
               <label {...labelFor(lastName)}>Last Name</label>
             </div>
-            <div>
-              <p {...descriptionFor(lastName)}>What's your last name?</p>
-            </div>
+            <div {...descriptionFor(lastName)}>What's your last name? (debounce 500ms) {this.lastName}</div>
             <div>
               <input {...lastName()} />
             </div>
-            <div {...validationFor(firstName)}>
-              <div>{validationMessage(lastName)}</div>
-            </div>
+            <div {...validationFor(firstName)}>{validationMessage(lastName)}</div>
           </section>
+
+          <hr />
 
           <section>
             <div>
               <label {...labelFor(vegetarian)}>Vegetarian</label>
             </div>
-            <div>
-              <p {...descriptionFor(vegetarian)}>Are you a vegetarian?</p>
-            </div>
+            <div {...descriptionFor(vegetarian)}>Are you a vegetarian? {String(this.vegetarian)}</div>
             <div>
               <input type="checkbox" {...vegetarian()} />
             </div>
-            <div {...validationFor(vegetarian)}>
-              <div>{validationMessage(vegetarian)}</div>
-            </div>
+            <div {...validationFor(vegetarian)}>{validationMessage(vegetarian)}</div>
           </section>
 
+          <hr />
+
           <section {...favoriteCar()}>
-            <div>
-              <p {...labelFor(favoriteCar)}>Favorite Car</p>
-            </div>
-            <div>
-              <p {...descriptionFor(favoriteCar)}>What's your favorite car?</p>
-            </div>
+            <div {...labelFor(favoriteCar)}>Favorite Car</div>
+            <div {...descriptionFor(favoriteCar)}>What's your favorite car? {this.favoriteCar}</div>
             <div>
               <label {...labelFor(favoriteCar, 'mustang')}>Mustang</label>
               <input type="radio" {...favoriteCar('mustang')} />
@@ -107,10 +97,10 @@ export class MyComponent {
               <label {...labelFor(favoriteCar, 'challenger')}>Challenger</label>
               <input type="radio" {...favoriteCar('challenger')} />
             </div>
-            <div {...validationFor(favoriteCar)}>
-              <div>{validationMessage(favoriteCar)}</div>
-            </div>
+            <div {...validationFor(favoriteCar)}>{validationMessage(favoriteCar)}</div>
           </section>
+
+          <hr />
 
           <section>
             <button type="submit">Submit</button>

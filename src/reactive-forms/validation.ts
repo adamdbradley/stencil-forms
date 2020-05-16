@@ -6,22 +6,41 @@ import type {
 } from './utils/types';
 import { isFunction, isPromise, isString } from './utils/helpers';
 
-export const checkValidity = (opts: ReactiveFormControlOptions, ctrlElm: ControlElement, ev: Event) => {
-  if (ctrlElm && isFunction(ctrlElm.checkValidity) && isFunction(opts.validate)) {
-    const validateResults = opts.validate(ctrlElm.value, ev);
-    if (isPromise(validateResults)) {
-      return validateResults.then((validateResults) => checkValidateResults(validateResults, ctrlElm));
+export const checkValidity = (
+  opts: ReactiveFormControlOptions,
+  ctrlElm: ControlElement,
+  value: any,
+  ev: Event,
+  cb: (opts: ReactiveFormControlOptions, ctrlElm: ControlElement, value: any, ev: Event) => void,
+): any => {
+  if (ctrlElm && ctrlElm.parentNode && isFunction(ctrlElm.checkValidity)) {
+    if (isFunction(opts.validate)) {
+      // has custom validate fn
+      const results = opts.validate(value, ev);
+      if (isPromise(results)) {
+        // results return a promise, let's wait on those
+        results.then((promiseResults) => checkValidateResults(promiseResults, opts, ctrlElm, value, ev, cb));
+      } else {
+        // results were not a promise
+        checkValidateResults(results, opts, ctrlElm, value, ev, cb);
+      }
+    } else {
+      // no validate fn
+      checkValidateResults('', opts, ctrlElm, value, ev, cb);
     }
-    return checkValidateResults(validateResults, ctrlElm);
   }
-  return true;
 };
 
-const checkValidateResults = (validateResults: ReactiveFormValidateResults, ctrlElm: ControlElement) => {
-  if (isString(validateResults) && validateResults !== '') {
-    ctrlElm.setCustomValidity('');
-  }
-  return true;
+const checkValidateResults = (
+  results: ReactiveFormValidateResults,
+  opts: ReactiveFormControlOptions,
+  ctrlElm: ControlElement,
+  value: any,
+  ev: Event,
+  cb: (opts: ReactiveFormControlOptions, ctrlElm: ControlElement, value: any, ev: Event) => void,
+) => {
+  ctrlElm.setCustomValidity(isString(results) ? results : '');
+  cb(opts, ctrlElm, value, ev);
 };
 
 export const validationMessage = (_ctrl: ReactiveFormControl) => {
