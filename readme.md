@@ -21,9 +21,11 @@ No clue 🔥
 ## Goals
 
 - Reduce boilerplate in order to wire-up reactive inputs
-- Do not re-invent form validation, which is already provided by the browser
+- Do not re-invent form validation, but rather use [web standardized validation](https://developer.mozilla.org/en-US/docs/Web/API/ValidityState) already provided by the browser
+- User provides the actual input elements and any attributes in order to use existing [constraint validation](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation) rather than providing a new API for validation
 - Do not provide any sort of UI, but rather provide utilities to make it easier to build custom UI which works directly with standards-based form validation
 - Accessibility out-of-the-box by linking inputs to their labels, descriptions and error messages with the appropriate aria attributes
+- Default to standard event listeners, such as `onInput` and `onChange`, but allow for custom event names that trigger value change events, such as Ionic's `ionOnChange`.
 
 ## Example
 
@@ -54,6 +56,10 @@ export class MyForm {
 ```
 
 ## Labels and Accessibility
+
+- Links the various elements together using `id` and aria attributes, such as `aria-labelledby`, `aria-describedby`, and `aria-errormessage`
+- Links the `<label>` element to the `<input>` using label's `for` attribute
+- Adds the `aria-labelledby` attribute when the labelling element is not a `<label>`
 
 ```tsx
 render() {
