@@ -7,9 +7,10 @@
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 export namespace Components {
     interface MyForm {
+        "email": string;
         "favoriteCar": string;
-        "firstName": string;
-        "lastName": string;
+        "fullName": string;
+        "specialInstructions": string;
         "vegetarian": boolean;
     }
 }
@@ -26,9 +27,10 @@ declare global {
 }
 declare namespace LocalJSX {
     interface MyForm {
+        "email"?: string;
         "favoriteCar"?: string;
-        "firstName"?: string;
-        "lastName"?: string;
+        "fullName"?: string;
+        "specialInstructions"?: string;
         "vegetarian"?: boolean;
     }
     interface IntrinsicElements {

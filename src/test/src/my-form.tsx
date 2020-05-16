@@ -15,13 +15,14 @@ import {
   tag: 'my-form',
 })
 export class MyForm {
-  @Prop() firstName = 'Marty';
-  @Prop() lastName = 'McFly';
+  @Prop() fullName = 'Marty McFly';
+  @Prop() email = '';
   @Prop() vegetarian = false;
+  @Prop() specialInstructions = '';
   @Prop() favoriteCar = '';
 
   render() {
-    const firstName = bind(this, 'firstName', {
+    const fullName = bind(this, 'fullName', {
       onBlur: (value) => {
         console.log('firstName onBlur', value);
       },
@@ -30,17 +31,19 @@ export class MyForm {
       },
     });
 
-    const lastName = control(this.lastName, {
-      id: 'last-name',
+    const email = control(this.email, {
+      id: 'user-email',
       debounce: 500,
-      onValueChange: (value) => (this.lastName = value),
+      onValueChange: (value) => (this.email = value),
     });
 
     const vegetarian = controlBoolean(this.vegetarian, {
-      id: 'vegetarian',
+      id: 'vegetarian-id',
       name: 'vegetarian-name',
       onValueChange: (value) => (this.vegetarian = value),
     });
+
+    const specialInstructions = bind(this, 'specialInstructions');
 
     const favoriteCar = controlGroup(this.favoriteCar, {
       id: 'fav-car',
@@ -52,26 +55,26 @@ export class MyForm {
         <form {...form()}>
           <section>
             <div>
-              <label {...labelFor(firstName)}>First Name</label>
+              <label {...labelFor(fullName)}>Name</label>
             </div>
-            <div {...descriptionFor(firstName)}>What's your first name? {this.firstName}</div>
+            <div {...descriptionFor(fullName)}>What's your full name? {this.fullName}</div>
             <div>
-              <input {...firstName()} />
+              <input {...fullName()} />
             </div>
-            <div {...validationFor(firstName)}>{validationMessage(firstName)}</div>
+            <div {...validationFor(fullName)}>{validationMessage(fullName)}</div>
           </section>
 
           <hr />
 
           <section>
             <div>
-              <label {...labelFor(lastName)}>Last Name</label>
+              <label {...labelFor(email)}>Last Name</label>
             </div>
-            <div {...descriptionFor(lastName)}>What's your last name? (debounce 500ms) {this.lastName}</div>
+            <div {...descriptionFor(email)}>Best email to contact you at? (500ms debounce) {this.email}</div>
             <div>
-              <input {...lastName()} />
+              <input type="email" required {...email()} />
             </div>
-            <div {...validationFor(firstName)}>{validationMessage(lastName)}</div>
+            <div {...validationFor(email)}>{validationMessage(email)}</div>
           </section>
 
           <hr />
@@ -85,6 +88,21 @@ export class MyForm {
               <input type="checkbox" {...vegetarian()} />
             </div>
             <div {...validationFor(vegetarian)}>{validationMessage(vegetarian)}</div>
+          </section>
+
+          <hr />
+
+          <section>
+            <div>
+              <label {...labelFor(specialInstructions)}>Special Instructions</label>
+            </div>
+            <div {...descriptionFor(specialInstructions)}>
+              Do you have dietary restrictions? {this.specialInstructions}
+            </div>
+            <div>
+              <textarea {...specialInstructions()} />
+            </div>
+            <div {...validationFor(specialInstructions)}>{validationMessage(specialInstructions)}</div>
           </section>
 
           <hr />

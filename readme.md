@@ -18,6 +18,13 @@ Not even close 🔥
 
 No clue 🔥
 
+## Goals
+
+- Reduce boilerplate in order to wire-up reactive inputs
+- Do not re-invent form validation, which is already provided by the browser
+- Do not provide any sort of UI, but rather provide utilities to make it easier to build custom UI which works directly with standards-based form validation
+- Accessibility out-of-the-box by linking inputs to their labels, descriptions and error messages with the appropriate aria attributes
+
 ## Example
 
 ```tsx
@@ -134,8 +141,11 @@ render() {
 </section>
 ```
 
+## Validation
 
-## Options
+Form validation uses the browser's built-in [ValidityState](https://developer.mozilla.org/en-US/docs/Web/API/ValidityState).
+
+## Bind Options
 
 `ReactiveFormBindOptions`
 
