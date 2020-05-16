@@ -57,8 +57,8 @@ render() {
       <label {...labelFor(firstName)}>
         First Name
       </label>
-      <p {...descriptionFor(pkgName)}>
-        Please add your first name below:
+      <p {...descriptionFor(firstName)}>
+        Please enter your first name below:
       </p>
       <input {...firstName()} />
     </Host>
@@ -90,13 +90,13 @@ render() {
 
 ```tsx
 render() {
-  const favoriteCar = groupBoolean(this, 'favoriteCar');
+  const favoriteCar = bindGroup(this, 'favoriteCar');
 
   return (
     <Host>
       <section {...favoriteCar()}>
         <div {...labelFor(favoriteCar)}>Favorite Car</div>
-        <div {...descriptionFor(favoriteCar)}>What's your favorite car? {this.favoriteCar}</div>
+        <div {...descriptionFor(favoriteCar)}>What's your favorite car?</div>
         <div>
           <label {...labelFor(favoriteCar, 'mustang')}>Mustang</label>
           <input type="radio" {...favoriteCar('mustang')} />
@@ -114,3 +114,39 @@ render() {
   );
 }
 ```
+
+```html
+<section id="favoritecar" role="group" aria-labelledby="favoritecar-lbl" aria-describedby="favoritecar-desc">
+  <div id="favoritecar-lbl">Favorite Car</div>
+  <div id="favoritecar-desc">What's your favorite car?</div>
+  <div>
+    <label id="favoritecar-mustang-lbl" for="favoritecar-mustang">Mustang</label>
+    <input type="radio" id="favoritecar-mustang" value="mustang" aria-labelledby="favoritecar-mustang-lbl">
+  </div>
+  <div>
+    <label id="favoritecar-camaro-lbl" for="favoritecar-camaro">Camaro</label>
+    <input type="radio" id="favoritecar-camaro" value="camaro" aria-labelledby="favoritecar-camaro-lbl">
+  </div>
+  <div>
+    <label id="favoritecar-challenger-lbl" for="favoritecar-challenger">Challenger</label>
+    <input type="radio" id="favoritecar-challenger" value="challenger" aria-labelledby="favoritecar-challenger-lbl">
+  </div>
+  <div>
+</section>
+```
+
+
+## Options
+
+`ReactiveFormBindOptions`
+
+https://github.com/adamdbradley/stencil-forms/blob/master/src/types.ts
+
+
+## Advanced
+
+`control()`
+
+`controlBoolean()`
+
+`controlGroup()`
