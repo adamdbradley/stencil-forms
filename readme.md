@@ -144,6 +144,8 @@ https://github.com/adamdbradley/stencil-forms/blob/master/src/types.ts
 
 ## Advanced
 
+https://github.com/adamdbradley/stencil-forms/blob/master/src/test/src/my-form.tsx
+
 `control()`
 
 `controlBoolean()`
