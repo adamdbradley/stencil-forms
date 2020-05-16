@@ -1,12 +1,12 @@
 import { ctrlElmAttrsMap, ctrlGroupsElmAttrsMap, ctrlMap, ctrlOptsMap } from './utils/state';
-import { isString } from './utils/helpers';
+import { isString, isFunction } from './utils/helpers';
 import {
   ReactiveControlProperties,
   ReactiveFormControl,
   ReactiveFormControlGroup,
   ReactiveFormControlOptions,
 } from './types';
-import { sharedOnInvalidHandler, sharedOnValueChangeHandler } from './handlers';
+import { sharedOnInvalidHandler, sharedOnValueChangeHandler, sharedOnFocus } from './handlers';
 
 const controlInput = (value: any, isBooleanValue: boolean, ctrlOpts: ReactiveFormControlOptions) => {
   normalizeCtrlOpts(ctrlOpts, isBooleanValue);
@@ -23,16 +23,24 @@ const controlInput = (value: any, isBooleanValue: boolean, ctrlOpts: ReactiveFor
       attrMap.forEach((attrValue, attrName) => ctrlElm.setAttribute(attrName, attrValue));
     },
 
-    // add the shared event listeners
-    onInvalid: sharedOnInvalidHandler,
-    [ctrlOpts.changeEventName]: sharedOnValueChangeHandler,
-
     // set the "id"
     id: ctrlOpts.id,
 
     // use the "name" if it's set, otherwise use the "id"
     name: ctrlOpts.name,
+
+    // add the shared event listeners
+    onInvalid: sharedOnInvalidHandler,
+    [ctrlOpts.changeEventName]: sharedOnValueChangeHandler,
   };
+
+  if (isFunction(ctrlOpts.onBlur)) {
+    props.onBlur = sharedOnFocus;
+  }
+
+  if (isFunction(ctrlOpts.onFocus)) {
+    props.onFocus = sharedOnFocus;
+  }
 
   if (isBooleanValue) {
     props.checked = String(value) === 'true';

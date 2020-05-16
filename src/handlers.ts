@@ -41,3 +41,24 @@ const afterInputValidity = (
     }
   }
 };
+
+export const sharedOnFocus = (ev: FocusEvent) => {
+  const ctrlElm = ev.currentTarget as ControlElement;
+  const ctrl = ctrlMap.get(ctrlElm);
+  const opts = ctrlOptsMap.get(ctrl);
+  const value = isBooleanInput(ctrlElm) ? ctrlElm.checked : ctrlElm.value;
+
+  checkValidity(opts, ctrlElm, value, ev, afterFocusValidity);
+};
+
+const afterFocusValidity = (opts: ReactiveFormControlOptions, ctrlElm: ControlElement, value: any, ev: FocusEvent) => {
+  if (ev.type === 'focus') {
+    if (isFunction(opts.onFocus)) {
+      opts.onFocus(value, ctrlElm.validity, ev);
+    }
+  } else if (ev.type === 'blur') {
+    if (isFunction(opts.onBlur)) {
+      opts.onBlur(value, ctrlElm.validity, ev);
+    }
+  }
+};

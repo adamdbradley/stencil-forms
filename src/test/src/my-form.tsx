@@ -21,7 +21,14 @@ export class MyForm {
   @Prop() favoriteCar = '';
 
   render() {
-    const firstName = bind(this, 'firstName');
+    const firstName = bind(this, 'firstName', {
+      onBlur: (value) => {
+        console.log('firstName onBlur', value);
+      },
+      onFocus: (value) => {
+        console.log('firstName onFocus', value);
+      },
+    });
 
     const lastName = control(this.lastName, {
       id: 'last-name',

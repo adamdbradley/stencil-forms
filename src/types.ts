@@ -14,20 +14,16 @@ export interface ReactiveFormBindOptions {
   id?: string;
   name?: string;
   onBlur?: (value: any, validity: ValidityState, ev: FocusEvent) => void;
-  onDirty?: (value: any, validity: ValidityState, ev: KeyboardEvent) => void;
   onEnterKey?: (value: any, validity: ValidityState, ev: KeyboardEvent) => void;
   onEscapeKey?: (value: any, validity: ValidityState, ev: KeyboardEvent) => void;
   onFocus?: (value: any, validity: ValidityState, ev: FocusEvent) => void;
   onInvalid?: (value: any, validity: ValidityState, ev: UIEvent) => void;
-  onValid?: (value: any, validity: ValidityState, ev: UIEvent) => void;
   validate?: (value: any, ev: Event) => ReactiveFormValidateResults | Promise<ReactiveFormValidateResults>;
 }
 
-export type OnValueChange = (value: any, validity: ValidityState, ev: UIEvent) => void;
-
 export interface ReactiveFormControlOptions extends ReactiveFormBindOptions {
   id: string;
-  onValueChange?: OnValueChange;
+  onValueChange?: (value: any, validity: ValidityState, ev: UIEvent) => void;
 }
 
 export type ReactiveControlProperties = {

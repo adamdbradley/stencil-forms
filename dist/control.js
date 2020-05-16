@@ -1,6 +1,6 @@
 import { ctrlElmAttrsMap, ctrlGroupsElmAttrsMap, ctrlMap, ctrlOptsMap } from './utils/state';
-import { isString } from './utils/helpers';
-import { sharedOnInvalidHandler, sharedOnValueChangeHandler } from './handlers';
+import { isString, isFunction } from './utils/helpers';
+import { sharedOnInvalidHandler, sharedOnValueChangeHandler, sharedOnFocus } from './handlers';
 const controlInput = (value, isBooleanValue, ctrlOpts) => {
     normalizeCtrlOpts(ctrlOpts, isBooleanValue);
     // create a map used by the containers to add attributes to the control element
@@ -13,14 +13,20 @@ const controlInput = (value, isBooleanValue, ctrlOpts) => {
             ctrlMap.set(ctrlElm, ctrl);
             attrMap.forEach((attrValue, attrName) => ctrlElm.setAttribute(attrName, attrValue));
         },
-        // add the shared event listeners
-        onInvalid: sharedOnInvalidHandler,
-        [ctrlOpts.changeEventName]: sharedOnValueChangeHandler,
         // set the "id"
         id: ctrlOpts.id,
         // use the "name" if it's set, otherwise use the "id"
         name: ctrlOpts.name,
+        // add the shared event listeners
+        onInvalid: sharedOnInvalidHandler,
+        [ctrlOpts.changeEventName]: sharedOnValueChangeHandler,
     };
+    if (isFunction(ctrlOpts.onBlur)) {
+        props.onBlur = sharedOnFocus;
+    }
+    if (isFunction(ctrlOpts.onFocus)) {
+        props.onFocus = sharedOnFocus;
+    }
     if (isBooleanValue) {
         props.checked = String(value) === 'true';
     }
