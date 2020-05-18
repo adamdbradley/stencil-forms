@@ -1,24 +1,41 @@
-import { ControlElement, ReactiveFormControl, ReactiveFormControlOptions, ReactiveFormControlGroup } from '../types';
+import { ControlData, ControlElement, ReactiveFormControl, ReactiveFormControlGroup } from '../types';
 
-export const ctrlBooleanOptsMap = /*@__PURE__*/ new WeakMap<
+export const state = {
+  i: 0,
+};
+
+export const instanceIdsMap = /*@__PURE__*/ new WeakMap<any, number>();
+
+export const ctrlElmIdsMap = /*@__PURE__*/ new WeakMap<ControlElement, string>();
+
+export const ctrlElmsMap = /*@__PURE__*/ new WeakMap<ReactiveFormControl | ReactiveFormControlGroup, ControlElement>();
+
+export const enum LabellingType {
+  labelledby,
+  errormessage,
+  describedby,
+}
+
+/**
+ * Follows LabellingType index
+ */
+export const labellingElmsMap = [
+  new WeakMap<ReactiveFormControl | ReactiveFormControlGroup, HTMLElement>(),
+  new WeakMap<ReactiveFormControl | ReactiveFormControlGroup, HTMLElement>(),
+  new WeakMap<ReactiveFormControl | ReactiveFormControlGroup, HTMLElement>(),
+];
+
+export const ctrlChildrenMap = /*@__PURE__*/ new WeakMap<
   ReactiveFormControl | ReactiveFormControlGroup,
-  ReactiveFormControlOptions
+  Map<string, { ctrl: ReactiveFormControl; data: ControlData }>
 >();
 
-export const ctrlElmAttrsMap = /*@__PURE__*/ new WeakMap<
-  ReactiveFormControl | ReactiveFormControlGroup,
-  Map<string, string>
->();
-
-export const ctrlGroupsElmAttrsMap = /*@__PURE__*/ new WeakMap<
-  ReactiveFormControl | ReactiveFormControlGroup,
-  Map<string, Map<string, string>>
->();
+export const groupItemLabellingElmParentCtrlMap = /*@__PURE__*/ new WeakMap<HTMLElement, ReactiveFormControlGroup>();
 
 export const ctrlGroupItemsMap = /*@__PURE__*/ new WeakMap<ReactiveFormControl | ReactiveFormControl>();
 
 export const ctrlMap = /*@__PURE__*/ new WeakMap<ControlElement, ReactiveFormControl | ReactiveFormControlGroup>();
 
-export const ctrlOptsMap = /*@__PURE__*/ new WeakMap<ReactiveFormControl, ReactiveFormControlOptions>();
+export const ctrlDataMap = /*@__PURE__*/ new WeakMap<ReactiveFormControl, ControlData>();
 
-export const inputEvDebounceMap = /*@__PURE__*/ new WeakMap<ControlElement, any>();
+export const debounceMap = /*@__PURE__*/ new WeakMap<ControlElement, any>();

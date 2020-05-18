@@ -1,8 +1,7 @@
 import { Component, h, Host, Prop } from '@stencil/core';
 import {
-  form,
   bind,
-  control,
+  bindNumber,
   controlBoolean,
   controlGroup,
   labelFor,
@@ -10,6 +9,7 @@ import {
   validationFor,
   validationMessage,
 } from '../../index';
+import { controlNumber } from '../../control';
 
 @Component({
   tag: 'my-form',
@@ -17,42 +17,54 @@ import {
 export class MyForm {
   @Prop() fullName = 'Marty McFly';
   @Prop() email = '';
+  @Prop() age = 18;
+  @Prop() volume = 11;
   @Prop() vegetarian = false;
   @Prop() specialInstructions = '';
   @Prop() favoriteCar = '';
 
+  onSubmit = (ev: Event) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+
+    const formData = new FormData(ev.currentTarget as HTMLFormElement);
+    const jsonData = JSON.stringify(Object.fromEntries(formData as any), null, 2);
+    console.log('submit', jsonData);
+  };
+
   render() {
-    const fullName = bind(this, 'fullName', {
+    const fullName = bind(this, 'fullName');
+
+    const email = bind(this, 'email', {
+      debounce: 500,
+    });
+
+    const age = bindNumber(this, 'age', {
       onBlur: (value) => {
-        console.log('firstName onBlur', value);
+        console.log('age onBlur', value);
       },
       onFocus: (value) => {
-        console.log('firstName onFocus', value);
+        console.log('age onFocus', value);
       },
     });
 
-    const email = control(this.email, {
-      id: 'user-email',
-      debounce: 500,
-      onValueChange: (value) => (this.email = value),
+    const volume = controlNumber(this.volume, {
+      onValueChange: (value) => (this.volume = value),
     });
 
     const vegetarian = controlBoolean(this.vegetarian, {
-      id: 'vegetarian-id',
-      name: 'vegetarian-name',
       onValueChange: (value) => (this.vegetarian = value),
     });
 
     const specialInstructions = bind(this, 'specialInstructions');
 
     const favoriteCar = controlGroup(this.favoriteCar, {
-      id: 'fav-car',
       onValueChange: (value) => (this.favoriteCar = value),
     });
 
     return (
       <Host>
-        <form {...form()}>
+        <form onSubmit={this.onSubmit}>
           <section>
             <div>
               <label {...labelFor(fullName)}>Name</label>
@@ -61,20 +73,46 @@ export class MyForm {
             <div>
               <input {...fullName()} />
             </div>
-            <div {...validationFor(fullName)}>{validationMessage(fullName)}</div>
+            <span {...validationFor(fullName)}>{validationMessage(fullName)}</span>
           </section>
 
           <hr />
 
           <section>
             <div>
-              <label {...labelFor(email)}>Last Name</label>
+              <label {...labelFor(email)}>Email</label>
             </div>
             <div {...descriptionFor(email)}>Best email to contact you at? (500ms debounce) {this.email}</div>
             <div>
-              <input type="email" required {...email()} />
+              <input id="my-email-id" name="my-email-name" type="email" required {...email()} />
             </div>
             <div {...validationFor(email)}>{validationMessage(email)}</div>
+          </section>
+
+          <hr />
+
+          <section>
+            <div>
+              <label {...labelFor(age)}>Age</label>
+            </div>
+            <div {...descriptionFor(age)}>How many years young are you? {this.age}</div>
+            <div>
+              <input type="number" min="0" max="150" {...age()} />
+            </div>
+            <div {...validationFor(age)}>{validationMessage(age)}</div>
+          </section>
+
+          <hr />
+
+          <section>
+            <div>
+              <label {...labelFor(volume)}>Volume</label>
+            </div>
+            <div {...descriptionFor(age)}>These go to eleven: {this.volume}</div>
+            <div>
+              <input type="range" min="0" max="11" {...volume()} />
+            </div>
+            <div {...validationFor(volume)}>{validationMessage(volume)}</div>
           </section>
 
           <hr />
@@ -124,9 +162,7 @@ export class MyForm {
             </div>
             <div {...validationFor(favoriteCar)}>{validationMessage(favoriteCar)}</div>
           </section>
-
           <hr />
-
           <section>
             <button type="submit">Submit</button>
           </section>

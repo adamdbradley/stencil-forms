@@ -1,7 +1,7 @@
 import { checkValidity } from './validation';
-import { ControlElement, ReactiveFormControlOptions } from './types';
-import { ctrlMap, ctrlOptsMap, inputEvDebounceMap as debounceMap } from './utils/state';
-import { isBooleanInput, isFunction, isNumber } from './utils/helpers';
+import { ControlElement, ReactiveFormControlOptions, ControlData } from './types';
+import { ctrlMap, ctrlDataMap, debounceMap } from './utils/state';
+import { isFunction, isNumber } from './utils/helpers';
 
 export const sharedOnInvalidHandler = (_ev: Event) => {
   // const ctrlElm = ev.currentTarget as ControlElement;
@@ -10,34 +10,29 @@ export const sharedOnInvalidHandler = (_ev: Event) => {
 export const sharedOnValueChangeHandler = (ev: KeyboardEvent) => {
   const ctrlElm = ev.currentTarget as ControlElement;
   const ctrl = ctrlMap.get(ctrlElm);
-  const opts = ctrlOptsMap.get(ctrl);
-  const value = isBooleanInput(ctrlElm) ? ctrlElm.checked : ctrlElm.value;
+  const ctrlData = ctrlDataMap.get(ctrl);
+  const value = getValueFromControlElement(ctrlData, ctrlElm);
 
-  if (isNumber(opts.debounce)) {
+  if (isNumber(ctrlData.debounce)) {
     clearTimeout(debounceMap.get(ctrlElm));
   }
 
-  checkValidity(opts, ctrlElm, value, ev, afterInputValidity);
+  checkValidity(ctrlData, ctrlElm, value, ev, afterInputValidity);
 };
 
-const afterInputValidity = (
-  opts: ReactiveFormControlOptions,
-  ctrlElm: ControlElement,
-  value: any,
-  ev: KeyboardEvent,
-) => {
-  if (ev.key === 'Enter' || isFunction(opts.onEnterKey)) {
-    opts.onEnterKey(value, ctrlElm.validity, ev);
-  } else if (ev.key === 'Escape' || isFunction(opts.onEscapeKey)) {
-    opts.onEscapeKey(value, ctrlElm.validity, ev);
-  } else if (isFunction(opts.onValueChange)) {
-    if (isNumber(opts.debounce)) {
+const afterInputValidity = (ctrlData: ControlData, ctrlElm: ControlElement, value: any, ev: KeyboardEvent) => {
+  if (ev.key === 'Enter' || isFunction(ctrlData.onEnterKey)) {
+    ctrlData.onEnterKey(value, ctrlElm.validity, ev);
+  } else if (ev.key === 'Escape' || isFunction(ctrlData.onEscapeKey)) {
+    ctrlData.onEscapeKey(value, ctrlElm.validity, ev);
+  } else if (isFunction(ctrlData.onValueChange)) {
+    if (isNumber(ctrlData.debounce)) {
       debounceMap.set(
         ctrlElm,
-        setTimeout(() => opts.onValueChange(value, ctrlElm.validity, ev), opts.debounce),
+        setTimeout(() => ctrlData.onValueChange(value, ctrlElm.validity, ev), ctrlData.debounce),
       );
     } else {
-      opts.onValueChange(value, ctrlElm.validity, ev);
+      ctrlData.onValueChange(value, ctrlElm.validity, ev);
     }
   }
 };
@@ -45,10 +40,10 @@ const afterInputValidity = (
 export const sharedOnFocus = (ev: FocusEvent) => {
   const ctrlElm = ev.currentTarget as ControlElement;
   const ctrl = ctrlMap.get(ctrlElm);
-  const opts = ctrlOptsMap.get(ctrl);
-  const value = isBooleanInput(ctrlElm) ? ctrlElm.checked : ctrlElm.value;
+  const ctrlData = ctrlDataMap.get(ctrl);
+  const value = getValueFromControlElement(ctrlData, ctrlElm);
 
-  checkValidity(opts, ctrlElm, value, ev, afterFocusValidity);
+  checkValidity(ctrlData, ctrlElm, value, ev, afterFocusValidity);
 };
 
 const afterFocusValidity = (opts: ReactiveFormControlOptions, ctrlElm: ControlElement, value: any, ev: FocusEvent) => {
@@ -61,4 +56,15 @@ const afterFocusValidity = (opts: ReactiveFormControlOptions, ctrlElm: ControlEl
       opts.onBlur(value, ctrlElm.validity, ev);
     }
   }
+};
+
+const getValueFromControlElement = (ctrlData: ControlData, ctrlElm: ControlElement) => {
+  const value: any = ctrlElm[ctrlData.valuePropName];
+  if (ctrlData.valuePropType === 'boolean') {
+    return String(value) === 'true';
+  }
+  if (ctrlData.valuePropType === 'number') {
+    return parseFloat(value);
+  }
+  return String(value);
 };

@@ -1,5 +1,3 @@
-import { ControlElement } from '../types';
-
 export const isFunction = (v: any): v is Function => typeof v === 'function';
 export const isNumber = (v: any): v is number => typeof v === 'number';
 export const isString = (v: any): v is string => typeof v === 'string';
@@ -13,5 +11,6 @@ export const toDashCase = (str: string) =>
     .trim()
     .replace(/ /g, '-');
 
-export const isBooleanInput = (elm: ControlElement): elm is HTMLInputElement =>
-  elm.nodeName === 'INPUT' && elm.type === 'checkbox';
+export const setAttribute = (elm: HTMLElement, attrName: string, attrValue: string) => (
+  elm.setAttribute(attrName, attrValue), attrValue
+);
