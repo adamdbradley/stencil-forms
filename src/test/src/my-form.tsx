@@ -6,7 +6,6 @@ import {
   controlGroup,
   labelFor,
   descriptionFor,
-  isSubmitValid,
   isValid,
   isInvalid,
   isValidating,
@@ -18,6 +17,15 @@ import { controlNumber } from '../../control';
 @Component({
   tag: 'my-form',
   styles: `
+    form button {
+      cursor: pointer;
+      background: #ccc;
+      margin: 10px 0 0 0;
+    }
+    form:invalid button {
+      pointer-events: none;
+      opacity: 0.4;
+    }
     input:valid {
       border: 1px solid green;
     }
@@ -213,9 +221,7 @@ export class MyForm {
           </section>
           <hr /> */}
           <section>
-            <button disabled={isSubmitValid()} type="submit">
-              Submit
-            </button>
+            <button type="submit">Submit</button>
           </section>
         </form>
       </Host>

@@ -53,10 +53,6 @@ export const isInvalid = (_ctrl) => {
     // TODO!
     return false;
 };
-export const isSubmitValid = () => {
-    // TODO!
-    return false;
-};
 export const validationMessage = (_ctrl) => {
     // TODO!
 };

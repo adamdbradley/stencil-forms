@@ -3,5 +3,4 @@ export declare const checkValidity: (ctrlData: ControlData, ctrlElm: ControlElem
 export declare const isValidating: (_ctrl: ReactiveFormControl) => boolean;
 export declare const isValid: (_ctrl: ReactiveFormControl) => boolean;
 export declare const isInvalid: (_ctrl: ReactiveFormControl) => boolean;
-export declare const isSubmitValid: () => boolean;
 export declare const validationMessage: (_ctrl: ReactiveFormControl) => void;

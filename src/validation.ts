@@ -76,11 +76,6 @@ export const isInvalid = (_ctrl: ReactiveFormControl) => {
   return false;
 };
 
-export const isSubmitValid = () => {
-  // TODO!
-  return false;
-};
-
 export const validationMessage = (_ctrl: ReactiveFormControl) => {
   // TODO!
 };
