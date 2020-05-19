@@ -1,12 +1,12 @@
 import {
-  ctrlMap,
-  ctrlDataMap,
+  ctrls,
+  ctrlDatas,
   state,
-  ctrlElmIdsMap,
-  labellingElmsMap,
-  ctrlElmsMap,
+  ctrlElmIds,
+  labellingElms,
+  ctrlElms,
   LabellingType,
-  ctrlChildrenMap,
+  ctrlChildren,
 } from './utils/state';
 import { isString, isFunction, setAttribute } from './utils/helpers';
 import {
@@ -56,7 +56,7 @@ export const inputControl = (value: any, ctrlData: ControlData) => {
   };
 
   // add to the weakmap the data for this control
-  ctrlDataMap.set(ctrl, ctrlData);
+  ctrlDatas.set(ctrl, ctrlData);
 
   // return the control to be used as a key and what's
   // called to get all of the props for the control element
@@ -96,10 +96,10 @@ export const inputControlGroup = (selectedValue: any, ctrlData: ControlData): an
     };
   };
 
-  ctrlChildrenMap.set(ctrl, new Map());
+  ctrlChildren.set(ctrl, new Map());
 
   // remember the control data
-  ctrlDataMap.set(ctrl, ctrlData);
+  ctrlDatas.set(ctrl, ctrlData);
 
   // return form control is used as a key
   // and what's called to get all of the props
@@ -142,14 +142,14 @@ const ctrlElmRef = (
   // we just got a reference to the control input element
   let ctrlId = ctrlElm.getAttribute('id');
   let ctrlName = ctrlElm.getAttribute('name');
-  let labellingElm = labellingElmsMap[LabellingType.labelledby].get(ctrl);
+  let labellingElm = labellingElms[LabellingType.labelledby].get(ctrl);
 
   if (!ctrlId) {
     ctrlId = ctrlData.id;
     if (!ctrlId) {
-      ctrlId = ctrlElmIdsMap.get(ctrlElm);
+      ctrlId = ctrlElmIds.get(ctrlElm);
       if (!ctrlId) {
-        ctrlElmIdsMap.set(ctrlElm, (ctrlId = 'ctrl-' + state.i++));
+        ctrlElmIds.set(ctrlElm, (ctrlId = 'ctrl-' + state.i++));
       }
     }
   }
@@ -161,16 +161,17 @@ const ctrlElmRef = (
     setLabelledbyAttributes(ctrlId, ctrlElm, labellingElm);
   }
 
-  labellingElm = labellingElmsMap[LabellingType.describedby].get(ctrl);
+  labellingElm = labellingElms[LabellingType.describedby].get(ctrl);
   if (labellingElm) {
     // describedby
     setDescribedbyAttributes(ctrlId, ctrlElm, labellingElm);
   }
 
-  labellingElm = labellingElmsMap[LabellingType.errormessage].get(ctrl);
+  labellingElm = labellingElms[LabellingType.errormessage].get(ctrl);
   if (labellingElm) {
     // errormessage
     setErrormessageAttributes(ctrlId, ctrlElm, labellingElm);
+    setAttribute(ctrlElm, 'formnovalidate');
   }
 
   ctrlData.id = setAttribute(ctrlElm, 'id', ctrlId);
@@ -185,8 +186,8 @@ const ctrlElmRef = (
     ctrlData.name = setAttribute(ctrlElm, 'name', ctrlName);
   }
 
-  ctrlMap.set(ctrlElm, ctrl);
-  ctrlElmsMap.set(ctrl, ctrlElm);
+  ctrls.set(ctrlElm, ctrl);
+  ctrlElms.set(ctrl, ctrlElm);
 };
 
 const ctrlGroupItemElmRef = (

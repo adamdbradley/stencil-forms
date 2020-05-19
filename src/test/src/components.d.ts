@@ -12,6 +12,7 @@ export namespace Components {
         "favoriteCar": string;
         "fullName": string;
         "specialInstructions": string;
+        "userName": string;
         "vegetarian": boolean;
         "volume": number;
     }
@@ -34,6 +35,7 @@ declare namespace LocalJSX {
         "favoriteCar"?: string;
         "fullName"?: string;
         "specialInstructions"?: string;
+        "userName"?: string;
         "vegetarian"?: boolean;
         "volume"?: number;
     }

@@ -1,6 +1,6 @@
 import { ControlData, ReactiveFormBindOptions, ReactiveFormValuePropType } from './types';
 import { toDashCase } from './utils/helpers';
-import { instanceIdsMap, state } from './utils/state';
+import { instanceIds, state } from './utils/state';
 import { inputControl, inputControlGroup } from './input-control';
 
 export const bind = <T extends any, PropName extends keyof T>(
@@ -37,9 +37,9 @@ const normalizeBindOpts = (
   valuePropName: string,
   valuePropType: ReactiveFormValuePropType,
 ): ControlData => {
-  let instanceId = instanceIdsMap.get(instance);
+  let instanceId = instanceIds.get(instance);
   if (instanceId == null) {
-    instanceIdsMap.set(instance, (instanceId = state.i++));
+    instanceIds.set(instance, (instanceId = state.i++));
   }
   return {
     id: toDashCase(propName) + '-' + instanceId,

@@ -17,6 +17,7 @@ export interface ReactiveFormBindOptions {
   onFocus?: (value: any, validity: ValidityState, ev: FocusEvent) => void;
   onInvalid?: (value: any, validity: ValidityState, ev: UIEvent) => void;
   validate?: (value: any, ev: Event) => ReactiveValidateResult | Promise<ReactiveValidateResult>;
+  validatingMessage?: string | ((value: any, ev: Event) => string);
   /**
    * The property name to use when assign the value to the input. The default
    * for `checkbox` and `radio` is `checked`, and the default for all others
@@ -33,12 +34,6 @@ export interface ReactiveFormBindOptions {
 
 export interface ReactiveFormControlOptions extends ReactiveFormBindOptions {
   onValueChange?: (value: any, validity: ValidityState, ev: UIEvent) => void;
-}
-
-export interface ReactiveForm extends ReactiveFormOptions {}
-
-export interface ReactiveFormOptions {
-  onSubmit?: (ev: Event, formData: FormData) => void;
 }
 
 export type ReactiveFormValuePropType = 'string' | 'boolean' | 'number';
@@ -67,6 +62,8 @@ export interface ControlData extends ReactiveFormControlOptions {
    * once this gets set it should not change
    */
   groupName?: string;
+
+  isValidating?: boolean;
 }
 
 /** @internal */

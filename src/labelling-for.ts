@@ -1,4 +1,4 @@
-import { ctrlChildrenMap, ctrlElmsMap, ctrlDataMap, labellingElmsMap, LabellingType } from './utils/state';
+import { ctrlChildren, ctrlElms, ctrlDatas, labellingElms, LabellingType } from './utils/state';
 import { isString, setAttribute } from './utils/helpers';
 import { ReactiveFormControl, ControlElement } from './types';
 
@@ -14,7 +14,7 @@ const labellingFor = (
       ref: (groupItemLabellingElm: HTMLElement) => {
         if (groupItemLabellingElm) {
           const child = getGroupChild(ctrl, groupItemValue);
-          const ctrlElm = ctrlElmsMap.get(child.ctrl);
+          const ctrlElm = ctrlElms.get(child.ctrl);
           if (ctrlElm) {
             // we already have the control element, so that means we'll
             // have the "id" and "name" data to when setting the attrs
@@ -23,7 +23,7 @@ const labellingFor = (
             // we haven't gotten a reference to the control element yet
             // so let's remember this labelling element for now and will
             // add the attribute later once we get a ref to the control element
-            labellingElmsMap[labellingType].set(child.ctrl, groupItemLabellingElm);
+            labellingElms[labellingType].set(child.ctrl, groupItemLabellingElm);
           }
         }
       },
@@ -37,16 +37,16 @@ const labellingFor = (
       if (labellingElm) {
         // we now have the labelling element, which could happen before or
         // after having the control input element
-        const ctrlElm = ctrlElmsMap.get(ctrl);
+        const ctrlElm = ctrlElms.get(ctrl);
         if (ctrlElm) {
           // we already have the control element, so that means we'll
           // have the "id" and "name" data to when setting the attrs
-          setAttrs(ctrlDataMap.get(ctrl).id, ctrlElm, labellingElm);
+          setAttrs(ctrlDatas.get(ctrl).id, ctrlElm, labellingElm);
         } else {
           // we haven't gotten a reference to the control element yet
           // so let's remember this labelling element for now and will
           // add the attribute later once we get a ref to the control element
-          labellingElmsMap[labellingType].set(ctrl, labellingElm);
+          labellingElms[labellingType].set(ctrl, labellingElm);
         }
       }
     },
@@ -89,10 +89,10 @@ export const labelFor = (ctrl: ReactiveFormControl, groupItemValue?: string) =>
   labellingFor(ctrl, groupItemValue, LabellingType.labelledby, setLabelledbyAttributes);
 
 export const getGroupChild = (parentCtrl: ReactiveFormControl, groupItemValue: string) => {
-  const ctrlChildMap = ctrlChildrenMap.get(parentCtrl);
+  const ctrlChildMap = ctrlChildren.get(parentCtrl);
   let child = ctrlChildMap.get(groupItemValue);
   if (!child) {
-    const parentCtrlData = ctrlDataMap.get(parentCtrl);
+    const parentCtrlData = ctrlDatas.get(parentCtrl);
     if (!parentCtrlData.groupName) {
       parentCtrlData.groupName = parentCtrlData.name;
     }
@@ -109,7 +109,7 @@ export const getGroupChild = (parentCtrl: ReactiveFormControl, groupItemValue: s
         },
       }),
     );
-    ctrlDataMap.set(child.ctrl, child.data);
+    ctrlDatas.set(child.ctrl, child.data);
   }
   return child;
 };

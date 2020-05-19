@@ -11,6 +11,6 @@ export const toDashCase = (str: string) =>
     .trim()
     .replace(/ /g, '-');
 
-export const setAttribute = (elm: HTMLElement, attrName: string, attrValue: string) => (
+export const setAttribute = (elm: HTMLElement, attrName: string, attrValue = '') => (
   elm.setAttribute(attrName, attrValue), attrValue
 );

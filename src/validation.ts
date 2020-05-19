@@ -8,16 +8,26 @@ export const checkValidity = (
   ev: Event,
   cb: (ctrlData: ControlData, ctrlElm: ControlElement, value: any, ev: Event) => void,
 ): any => {
-  if (ctrlElm && ctrlElm.parentNode && isFunction(ctrlElm.checkValidity)) {
+  if (ctrlElm && ctrlElm.parentNode && ctrlElm.validity) {
+    ctrlElm.setCustomValidity('');
+    ctrlData.isValidating = false;
+
     const value = getValueFromControlElement(ctrlData, ctrlElm);
 
-    ctrlElm.setCustomValidity('');
-
-    if (isFunction(ctrlData.validate)) {
-      // has custom validate fn
+    if (isFunction(ctrlData.validate) && ctrlElm.validity.valid) {
+      // has custom validate fn and the native browser constraints are valid
       const results = ctrlData.validate(value, ev);
       if (isPromise(results)) {
         // results return a promise, let's wait on those
+        ctrlData.isValidating = true;
+
+        const validatingMsg = isString(ctrlData.validatingMessage)
+          ? ctrlData.validatingMessage
+          : isFunction(ctrlData.validatingMessage)
+          ? ctrlData.validatingMessage(value, ev)
+          : null;
+
+        ctrlElm.setCustomValidity(isString(validatingMsg) ? validatingMsg : `Validating...`);
         results.then((promiseResults) => checkValidateResults(promiseResults, ctrlData, ctrlElm, value, ev, cb));
       } else {
         // results were not a promise
@@ -38,15 +48,39 @@ const checkValidateResults = (
   ev: Event,
   cb: (ctrlData: ControlData, ctrlElm: ControlElement, value: any, ev: Event) => void,
 ) => {
-  if (isString(results) && results.trim() !== '') {
-    ctrlElm.setCustomValidity(results);
-    ctrlElm.reportValidity();
+  ctrlElm.setCustomValidity(isString(results) ? results : '');
+  ctrlData.isValidating = false;
+
+  if (!ctrlElm.validity.valid) {
+    const showNativeReport = !ctrlElm.hasAttribute('formNoValidate') && !ctrlElm?.form.hasAttribute('novalidate');
+    if (showNativeReport) {
+      ctrlElm.reportValidity();
+    }
   }
 
-  // ctrlElm.checkValidity();
   cb(ctrlData, ctrlElm, value, ev);
 };
 
+export const isValidating = (_ctrl: ReactiveFormControl) => {
+  // TODO!
+  return false;
+};
+
+export const isValid = (_ctrl: ReactiveFormControl) => {
+  // TODO!
+  return false;
+};
+
+export const isInvalid = (_ctrl: ReactiveFormControl) => {
+  // TODO!
+  return false;
+};
+
+export const isSubmitValid = () => {
+  // TODO!
+  return false;
+};
+
 export const validationMessage = (_ctrl: ReactiveFormControl) => {
-  // const ctrlElm = ctrlElmMap.get(formCtrl);
+  // TODO!
 };

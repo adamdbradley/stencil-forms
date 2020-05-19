@@ -1,47 +1,51 @@
 import { checkValidity } from './validation';
 import { ControlElement, ReactiveFormControlOptions, ControlData } from './types';
-import { ctrlMap, ctrlDataMap, debounceMap } from './utils/state';
+import { ctrls, ctrlDatas, debounces } from './utils/state';
 import { isFunction, isNumber } from './utils/helpers';
 
-export const sharedOnInvalidHandler = (ev: Event) => {
-  const inputElm = ev.currentTarget as HTMLInputElement;
-
-  // const ctrlElm = ev.currentTarget as ControlElement;
-};
+export const sharedOnInvalidHandler = (ev: Event) => {};
 
 export const sharedOnValueChangeHandler = (ev: KeyboardEvent) => {
   const ctrlElm = ev.currentTarget as ControlElement;
-  const ctrl = ctrlMap.get(ctrlElm);
-  const ctrlData = ctrlDataMap.get(ctrl);
+  const ctrl = ctrls.get(ctrlElm);
+  const ctrlData = ctrlDatas.get(ctrl);
+  const value = getValueFromControlElement(ctrlData, ctrlElm);
 
   if (isNumber(ctrlData.debounce)) {
-    clearTimeout(debounceMap.get(ctrlElm));
+    clearTimeout(debounces.get(ctrlElm));
   }
 
-  checkValidity(ctrlData, ctrlElm, ev, afterInputValidity);
-};
-
-const afterInputValidity = (ctrlData: ControlData, ctrlElm: ControlElement, value: any, ev: KeyboardEvent) => {
   if (ev.key === 'Enter' || isFunction(ctrlData.onEnterKey)) {
+    checkValidity(ctrlData, ctrlElm, ev, afterInputValidity);
     ctrlData.onEnterKey(value, ctrlElm.validity, ev);
-  } else if (ev.key === 'Escape' || isFunction(ctrlData.onEscapeKey)) {
+  } else if (ev.key === 'Escape') {
+    checkValidity(ctrlData, ctrlElm, ev, afterInputValidity);
     ctrlData.onEscapeKey(value, ctrlElm.validity, ev);
   } else if (isFunction(ctrlData.onValueChange)) {
     if (isNumber(ctrlData.debounce)) {
-      debounceMap.set(
+      debounces.set(
         ctrlElm,
-        setTimeout(() => ctrlData.onValueChange(value, ctrlElm.validity, ev), ctrlData.debounce),
+        setTimeout(() => {
+          const value = getValueFromControlElement(ctrlData, ctrlElm);
+          checkValidity(ctrlData, ctrlElm, ev, afterInputValidity);
+          ctrlData.onValueChange(value, ctrlElm.validity, ev);
+        }, ctrlData.debounce),
       );
     } else {
+      checkValidity(ctrlData, ctrlElm, ev, afterInputValidity);
       ctrlData.onValueChange(value, ctrlElm.validity, ev);
     }
   }
 };
 
+const afterInputValidity = (ctrlData: ControlData, ctrlElm: ControlElement, value: any, ev: KeyboardEvent) => {
+  ctrlData.onValueChange(value, ctrlElm.validity, ev);
+};
+
 export const sharedOnFocus = (ev: FocusEvent) => {
   const ctrlElm = ev.currentTarget as ControlElement;
-  const ctrl = ctrlMap.get(ctrlElm);
-  const ctrlData = ctrlDataMap.get(ctrl);
+  const ctrl = ctrls.get(ctrlElm);
+  const ctrlData = ctrlDatas.get(ctrl);
   checkValidity(ctrlData, ctrlElm, ev, afterFocusValidity);
 };
 

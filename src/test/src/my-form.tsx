@@ -3,10 +3,13 @@ import {
   bind,
   bindNumber,
   controlBoolean,
-  controlForm,
   controlGroup,
   labelFor,
   descriptionFor,
+  isSubmitValid,
+  isValid,
+  isInvalid,
+  isValidating,
   validationFor,
   validationMessage,
 } from '../../index';
@@ -21,12 +24,23 @@ import { controlNumber } from '../../control';
     input:invalid {
       border: 1px solid red;
     }
+    .is-validating {
+      background: #eee;
+      border: 1px solid yellow;
+    }
+    .is-valid {
+      border: 1px solid green;
+    }
+    .is-invalid {
+      border: 1px solid red;
+    }
   `,
 })
 export class MyForm {
   @Prop() fullName = 'Marty McFly';
   @Prop() email = '';
-  @Prop() age = 18;
+  @Prop() userName = '';
+  @Prop() age = 17;
   @Prop() volume = 11;
   @Prop() vegetarian = false;
   @Prop() specialInstructions = '';
@@ -36,25 +50,28 @@ export class MyForm {
     ev.preventDefault();
     ev.stopPropagation();
 
-    const a = document.querySelector('#age-0') as HTMLInputElement;
-    console.log(a.validationMessage, a.validity);
-
     const formData = new FormData(ev.currentTarget as HTMLFormElement);
     const jsonData = JSON.stringify(Object.fromEntries(formData as any), null, 2);
-    console.log('submit', jsonData);
+    console.warn('submit', jsonData);
   };
 
   render() {
-    const form = controlForm({
-      onSubmit: (ev) => {
-        console.log('onSubmit', ev);
-      },
-    });
-
     const fullName = bind(this, 'fullName');
 
-    const email = bind(this, 'email', {
+    const email = bind(this, 'email');
+
+    const userName = bind(this, 'userName', {
       debounce: 500,
+      validatingMessage: (value) => `Checking if "${value}" is already taken...`,
+      validate: (value) => {
+        console.log(`checking "${value}" username...`);
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            console.log(`finished checking "${value}" username`);
+            resolve();
+          }, 5000);
+        });
+      },
     });
 
     const age = bindNumber(this, 'age', {
@@ -81,7 +98,7 @@ export class MyForm {
 
     return (
       <Host>
-        <form {...form()}>
+        <form onSubmit={this.onSubmit}>
           {/* <section>
             <div>
               <label {...labelFor(fullName)}>Name</label>
@@ -91,23 +108,38 @@ export class MyForm {
               <input {...fullName()} />
             </div>
             <span {...validationFor(fullName)}>{validationMessage(fullName)}</span>
-          </section> */}
-
-          {/* <hr />
-
+          </section> 
+          <hr />
           <section>
             <div>
               <label {...labelFor(email)}>Email</label>
             </div>
-            <div {...descriptionFor(email)}>Best email to contact you at? (500ms debounce) {this.email}</div>
+            <div {...descriptionFor(email)}>Best email to contact you at? {this.email}</div>
             <div>
               <input id="my-email-id" name="my-email-name" type="email" required {...email()} />
             </div>
             <div {...validationFor(email)}>{validationMessage(email)}</div>
           </section>
+          <hr />*/}
 
-          <hr /> */}
+          <section
+            class={{
+              'is-validating': isValidating(userName),
+              'is-valid': isValid(userName),
+              'is-invalid': isInvalid(userName),
+            }}
+          >
+            <div>
+              <label {...labelFor(userName)}>User Name</label>
+            </div>
+            <div {...descriptionFor(userName)}>Enter a unique username? (500ms debounce) {this.userName}</div>
+            <div>
+              <input required {...userName()} />
+            </div>
+            <div {...validationFor(userName)}>{validationMessage(userName)}</div>
+          </section>
 
+          {/* 
           <section>
             <div>
               <label {...labelFor(age)}>Age</label>
@@ -118,7 +150,7 @@ export class MyForm {
             </div>
             <div {...validationFor(age)}>{validationMessage(age)}</div>
           </section>
-          {/* 
+
           <hr />
 
           <section>
@@ -181,7 +213,9 @@ export class MyForm {
           </section>
           <hr /> */}
           <section>
-            <button type="submit">Submit</button>
+            <button disabled={isSubmitValid()} type="submit">
+              Submit
+            </button>
           </section>
         </form>
       </Host>
