@@ -1,41 +1,45 @@
 import { checkValidity } from './validation';
-import { ctrlMap, ctrlOptsMap, inputEvDebounceMap as debounceMap } from './utils/state';
-import { isBooleanInput, isFunction, isNumber } from './utils/helpers';
-export const sharedOnInvalidHandler = (_ev) => {
-    // const ctrlElm = ev.currentTarget as ControlElement;
-};
+import { ctrls, ctrlDatas, debounces } from './utils/state';
+import { isFunction, isNumber } from './utils/helpers';
+export const sharedOnInvalidHandler = (_ev) => { };
 export const sharedOnValueChangeHandler = (ev) => {
     const ctrlElm = ev.currentTarget;
-    const ctrl = ctrlMap.get(ctrlElm);
-    const opts = ctrlOptsMap.get(ctrl);
-    const value = isBooleanInput(ctrlElm) ? ctrlElm.checked : ctrlElm.value;
-    if (isNumber(opts.debounce)) {
-        clearTimeout(debounceMap.get(ctrlElm));
+    const ctrl = ctrls.get(ctrlElm);
+    const ctrlData = ctrlDatas.get(ctrl);
+    const value = getValueFromControlElement(ctrlData, ctrlElm);
+    if (isNumber(ctrlData.debounce)) {
+        clearTimeout(debounces.get(ctrlElm));
     }
-    checkValidity(opts, ctrlElm, value, ev, afterInputValidity);
-};
-const afterInputValidity = (opts, ctrlElm, value, ev) => {
-    if (ev.key === 'Enter' || isFunction(opts.onEnterKey)) {
-        opts.onEnterKey(value, ctrlElm.validity, ev);
+    if (ev.key === 'Enter' || isFunction(ctrlData.onEnterKey)) {
+        checkValidity(ctrlData, ctrlElm, ev, afterInputValidity);
+        ctrlData.onEnterKey(value, ctrlElm.validity, ev);
     }
-    else if (ev.key === 'Escape' || isFunction(opts.onEscapeKey)) {
-        opts.onEscapeKey(value, ctrlElm.validity, ev);
+    else if (ev.key === 'Escape') {
+        checkValidity(ctrlData, ctrlElm, ev, afterInputValidity);
+        ctrlData.onEscapeKey(value, ctrlElm.validity, ev);
     }
-    else if (isFunction(opts.onValueChange)) {
-        if (isNumber(opts.debounce)) {
-            debounceMap.set(ctrlElm, setTimeout(() => opts.onValueChange(value, ctrlElm.validity, ev), opts.debounce));
+    else if (isFunction(ctrlData.onValueChange)) {
+        if (isNumber(ctrlData.debounce)) {
+            debounces.set(ctrlElm, setTimeout(() => {
+                const value = getValueFromControlElement(ctrlData, ctrlElm);
+                checkValidity(ctrlData, ctrlElm, ev, afterInputValidity);
+                ctrlData.onValueChange(value, ctrlElm.validity, ev);
+            }, ctrlData.debounce));
         }
         else {
-            opts.onValueChange(value, ctrlElm.validity, ev);
+            checkValidity(ctrlData, ctrlElm, ev, afterInputValidity);
+            ctrlData.onValueChange(value, ctrlElm.validity, ev);
         }
     }
+};
+const afterInputValidity = (ctrlData, ctrlElm, value, ev) => {
+    ctrlData.onValueChange(value, ctrlElm.validity, ev);
 };
 export const sharedOnFocus = (ev) => {
     const ctrlElm = ev.currentTarget;
-    const ctrl = ctrlMap.get(ctrlElm);
-    const opts = ctrlOptsMap.get(ctrl);
-    const value = isBooleanInput(ctrlElm) ? ctrlElm.checked : ctrlElm.value;
-    checkValidity(opts, ctrlElm, value, ev, afterFocusValidity);
+    const ctrl = ctrls.get(ctrlElm);
+    const ctrlData = ctrlDatas.get(ctrl);
+    checkValidity(ctrlData, ctrlElm, ev, afterFocusValidity);
 };
 const afterFocusValidity = (opts, ctrlElm, value, ev) => {
     if (ev.type === 'focus') {
@@ -48,4 +52,14 @@ const afterFocusValidity = (opts, ctrlElm, value, ev) => {
             opts.onBlur(value, ctrlElm.validity, ev);
         }
     }
+};
+export const getValueFromControlElement = (ctrlData, ctrlElm) => {
+    const value = ctrlElm[ctrlData.valuePropName];
+    if (ctrlData.valuePropType === 'boolean') {
+        return String(value) === 'true';
+    }
+    if (ctrlData.valuePropType === 'number') {
+        return parseFloat(value);
+    }
+    return String(value);
 };

@@ -7,4 +7,4 @@ export const toDashCase = (str) => str
     .replace(/([A-Z0-9])/g, (g) => ' ' + g[0])
     .trim()
     .replace(/ /g, '-');
-export const isBooleanInput = (elm) => elm.nodeName === 'INPUT' && elm.type === 'checkbox';
+export const setAttribute = (elm, attrName, attrValue = '') => (elm.setAttribute(attrName, attrValue), attrValue);
