@@ -30,10 +30,6 @@ export const ctrlChildrenMap = /*@__PURE__*/ new WeakMap<
   Map<string, { ctrl: ReactiveFormControl; data: ControlData }>
 >();
 
-export const groupItemLabellingElmParentCtrlMap = /*@__PURE__*/ new WeakMap<HTMLElement, ReactiveFormControlGroup>();
-
-export const ctrlGroupItemsMap = /*@__PURE__*/ new WeakMap<ReactiveFormControl | ReactiveFormControl>();
-
 export const ctrlMap = /*@__PURE__*/ new WeakMap<ControlElement, ReactiveFormControl | ReactiveFormControlGroup>();
 
 export const ctrlDataMap = /*@__PURE__*/ new WeakMap<ReactiveFormControl, ControlData>();

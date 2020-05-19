@@ -1,14 +1,18 @@
-import { ControlElement, ReactiveFormControl, ReactiveFormValidateResults, ControlData } from './types';
+import { ControlElement, ReactiveFormControl, ReactiveValidateResult, ControlData } from './types';
+import { getValueFromControlElement } from './handlers';
 import { isFunction, isPromise, isString } from './utils/helpers';
 
 export const checkValidity = (
   ctrlData: ControlData,
   ctrlElm: ControlElement,
-  value: any,
   ev: Event,
   cb: (ctrlData: ControlData, ctrlElm: ControlElement, value: any, ev: Event) => void,
 ): any => {
   if (ctrlElm && ctrlElm.parentNode && isFunction(ctrlElm.checkValidity)) {
+    const value = getValueFromControlElement(ctrlData, ctrlElm);
+
+    ctrlElm.setCustomValidity('');
+
     if (isFunction(ctrlData.validate)) {
       // has custom validate fn
       const results = ctrlData.validate(value, ev);
@@ -27,14 +31,19 @@ export const checkValidity = (
 };
 
 const checkValidateResults = (
-  results: ReactiveFormValidateResults,
+  results: ReactiveValidateResult,
   ctrlData: ControlData,
   ctrlElm: ControlElement,
   value: any,
   ev: Event,
   cb: (ctrlData: ControlData, ctrlElm: ControlElement, value: any, ev: Event) => void,
 ) => {
-  ctrlElm.setCustomValidity(isString(results) ? results : '');
+  if (isString(results) && results.trim() !== '') {
+    ctrlElm.setCustomValidity(results);
+    ctrlElm.reportValidity();
+  }
+
+  // ctrlElm.checkValidity();
   cb(ctrlData, ctrlElm, value, ev);
 };
 

@@ -3,6 +3,7 @@ import {
   bind,
   bindNumber,
   controlBoolean,
+  controlForm,
   controlGroup,
   labelFor,
   descriptionFor,
@@ -13,6 +14,14 @@ import { controlNumber } from '../../control';
 
 @Component({
   tag: 'my-form',
+  styles: `
+    input:valid {
+      border: 1px solid green;
+    }
+    input:invalid {
+      border: 1px solid red;
+    }
+  `,
 })
 export class MyForm {
   @Prop() fullName = 'Marty McFly';
@@ -27,12 +36,21 @@ export class MyForm {
     ev.preventDefault();
     ev.stopPropagation();
 
+    const a = document.querySelector('#age-0') as HTMLInputElement;
+    console.log(a.validationMessage, a.validity);
+
     const formData = new FormData(ev.currentTarget as HTMLFormElement);
     const jsonData = JSON.stringify(Object.fromEntries(formData as any), null, 2);
     console.log('submit', jsonData);
   };
 
   render() {
+    const form = controlForm({
+      onSubmit: (ev) => {
+        console.log('onSubmit', ev);
+      },
+    });
+
     const fullName = bind(this, 'fullName');
 
     const email = bind(this, 'email', {
@@ -40,11 +58,10 @@ export class MyForm {
     });
 
     const age = bindNumber(this, 'age', {
-      onBlur: (value) => {
-        console.log('age onBlur', value);
-      },
-      onFocus: (value) => {
-        console.log('age onFocus', value);
+      validate: (value) => {
+        if (value < 18) {
+          return 'Must be 18 or older';
+        }
       },
     });
 
@@ -64,8 +81,8 @@ export class MyForm {
 
     return (
       <Host>
-        <form onSubmit={this.onSubmit}>
-          <section>
+        <form {...form()}>
+          {/* <section>
             <div>
               <label {...labelFor(fullName)}>Name</label>
             </div>
@@ -74,9 +91,9 @@ export class MyForm {
               <input {...fullName()} />
             </div>
             <span {...validationFor(fullName)}>{validationMessage(fullName)}</span>
-          </section>
+          </section> */}
 
-          <hr />
+          {/* <hr />
 
           <section>
             <div>
@@ -89,7 +106,7 @@ export class MyForm {
             <div {...validationFor(email)}>{validationMessage(email)}</div>
           </section>
 
-          <hr />
+          <hr /> */}
 
           <section>
             <div>
@@ -101,7 +118,7 @@ export class MyForm {
             </div>
             <div {...validationFor(age)}>{validationMessage(age)}</div>
           </section>
-
+          {/* 
           <hr />
 
           <section>
@@ -162,7 +179,7 @@ export class MyForm {
             </div>
             <div {...validationFor(favoriteCar)}>{validationMessage(favoriteCar)}</div>
           </section>
-          <hr />
+          <hr /> */}
           <section>
             <button type="submit">Submit</button>
           </section>

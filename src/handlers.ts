@@ -3,7 +3,9 @@ import { ControlElement, ReactiveFormControlOptions, ControlData } from './types
 import { ctrlMap, ctrlDataMap, debounceMap } from './utils/state';
 import { isFunction, isNumber } from './utils/helpers';
 
-export const sharedOnInvalidHandler = (_ev: Event) => {
+export const sharedOnInvalidHandler = (ev: Event) => {
+  const inputElm = ev.currentTarget as HTMLInputElement;
+
   // const ctrlElm = ev.currentTarget as ControlElement;
 };
 
@@ -11,13 +13,12 @@ export const sharedOnValueChangeHandler = (ev: KeyboardEvent) => {
   const ctrlElm = ev.currentTarget as ControlElement;
   const ctrl = ctrlMap.get(ctrlElm);
   const ctrlData = ctrlDataMap.get(ctrl);
-  const value = getValueFromControlElement(ctrlData, ctrlElm);
 
   if (isNumber(ctrlData.debounce)) {
     clearTimeout(debounceMap.get(ctrlElm));
   }
 
-  checkValidity(ctrlData, ctrlElm, value, ev, afterInputValidity);
+  checkValidity(ctrlData, ctrlElm, ev, afterInputValidity);
 };
 
 const afterInputValidity = (ctrlData: ControlData, ctrlElm: ControlElement, value: any, ev: KeyboardEvent) => {
@@ -41,9 +42,7 @@ export const sharedOnFocus = (ev: FocusEvent) => {
   const ctrlElm = ev.currentTarget as ControlElement;
   const ctrl = ctrlMap.get(ctrlElm);
   const ctrlData = ctrlDataMap.get(ctrl);
-  const value = getValueFromControlElement(ctrlData, ctrlElm);
-
-  checkValidity(ctrlData, ctrlElm, value, ev, afterFocusValidity);
+  checkValidity(ctrlData, ctrlElm, ev, afterFocusValidity);
 };
 
 const afterFocusValidity = (opts: ReactiveFormControlOptions, ctrlElm: ControlElement, value: any, ev: FocusEvent) => {
@@ -58,7 +57,7 @@ const afterFocusValidity = (opts: ReactiveFormControlOptions, ctrlElm: ControlEl
   }
 };
 
-const getValueFromControlElement = (ctrlData: ControlData, ctrlElm: ControlElement) => {
+export const getValueFromControlElement = (ctrlData: ControlData, ctrlElm: ControlElement) => {
   const value: any = ctrlElm[ctrlData.valuePropName];
   if (ctrlData.valuePropType === 'boolean') {
     return String(value) === 'true';

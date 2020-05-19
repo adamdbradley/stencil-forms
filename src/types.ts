@@ -16,7 +16,7 @@ export interface ReactiveFormBindOptions {
   onEscapeKey?: (value: any, validity: ValidityState, ev: KeyboardEvent) => void;
   onFocus?: (value: any, validity: ValidityState, ev: FocusEvent) => void;
   onInvalid?: (value: any, validity: ValidityState, ev: UIEvent) => void;
-  validate?: (value: any, ev: Event) => ReactiveFormValidateResults | Promise<ReactiveFormValidateResults>;
+  validate?: (value: any, ev: Event) => ReactiveValidateResult | Promise<ReactiveValidateResult>;
   /**
    * The property name to use when assign the value to the input. The default
    * for `checkbox` and `radio` is `checked`, and the default for all others
@@ -38,14 +38,12 @@ export interface ReactiveFormControlOptions extends ReactiveFormBindOptions {
 export interface ReactiveForm extends ReactiveFormOptions {}
 
 export interface ReactiveFormOptions {
-  id: string;
+  onSubmit?: (ev: Event, formData: FormData) => void;
 }
 
 export type ReactiveFormValuePropType = 'string' | 'boolean' | 'number';
 
-export type ReactiveFormValidateResults = string | undefined | null;
-
-export interface ReactiveSubmit {}
+export type ReactiveValidateResult = string | undefined | null;
 
 export type ReactiveFormControl = () => ReactiveControlProperties;
 
