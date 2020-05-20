@@ -3,7 +3,9 @@ import { ControlElement, ReactiveFormControlOptions, ControlData } from './types
 import { ctrls, ctrlDatas, debounces } from './utils/state';
 import { isFunction, isNumber } from './utils/helpers';
 
-export const sharedOnInvalidHandler = (_ev: Event) => {};
+export const sharedOnInvalidHandler = (_ev: Event) => {
+  console.log('onInvalid', _ev);
+};
 
 export const sharedOnValueChangeHandler = (ev: KeyboardEvent) => {
   const ctrlElm = ev.currentTarget as ControlElement;

@@ -413,7 +413,9 @@ const isActivelyValidating = (ctrl) => activeValidatingMessage(ctrl) !== '';
 const isValid = (ctrl) => validationMessage(ctrl) === '';
 const isInvalid = (ctrl) => validationMessage(ctrl) !== '';
 
-const sharedOnInvalidHandler = (_ev) => { };
+const sharedOnInvalidHandler = (_ev) => {
+    console.log('onInvalid', _ev);
+};
 const sharedOnValueChangeHandler = (ev) => {
     const ctrlElm = ev.currentTarget;
     const ctrl = ctrls.get(ctrlElm);
