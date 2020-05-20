@@ -30,6 +30,9 @@ import { controlNumber } from '../../control';
       color: red;
       white-space: nowrap;
     }
+    [role="alert"] {
+      color: red;
+    }
     input:valid {
       border: 1px solid green;
     }
@@ -112,17 +115,17 @@ export class MyForm {
     return (
       <Host>
         <form onSubmit={this.onSubmit}>
-          <section>
+          {/* <section>
             <div>
               <label {...labelFor(fullName)}>Name</label>
             </div>
             <div {...descriptionFor(fullName)}>What's your full name? {this.fullName}</div>
             <div>
-              <input {...fullName()} />
+              <input required {...fullName()} />
             </div>
             <span {...validationFor(fullName)}>{validationMessage(fullName)}</span>
           </section>
-          {/* <hr />
+          <hr />
           <section>
             <div>
               <label {...labelFor(email)}>Email</label>

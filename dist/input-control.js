@@ -1,18 +1,21 @@
-import { ctrls, ctrlDatas, state, ctrlElmIds, labellingElms, ctrlElms, ctrlChildren, } from './utils/state';
-import { isString, isFunction, setAttribute } from './utils/helpers';
+import { Control, ctrlChildren, ctrlDatas, ctrlElms, ctrlElmIds, ctrls, labellingElms, setControlState, state, } from './utils/state';
+import { isFunction, isString, setAttribute } from './utils/helpers';
+import { getGroupChild, setDescribedbyAttributes, setErrormessageAttributes, setLabelledbyAttributes, } from './labelling-for';
 import { sharedOnInvalidHandler, sharedOnValueChangeHandler, sharedOnFocus } from './handlers';
-import { setLabelledbyAttributes, setDescribedbyAttributes, setErrormessageAttributes, getGroupChild, } from './labelling-for';
+import { checkValidity } from './validation';
 export const inputControl = (value, ctrlData) => {
     // create the control arrow fn that'll be used as a weakmap key
     // and as a function to return the props for the control element
+    const ctrlState = setControlState(ctrlData);
     const ctrl = () => {
+        state.r = null;
         // create the object to be used as a property spread in the render()
         const props = {
             // set the value
             [ctrlData.valuePropName]: getPropValue(ctrlData.valuePropType, value),
             // get the reference to this form control element
             // and remember it so we can look up the form control by the element
-            ref: (ctrlElm) => ctrlElm && ctrlElmRef(ctrl, ctrlData, ctrlElm, false),
+            ref: (ctrlElm) => ctrlElm && ctrlElmRef(ctrl, ctrlData, ctrlState, ctrlElm, false),
             // add the shared event listeners
             onInvalid: sharedOnInvalidHandler,
             [ctrlData.changeEventName]: sharedOnValueChangeHandler,
@@ -49,8 +52,10 @@ const getPropValue = (valueTypeCast, value) => {
     return String(value);
 };
 export const inputControlGroup = (selectedValue, ctrlData) => {
+    const ctrlState = setControlState(ctrlData);
     // create the form control that'll be used as a weakmap key
     const ctrl = (groupItemValue) => {
+        state.r = null;
         if (isString(groupItemValue)) {
             // group item, like <input type="radio">
             return inputControlGroupItem(selectedValue, ctrl, ctrlData, groupItemValue);
@@ -58,7 +63,7 @@ export const inputControlGroup = (selectedValue, ctrlData) => {
         // group container, like <div role="group">
         return {
             role: 'group',
-            ref: (ctrlElm) => ctrlElm && ctrlElmRef(ctrl, ctrlData, ctrlElm, true),
+            ref: (ctrlElm) => ctrlElm && ctrlElmRef(ctrl, ctrlData, ctrlState, ctrlElm, true),
         };
     };
     ctrlChildren.set(ctrl, new Map());
@@ -86,17 +91,17 @@ const inputControlGroupItem = (selectedGroupValue, parentCtrl, parentCtrlData, v
         ref: (childCtrlElm) => childCtrlElm && ctrlGroupItemElmRef(parentCtrl, childCtrlElm, value),
     };
 };
-const ctrlElmRef = (ctrl, ctrlData, ctrlElm, isParentGroup) => {
+const ctrlElmRef = (ctrl, ctrlData, ctrlState, ctrlElm, isParentGroup) => {
     // we just got a reference to the control input element
     let ctrlId = ctrlElm.getAttribute('id');
     let ctrlName = ctrlElm.getAttribute('name');
     let labellingElm = labellingElms[0 /* labelledby */].get(ctrl);
     if (!ctrlId) {
-        ctrlId = ctrlData.id;
+        ctrlId = ctrlData.i;
         if (!ctrlId) {
             ctrlId = ctrlElmIds.get(ctrlElm);
             if (!ctrlId) {
-                ctrlElmIds.set(ctrlElm, (ctrlId = 'ctrl-' + state.i++));
+                ctrlElmIds.set(ctrlElm, (ctrlId = 'ctrl' + state.i++));
             }
         }
     }
@@ -115,22 +120,30 @@ const ctrlElmRef = (ctrl, ctrlData, ctrlElm, isParentGroup) => {
     if (labellingElm) {
         // errormessage
         setErrormessageAttributes(ctrlId, ctrlElm, labellingElm);
-        setAttribute(ctrlElm, 'formnovalidate');
     }
-    ctrlData.id = setAttribute(ctrlElm, 'id', ctrlId);
+    if (ctrlState.validationMessage !== '') {
+        setAttribute(ctrlElm, 'aria-invalid', 'true');
+    }
+    else {
+        ctrlElm.removeAttribute('aria-invalid');
+    }
+    ctrlData.i = setAttribute(ctrlElm, 'id', ctrlId);
     if (!isParentGroup) {
         if (!ctrlName) {
-            ctrlName = ctrlData.name;
+            ctrlName = ctrlData.n;
             if (!ctrlName) {
                 ctrlName = ctrlId;
             }
         }
-        ctrlData.name = setAttribute(ctrlElm, 'name', ctrlName);
+        ctrlData.n = setAttribute(ctrlElm, 'name', ctrlName);
     }
     ctrls.set(ctrlElm, ctrl);
     ctrlElms.set(ctrl, ctrlElm);
+    ctrlElm[Control] = ctrlState;
+    checkValidity(ctrlData, ctrlElm, null, null);
 };
 const ctrlGroupItemElmRef = (parentCtrl, childCtrlElm, childValue) => {
     const child = getGroupChild(parentCtrl, childValue);
-    return ctrlElmRef(child.ctrl, child.data, childCtrlElm, false);
+    const ctrlState = setControlState(child.data);
+    return ctrlElmRef(child.ctrl, child.data, ctrlState, childCtrlElm, false);
 };

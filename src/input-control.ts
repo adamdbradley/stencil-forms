@@ -7,26 +7,27 @@ import {
   ctrls,
   labellingElms,
   LabellingType,
-  state,
   setControlState,
+  state,
 } from './utils/state';
 import { isFunction, isString, setAttribute } from './utils/helpers';
 import {
   ControlData,
   ControlElement,
+  ControlState,
   ReactiveControlProperties,
   ReactiveFormControl,
   ReactiveFormControlGroup,
   ReactiveFormValuePropType,
-  ControlState,
 } from './types';
 import {
-  setLabelledbyAttributes,
+  getGroupChild,
   setDescribedbyAttributes,
   setErrormessageAttributes,
-  getGroupChild,
+  setLabelledbyAttributes,
 } from './labelling-for';
 import { sharedOnInvalidHandler, sharedOnValueChangeHandler, sharedOnFocus } from './handlers';
+import { checkValidity } from './validation';
 
 export const inputControl = (value: any, ctrlData: ControlData) => {
   // create the control arrow fn that'll be used as a weakmap key
@@ -161,7 +162,7 @@ const ctrlElmRef = (
     if (!ctrlId) {
       ctrlId = ctrlElmIds.get(ctrlElm);
       if (!ctrlId) {
-        ctrlElmIds.set(ctrlElm, (ctrlId = 'ctrl-' + state.i++));
+        ctrlElmIds.set(ctrlElm, (ctrlId = 'ctrl' + state.i++));
       }
     }
   }
@@ -183,7 +184,12 @@ const ctrlElmRef = (
   if (labellingElm) {
     // errormessage
     setErrormessageAttributes(ctrlId, ctrlElm, labellingElm);
-    setAttribute(ctrlElm, 'formnovalidate');
+  }
+
+  if (ctrlState.validationMessage !== '') {
+    setAttribute(ctrlElm, 'aria-invalid', 'true');
+  } else {
+    ctrlElm.removeAttribute('aria-invalid');
   }
 
   ctrlData.i = setAttribute(ctrlElm, 'id', ctrlId);
@@ -201,6 +207,8 @@ const ctrlElmRef = (
   ctrls.set(ctrlElm, ctrl);
   ctrlElms.set(ctrl, ctrlElm);
   ctrlElm[Control] = ctrlState;
+
+  checkValidity(ctrlData, ctrlElm, null, null);
 };
 
 const ctrlGroupItemElmRef = (

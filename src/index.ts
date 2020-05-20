@@ -1,11 +1,11 @@
-export { bind, bindBoolean, bindNumber, bindGroup } from './bind';
-export { control, controlBoolean, controlNumber, controlGroup } from './control';
+export { bind, bindBoolean, bindGroup, bindNumber } from './bind';
+export { control, controlBoolean, controlGroup, controlNumber } from './control';
 export { descriptionFor, labelFor, validationFor } from './labelling-for';
-export { isActivelyValidating, isValid, isInvalid, validationMessage } from './validation';
+export { isActivelyValidating, isInvalid, isValid, validationMessage } from './validation';
 
 export {
+  ReactiveFormBindOptions,
   ReactiveFormControl,
   ReactiveFormControlGroup,
-  ReactiveFormBindOptions,
   ReactiveFormControlOptions,
 } from './types';

@@ -58,8 +58,12 @@ const labellingFor = (
 export const setDescribedbyAttributes = (ctrlId: string, ctrlElm: ControlElement, labellingElm: HTMLElement) =>
   setAriaLinkedIdAttributes(ctrlId, ctrlElm, labellingElm, 'describedby', 'desc');
 
-export const setErrormessageAttributes = (ctrlId: string, ctrlElm: ControlElement, labellingElm: HTMLElement) =>
+export const setErrormessageAttributes = (ctrlId: string, ctrlElm: ControlElement, labellingElm: HTMLElement) => {
   setAriaLinkedIdAttributes(ctrlId, ctrlElm, labellingElm, 'errormessage', 'err');
+  setAttribute(labellingElm, 'role', 'alert');
+  setAttribute(labellingElm, 'aria-atomic', 'true');
+  setAttribute(ctrlElm, 'formnovalidate');
+};
 
 export const setLabelledbyAttributes = (ctrlId: string, ctrlElm: ControlElement, labellingElm: HTMLElement) => {
   if (labellingElm) {

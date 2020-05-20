@@ -1,8 +1,7 @@
-import { ControlData, ControlElement, ReactiveFormControl, ReactiveValidateResult } from './types';
-import { Control, ctrlElms, getControlState } from './utils/state';
+import { ControlData, ControlElement, ReactiveFormControl, ReactiveValidateResult, ControlState } from './types';
+import { Control, getControlState, ctrlElms } from './utils/state';
 import { getValueFromControlElement } from './handlers';
-import { isFunction, isPromise, isString } from './utils/helpers';
-import { getRenderingRef } from '@stencil/core';
+import { isFunction, isPromise, isString, setAttribute } from './utils/helpers';
 
 export const checkValidity = (
   ctrlData: ControlData,
@@ -10,14 +9,17 @@ export const checkValidity = (
   ev: Event,
   cb: (ctrlData: ControlData, ctrlElm: ControlElement, value: any, ev: Event) => void,
 ): any => {
-  if (ctrlElm && ctrlElm.parentNode && ctrlElm.validity) {
-    const ctrlState = ctrlElm[Control];
+  if (ctrlElm && ctrlElm.validity) {
+    const ctrlState: ControlState = ctrlElm[Control];
     const value = getValueFromControlElement(ctrlData, ctrlElm);
 
     ctrlElm.setCustomValidity('');
     ctrlState.validationMessage = '';
 
-    if (isFunction(ctrlData.validate) && ctrlElm.validity.valid) {
+    if (!ctrlElm.validity.valid) {
+      // native browser constraint
+      ctrlState.validationMessage = ctrlElm.validationMessage;
+    } else if (isFunction(ctrlData.validate)) {
       // has custom validate fn and the native browser constraints are valid
       const results = ctrlData.validate(value, ev);
       if (isPromise(results)) {
@@ -64,11 +66,17 @@ const checkValidateResults = (
     }
   }
 
-  cb(ctrlData, ctrlElm, value, ev);
+  cb && cb(ctrlData, ctrlElm, value, ev);
 };
 
 export const validationMessage = (ctrl: ReactiveFormControl) => {
+  const ctrlElm = ctrlElms.get(ctrl);
   const ctrlState = getControlState(ctrl);
+
+  if (ctrlElm) {
+    setAttribute(ctrlElm, 'formnovalidate');
+  }
+
   if (ctrlState) {
     return ctrlState.validationMessage;
   }

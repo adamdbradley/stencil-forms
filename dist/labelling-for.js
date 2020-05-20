@@ -1,6 +1,7 @@
-import { ctrlChildren, ctrlElms, ctrlDatas, labellingElms } from './utils/state';
+import { ctrlChildren, ctrlElms, ctrlDatas, labellingElms, state } from './utils/state';
 import { isString, setAttribute } from './utils/helpers';
 const labellingFor = (ctrl, groupItemValue, labellingType, setAttrs) => {
+    state.r = null;
     if (isString(groupItemValue)) {
         // labelling element for a group item input
         return {
@@ -11,7 +12,7 @@ const labellingFor = (ctrl, groupItemValue, labellingType, setAttrs) => {
                     if (ctrlElm) {
                         // we already have the control element, so that means we'll
                         // have the "id" and "name" data to when setting the attrs
-                        setAttrs(child.data.id, ctrlElm, groupItemLabellingElm);
+                        setAttrs(child.data.i, ctrlElm, groupItemLabellingElm);
                     }
                     else {
                         // we haven't gotten a reference to the control element yet
@@ -34,7 +35,7 @@ const labellingFor = (ctrl, groupItemValue, labellingType, setAttrs) => {
                 if (ctrlElm) {
                     // we already have the control element, so that means we'll
                     // have the "id" and "name" data to when setting the attrs
-                    setAttrs(ctrlDatas.get(ctrl).id, ctrlElm, labellingElm);
+                    setAttrs(ctrlDatas.get(ctrl).i, ctrlElm, labellingElm);
                 }
                 else {
                     // we haven't gotten a reference to the control element yet
@@ -47,7 +48,12 @@ const labellingFor = (ctrl, groupItemValue, labellingType, setAttrs) => {
     };
 };
 export const setDescribedbyAttributes = (ctrlId, ctrlElm, labellingElm) => setAriaLinkedIdAttributes(ctrlId, ctrlElm, labellingElm, 'describedby', 'desc');
-export const setErrormessageAttributes = (ctrlId, ctrlElm, labellingElm) => setAriaLinkedIdAttributes(ctrlId, ctrlElm, labellingElm, 'errormessage', 'err');
+export const setErrormessageAttributes = (ctrlId, ctrlElm, labellingElm) => {
+    setAriaLinkedIdAttributes(ctrlId, ctrlElm, labellingElm, 'errormessage', 'err');
+    setAttribute(labellingElm, 'role', 'alert');
+    setAttribute(labellingElm, 'aria-atomic', 'true');
+    setAttribute(ctrlElm, 'formnovalidate');
+};
 export const setLabelledbyAttributes = (ctrlId, ctrlElm, labellingElm) => {
     if (labellingElm) {
         if (labellingElm.nodeName === 'LABEL') {
@@ -69,16 +75,16 @@ export const getGroupChild = (parentCtrl, groupItemValue) => {
     let child = ctrlChildMap.get(groupItemValue);
     if (!child) {
         const parentCtrlData = ctrlDatas.get(parentCtrl);
-        if (!parentCtrlData.groupName) {
-            parentCtrlData.groupName = parentCtrlData.name;
+        if (!parentCtrlData.g) {
+            parentCtrlData.g = parentCtrlData.n;
         }
         ctrlChildMap.set(groupItemValue, (child = {
             ctrl: {},
             data: {
                 valuePropName: 'value',
                 valuePropType: 'string',
-                id: parentCtrlData.groupName + '-' + groupItemValue,
-                name: parentCtrlData.groupName,
+                i: parentCtrlData.g + '-' + groupItemValue,
+                n: parentCtrlData.g,
                 onValueChange: parentCtrlData.onValueChange,
             },
         }));

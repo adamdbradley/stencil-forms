@@ -1,6 +1,6 @@
-import { ControlData, ControlElement, ReactiveFormControl, ReactiveFormControlGroup, ControlState } from '../types';
-import { getRenderingRef } from '@stencil/core';
+import { ControlData, ControlElement, ControlState, ReactiveFormControl, ReactiveFormControlGroup } from '../types';
 import { createStore } from '@stencil/store';
+import { getRenderingRef } from '@stencil/core';
 
 export const state = {
   /**
@@ -96,9 +96,5 @@ export const getControlState = (ctrl: ReactiveFormControl): ControlState => {
   }
 
   ctrlElm = ctrlElms.get(ctrl);
-  if (ctrlElm && ctrlElm[Control]) {
-    return ctrlElm[Control];
-  }
-
-  return null;
+  return ctrlElm ? ctrlElm[Control] : null;
 };
