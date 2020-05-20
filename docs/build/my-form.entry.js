@@ -1,4 +1,4 @@
-import { g as getRenderingRef, f as forceUpdate, r as registerInstance, h, H as Host } from './index-098c57d7.js';
+import { g as getRenderingRef, f as forceUpdate, r as registerInstance, h, H as Host } from './index-8c092451.js';
 
 const isFunction = (v) => typeof v === 'function';
 const isNumber = (v) => typeof v === 'number';
@@ -666,12 +666,13 @@ const MyForm = class {
         this.specialInstructions = '';
         this.favoriteCar = '';
         this.counter = 0;
+        this.json = '';
         this.onSubmit = (ev) => {
             ev.preventDefault();
             ev.stopPropagation();
             const formData = new FormData(ev.currentTarget);
-            const jsonData = JSON.stringify(Object.fromEntries(formData), null, 2);
-            console.warn('submit', jsonData);
+            this.json = JSON.stringify(Object.fromEntries(formData), null, 2);
+            console.warn('submit', this.json);
         };
     }
     render() {
@@ -707,7 +708,7 @@ const MyForm = class {
         // const favoriteCar = controlGroup(this.favoriteCar, {
         //   onValueChange: (value) => (this.favoriteCar = value),
         // });
-        return (h(Host, null, h("form", { onSubmit: this.onSubmit }, h("section", null, h("div", null, h("label", Object.assign({}, labelFor(age)), "Age")), h("div", Object.assign({}, descriptionFor(age)), "How many years young are you? ", this.age), h("div", null, h("input", Object.assign({ formNoValidate: true, type: "number", min: "0", max: "150" }, age()))), h("div", Object.assign({}, validationFor(age)), validationMessage(age))), h("section", null, h("button", { type: "submit" }, "Submit")), h("hr", null)), h("section", null, "Counter:", h("button", { onClick: () => this.counter-- }, "-"), " ", this.counter, ' ', h("button", { onClick: () => this.counter++ }, "+"))));
+        return (h(Host, null, h("form", { onSubmit: this.onSubmit }, h("section", null, h("div", null, h("label", Object.assign({}, labelFor(age)), "Age")), h("div", Object.assign({}, descriptionFor(age)), "How many years young are you? ", this.age), h("div", null, h("input", Object.assign({ formNoValidate: true, type: "number", min: "0", max: "150" }, age()))), h("div", Object.assign({}, validationFor(age)), validationMessage(age))), h("section", null, h("button", { type: "submit" }, "Submit")), h("hr", null)), this.json !== '' ? h("pre", null, "Submit: ", this.json) : null, h("section", null, "Counter:", h("button", { onClick: () => this.counter-- }, "-"), " ", this.counter, ' ', h("button", { onClick: () => this.counter++ }, "+"))));
     }
 };
 MyForm.style = myFormCss;

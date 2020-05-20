@@ -1,7 +1,13 @@
 import { checkValidity } from './validation';
-import { ctrls, ctrlDatas, debounces } from './utils/state';
+import { ctrls, ctrlDatas, debounces, Control } from './utils/state';
 import { isFunction, isNumber } from './utils/helpers';
-export const sharedOnInvalidHandler = (_ev) => { };
+export const sharedOnInvalidHandler = (ev) => {
+    ev.preventDefault();
+    const ctrlElm = ev.currentTarget;
+    const ctrlState = ctrlElm[Control];
+    // add a space at the end to ensure we trigger a re-render
+    ctrlState.validationMessage = ctrlElm.validationMessage + ' ';
+};
 export const sharedOnValueChangeHandler = (ev) => {
     const ctrlElm = ev.currentTarget;
     const ctrl = ctrls.get(ctrlElm);

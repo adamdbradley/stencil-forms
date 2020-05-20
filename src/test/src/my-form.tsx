@@ -1,4 +1,4 @@
-import { Component, h, Host, Prop } from '@stencil/core';
+import { Component, h, Host, Prop, State } from '@stencil/core';
 import {
   bind,
   bindNumber,
@@ -28,14 +28,15 @@ export class MyForm {
   @Prop() specialInstructions = '';
   @Prop() favoriteCar = '';
   @Prop() counter = 0;
+  @State() json = '';
 
   onSubmit = (ev: Event) => {
     ev.preventDefault();
     ev.stopPropagation();
 
     const formData = new FormData(ev.currentTarget as HTMLFormElement);
-    const jsonData = JSON.stringify(Object.fromEntries(formData as any), null, 2);
-    console.warn('submit', jsonData);
+    this.json = JSON.stringify(Object.fromEntries(formData as any), null, 2);
+    console.warn('submit', this.json);
   };
 
   render() {
@@ -200,6 +201,9 @@ export class MyForm {
           </section>
           <hr />
         </form>
+
+        {this.json !== '' ? <pre>Submit: {this.json}</pre> : null}
+
         <section>
           Counter:
           <button onClick={() => this.counter--}>-</button> {this.counter}{' '}
