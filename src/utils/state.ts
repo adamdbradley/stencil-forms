@@ -66,6 +66,7 @@ export const setControlState = (ctrlData: ControlData) => {
   if (ctrlData.x === ctrlStates.length) {
     ctrlStates.push(
       createStore<ControlState>({
+        isInitialLoad: true,
         validatingMessage: '',
         validationMessage: '',
       }).state,

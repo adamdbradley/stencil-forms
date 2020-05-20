@@ -222,6 +222,7 @@ const setControlState = (ctrlData) => {
     }
     if (ctrlData.x === ctrlStates.length) {
         ctrlStates.push(createStore({
+            isInitialLoad: true,
             validatingMessage: '',
             validationMessage: '',
         }).state);
@@ -383,6 +384,7 @@ const checkValidateResults = (results, ctrlData, ctrlElm, value, ev, cb) => {
     const msg = isString(results) ? results.trim() : '';
     ctrlElm.setCustomValidity(msg);
     ctrlState.validationMessage = msg;
+    ctrlState.validatingMessage = '';
     if (!ctrlElm.validity.valid) {
         const showNativeReport = !ctrlElm.hasAttribute('formnovalidate') && !(ctrlElm === null || ctrlElm === void 0 ? void 0 : ctrlElm.form.hasAttribute('novalidate'));
         if (showNativeReport) {
@@ -410,8 +412,8 @@ const activeValidatingMessage = (ctrl) => {
     return '';
 };
 const isActivelyValidating = (ctrl) => activeValidatingMessage(ctrl) !== '';
-const isValid = (ctrl) => validationMessage(ctrl) === '';
-const isInvalid = (ctrl) => validationMessage(ctrl) !== '';
+const isValid = (ctrl) => isActivelyValidating(ctrl) ? null : validationMessage(ctrl) === '';
+const isInvalid = (ctrl) => isActivelyValidating(ctrl) ? null : validationMessage(ctrl) !== '';
 
 const sharedOnInvalidHandler = (ev) => {
     ev.preventDefault();
@@ -619,7 +621,10 @@ const ctrlElmRef = (ctrl, ctrlData, ctrlState, ctrlElm, isParentGroup) => {
     ctrls.set(ctrlElm, ctrl);
     ctrlElms.set(ctrl, ctrlElm);
     ctrlElm[Control] = ctrlState;
-    checkValidity(ctrlData, ctrlElm, null, null);
+    if (ctrlState.isInitialLoad) {
+        checkValidity(ctrlData, ctrlElm, null, null);
+        ctrlState.isInitialLoad = false;
+    }
 };
 const ctrlGroupItemElmRef = (parentCtrl, childCtrlElm, childValue) => {
     const child = getGroupChild(parentCtrl, childValue);
@@ -652,7 +657,7 @@ const normalizeControlOpts = (ctrlOpts, changeEventName, valuePropName, valuePro
         valuePropType }, ctrlOpts);
 };
 
-const myFormCss = "form button{position:relative;cursor:pointer;background:#ccc;margin:10px 0 0 0}form:invalid button::after{position:absolute;padding-left:20px;content:'form:invalid';color:red;white-space:nowrap}[role='alert']{color:red}input:valid{border:1px solid green}input:invalid{border:1px solid red}.is-validating{background:#eee;border:1px solid yellow}.is-valid{background-color:rgba(0, 128, 0, 0.1)}.is-invalid{border:1px solid rgba(255, 0, 0, 0.1)}pre{background:#eee}section{padding:10px;border-bottom:1px solid gray}";
+const myFormCss = "form button{position:relative;cursor:pointer;background:#ccc;margin:10px 0 0 0}form:invalid button{background:#eee;color:#aaa}form:invalid button::after{position:absolute;padding-left:20px;content:'form:invalid';color:red;white-space:nowrap}form:valid button::after{position:absolute;padding-left:20px;content:'form:valid';color:green;white-space:nowrap}label{font-weight:bold}[role='alert']{color:red}input:valid{border:1px solid green}input:invalid{border:1px solid red}.is-validating{background:rgba(255, 255, 0, 0.2)}.is-valid{background:rgba(0, 128, 0, 0.2)}.is-invalid{background:rgba(255, 0, 0, 0.1)}pre{background:#eee}section{padding:10px;border-bottom:1px solid gray}";
 
 const MyForm = class {
     constructor(hostRef) {
@@ -682,12 +687,12 @@ const MyForm = class {
             debounce: 500,
             validatingMessage: (value) => `Checking if "${value}" is already taken...`,
             validate: (value) => {
-                console.log(`checking "${value}" username...`);
+                console.log(`async checking "${value}" username, this will take 3 seconds...`);
                 return new Promise((resolve) => {
                     setTimeout(() => {
                         console.log(`finished checking "${value}" username`);
                         resolve();
-                    }, 5000);
+                    }, 3000);
                 });
             },
         });
@@ -712,7 +717,7 @@ const MyForm = class {
                 'is-validating': isActivelyValidating(userName),
                 'is-valid': isValid(userName),
                 'is-invalid': isInvalid(userName),
-            } }, h("div", null, h("label", Object.assign({}, labelFor(userName)), "User Name")), h("div", Object.assign({}, descriptionFor(userName)), "Enter a unique username? (500ms debounce) ", this.userName), h("div", null, h("input", Object.assign({ required: true }, userName()))), h("div", Object.assign({}, validationFor(userName)), validationMessage(userName))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(age)), "Age")), h("div", Object.assign({}, descriptionFor(age)), "How many years young are you? ", this.age), h("div", null, h("input", Object.assign({ formNoValidate: true, type: "number", min: "0", max: "150" }, age()))), h("div", Object.assign({}, validationFor(age)), validationMessage(age))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(volume)), "Volume")), h("div", Object.assign({}, descriptionFor(age)), "These go to eleven: ", this.volume), h("div", null, h("input", Object.assign({ type: "range", min: "0", max: "11" }, volume()))), h("div", Object.assign({}, validationFor(volume)), validationMessage(volume))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(vegetarian)), "Vegetarian")), h("div", Object.assign({}, descriptionFor(vegetarian)), "Are you a vegetarian? ", String(this.vegetarian)), h("div", null, h("input", Object.assign({ type: "checkbox" }, vegetarian()))), h("div", Object.assign({}, validationFor(vegetarian)), validationMessage(vegetarian))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(specialInstructions)), "Special Instructions")), h("div", Object.assign({}, descriptionFor(specialInstructions)), "Do you have dietary restrictions? ", this.specialInstructions), h("div", null, h("textarea", Object.assign({}, specialInstructions()))), h("div", Object.assign({}, validationFor(specialInstructions)), validationMessage(specialInstructions))), h("section", null, h("button", { type: "submit" }, "Submit"))), this.json !== '' ? h("pre", null, "Submit: ", this.json) : null, h("section", null, "Counter (just to test re-rendering scenarios):", h("button", { onClick: () => this.counter-- }, "-"), " ", this.counter, ' ', h("button", { onClick: () => this.counter++ }, "+"))));
+            } }, h("div", null, h("label", Object.assign({}, labelFor(userName)), "User Name")), h("div", Object.assign({}, descriptionFor(userName)), "Enter a unique username? (500ms debounce, 3s async validation) ", this.userName), h("div", null, h("input", Object.assign({ required: true }, userName()))), h("div", Object.assign({}, validationFor(userName)), validationMessage(userName))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(age)), "Age")), h("div", Object.assign({}, descriptionFor(age)), "How many years young are you? ", this.age), h("div", null, h("input", Object.assign({ formNoValidate: true, type: "number", min: "0", max: "150" }, age()))), h("div", Object.assign({}, validationFor(age)), validationMessage(age))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(volume)), "Volume")), h("div", Object.assign({}, descriptionFor(age)), "These go to eleven: ", this.volume), h("div", null, h("input", Object.assign({ type: "range", min: "0", max: "11" }, volume()))), h("div", Object.assign({}, validationFor(volume)), validationMessage(volume))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(vegetarian)), "Vegetarian")), h("div", Object.assign({}, descriptionFor(vegetarian)), "Are you a vegetarian? ", String(this.vegetarian)), h("div", null, h("input", Object.assign({ type: "checkbox" }, vegetarian()))), h("div", Object.assign({}, validationFor(vegetarian)), validationMessage(vegetarian))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(specialInstructions)), "Special Instructions")), h("div", Object.assign({}, descriptionFor(specialInstructions)), "Do you have dietary restrictions? ", this.specialInstructions), h("div", null, h("textarea", Object.assign({}, specialInstructions()))), h("div", Object.assign({}, validationFor(specialInstructions)), validationMessage(specialInstructions))), h("section", null, h("button", { type: "submit" }, "Submit"))), this.json !== '' ? h("pre", null, "Submit: ", this.json) : null, h("section", null, "Counter (just to test re-rendering scenarios):", h("button", { onClick: () => this.counter-- }, "-"), " ", this.counter, ' ', h("button", { onClick: () => this.counter++ }, "+"))));
     }
 };
 MyForm.style = myFormCss;

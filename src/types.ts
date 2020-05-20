@@ -72,6 +72,7 @@ export interface ControlData extends ReactiveFormControlOptions {
 
 /** @internal */
 export interface ControlState {
+  isInitialLoad: boolean;
   validatingMessage: string;
   validationMessage: string;
 }

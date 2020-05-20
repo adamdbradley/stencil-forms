@@ -48,12 +48,12 @@ export class MyForm {
       debounce: 500,
       validatingMessage: (value) => `Checking if "${value}" is already taken...`,
       validate: (value) => {
-        console.log(`checking "${value}" username...`);
+        console.log(`async checking "${value}" username, this will take 3 seconds...`);
         return new Promise((resolve) => {
           setTimeout(() => {
             console.log(`finished checking "${value}" username`);
             resolve();
-          }, 5000);
+          }, 3000);
         });
       },
     });
@@ -115,7 +115,9 @@ export class MyForm {
             <div>
               <label {...labelFor(userName)}>User Name</label>
             </div>
-            <div {...descriptionFor(userName)}>Enter a unique username? (500ms debounce) {this.userName}</div>
+            <div {...descriptionFor(userName)}>
+              Enter a unique username? (500ms debounce, 3s async validation) {this.userName}
+            </div>
             <div>
               <input required {...userName()} />
             </div>

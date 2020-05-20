@@ -4,6 +4,12 @@ form button {
   background: #ccc;
   margin: 10px 0 0 0;
 }
+
+form:invalid button {
+  background: #eee;
+  color: #aaa;
+}
+
 form:invalid button::after {
   position: absolute;
   padding-left: 20px;
@@ -11,28 +17,47 @@ form:invalid button::after {
   color: red;
   white-space: nowrap;
 }
+
+form:valid button::after {
+  position: absolute;
+  padding-left: 20px;
+  content: 'form:valid';
+  color: green;
+  white-space: nowrap;
+}
+
+label {
+  font-weight: bold;
+}
+
 [role='alert'] {
   color: red;
 }
+
 input:valid {
   border: 1px solid green;
 }
+
 input:invalid {
   border: 1px solid red;
 }
+
 .is-validating {
-  background: #eee;
-  border: 1px solid yellow;
+  background: rgba(255, 255, 0, 0.2);
 }
+
 .is-valid {
-  background-color: rgba(0, 128, 0, 0.1);
+  background: rgba(0, 128, 0, 0.2);
 }
+
 .is-invalid {
-  border: 1px solid rgba(255, 0, 0, 0.1);
+  background: rgba(255, 0, 0, 0.1);
 }
+
 pre {
   background: #eee;
 }
+
 section {
   padding: 10px;
   border-bottom: 1px solid gray;

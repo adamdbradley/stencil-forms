@@ -58,6 +58,7 @@ const checkValidateResults = (
 
   ctrlElm.setCustomValidity(msg);
   ctrlState.validationMessage = msg;
+  ctrlState.validatingMessage = '';
 
   if (!ctrlElm.validity.valid) {
     const showNativeReport = !ctrlElm.hasAttribute('formnovalidate') && !ctrlElm?.form.hasAttribute('novalidate');
@@ -93,6 +94,8 @@ export const activeValidatingMessage = (ctrl: ReactiveFormControl) => {
 
 export const isActivelyValidating = (ctrl: ReactiveFormControl) => activeValidatingMessage(ctrl) !== '';
 
-export const isValid = (ctrl: ReactiveFormControl) => validationMessage(ctrl) === '';
+export const isValid = (ctrl: ReactiveFormControl) =>
+  isActivelyValidating(ctrl) ? null : validationMessage(ctrl) === '';
 
-export const isInvalid = (ctrl: ReactiveFormControl) => validationMessage(ctrl) !== '';
+export const isInvalid = (ctrl: ReactiveFormControl) =>
+  isActivelyValidating(ctrl) ? null : validationMessage(ctrl) !== '';

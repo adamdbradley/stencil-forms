@@ -208,7 +208,10 @@ const ctrlElmRef = (
   ctrlElms.set(ctrl, ctrlElm);
   ctrlElm[Control] = ctrlState;
 
-  checkValidity(ctrlData, ctrlElm, null, null);
+  if (ctrlState.isInitialLoad) {
+    checkValidity(ctrlData, ctrlElm, null, null);
+    ctrlState.isInitialLoad = false;
+  }
 };
 
 const ctrlGroupItemElmRef = (
