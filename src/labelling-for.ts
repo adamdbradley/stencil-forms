@@ -1,4 +1,4 @@
-import { ctrlChildren, ctrlElms, ctrlDatas, labellingElms, LabellingType } from './utils/state';
+import { ctrlChildren, ctrlElms, ctrlDatas, labellingElms, LabellingType, state } from './utils/state';
 import { isString, setAttribute } from './utils/helpers';
 import { ReactiveFormControl, ControlElement } from './types';
 
@@ -8,6 +8,8 @@ const labellingFor = (
   labellingType: LabellingType,
   setAttrs: (ctrlId: string, ctrlElm: ControlElement, labellingElm: HTMLElement) => void,
 ) => {
+  state.r = null;
+
   if (isString(groupItemValue)) {
     // labelling element for a group item input
     return {
@@ -18,7 +20,7 @@ const labellingFor = (
           if (ctrlElm) {
             // we already have the control element, so that means we'll
             // have the "id" and "name" data to when setting the attrs
-            setAttrs(child.data.id, ctrlElm, groupItemLabellingElm);
+            setAttrs(child.data.i, ctrlElm, groupItemLabellingElm);
           } else {
             // we haven't gotten a reference to the control element yet
             // so let's remember this labelling element for now and will
@@ -41,7 +43,7 @@ const labellingFor = (
         if (ctrlElm) {
           // we already have the control element, so that means we'll
           // have the "id" and "name" data to when setting the attrs
-          setAttrs(ctrlDatas.get(ctrl).id, ctrlElm, labellingElm);
+          setAttrs(ctrlDatas.get(ctrl).i, ctrlElm, labellingElm);
         } else {
           // we haven't gotten a reference to the control element yet
           // so let's remember this labelling element for now and will
@@ -93,8 +95,8 @@ export const getGroupChild = (parentCtrl: ReactiveFormControl, groupItemValue: s
   let child = ctrlChildMap.get(groupItemValue);
   if (!child) {
     const parentCtrlData = ctrlDatas.get(parentCtrl);
-    if (!parentCtrlData.groupName) {
-      parentCtrlData.groupName = parentCtrlData.name;
+    if (!parentCtrlData.g) {
+      parentCtrlData.g = parentCtrlData.n;
     }
     ctrlChildMap.set(
       groupItemValue,
@@ -103,8 +105,8 @@ export const getGroupChild = (parentCtrl: ReactiveFormControl, groupItemValue: s
         data: {
           valuePropName: 'value',
           valuePropType: 'string',
-          id: parentCtrlData.groupName + '-' + groupItemValue,
-          name: parentCtrlData.groupName,
+          i: parentCtrlData.g + '-' + groupItemValue,
+          n: parentCtrlData.g,
           onValueChange: parentCtrlData.onValueChange,
         },
       }),

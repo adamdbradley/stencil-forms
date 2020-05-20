@@ -50,20 +50,30 @@ export interface ControlData extends ReactiveFormControlOptions {
    * Unique "id" which may change after the control element renders
    * and the user's control element has provided its own "id"
    */
-  id?: string;
+  i?: string;
 
   /**
-   * "name" which may change after the control element renders
+   * Name: "name" which may change after the control element renders
    * and the user's control element has provided its own "name"
    */
-  name?: string;
+  n?: string;
 
   /**
-   * once this gets set it should not change
+   * Group Name: once this gets set it should not change
    */
-  groupName?: string;
+  g?: string;
 
-  isValidating?: boolean;
+  /**
+   * Control Index: This is the index in the order of all the
+   * controls that were created at the beginning of render()
+   */
+  x?: number;
+}
+
+/** @internal */
+export interface ControlState {
+  validatingMessage: string;
+  validationMessage: string;
 }
 
 /** @internal */

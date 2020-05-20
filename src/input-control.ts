@@ -1,35 +1,42 @@
 import {
-  ctrls,
-  ctrlDatas,
-  state,
-  ctrlElmIds,
-  labellingElms,
-  ctrlElms,
-  LabellingType,
+  Control,
   ctrlChildren,
+  ctrlDatas,
+  ctrlElms,
+  ctrlElmIds,
+  ctrls,
+  labellingElms,
+  LabellingType,
+  state,
+  setControlState,
 } from './utils/state';
-import { isString, isFunction, setAttribute } from './utils/helpers';
+import { isFunction, isString, setAttribute } from './utils/helpers';
 import {
+  ControlData,
+  ControlElement,
   ReactiveControlProperties,
   ReactiveFormControl,
   ReactiveFormControlGroup,
-  ControlData,
-  ControlElement,
   ReactiveFormValuePropType,
+  ControlState,
 } from './types';
-import { sharedOnInvalidHandler, sharedOnValueChangeHandler, sharedOnFocus } from './handlers';
 import {
   setLabelledbyAttributes,
   setDescribedbyAttributes,
   setErrormessageAttributes,
   getGroupChild,
 } from './labelling-for';
+import { sharedOnInvalidHandler, sharedOnValueChangeHandler, sharedOnFocus } from './handlers';
 
 export const inputControl = (value: any, ctrlData: ControlData) => {
   // create the control arrow fn that'll be used as a weakmap key
   // and as a function to return the props for the control element
 
+  const ctrlState = setControlState(ctrlData);
+
   const ctrl: ReactiveFormControl = () => {
+    state.r = null;
+
     // create the object to be used as a property spread in the render()
     const props: ReactiveControlProperties = {
       // set the value
@@ -37,7 +44,7 @@ export const inputControl = (value: any, ctrlData: ControlData) => {
 
       // get the reference to this form control element
       // and remember it so we can look up the form control by the element
-      ref: (ctrlElm) => ctrlElm && ctrlElmRef(ctrl, ctrlData, ctrlElm, false),
+      ref: (ctrlElm) => ctrlElm && ctrlElmRef(ctrl, ctrlData, ctrlState, ctrlElm, false),
 
       // add the shared event listeners
       onInvalid: sharedOnInvalidHandler,
@@ -82,8 +89,12 @@ const getPropValue = (valueTypeCast: ReactiveFormValuePropType, value: any) => {
 };
 
 export const inputControlGroup = (selectedValue: any, ctrlData: ControlData): any => {
+  const ctrlState = setControlState(ctrlData);
+
   // create the form control that'll be used as a weakmap key
   const ctrl: ReactiveFormControlGroup = (groupItemValue?: any) => {
+    state.r = null;
+
     if (isString(groupItemValue)) {
       // group item, like <input type="radio">
       return inputControlGroupItem(selectedValue, ctrl, ctrlData, groupItemValue);
@@ -92,7 +103,7 @@ export const inputControlGroup = (selectedValue: any, ctrlData: ControlData): an
     // group container, like <div role="group">
     return {
       role: 'group',
-      ref: (ctrlElm) => ctrlElm && ctrlElmRef(ctrl, ctrlData, ctrlElm, true),
+      ref: (ctrlElm) => ctrlElm && ctrlElmRef(ctrl, ctrlData, ctrlState, ctrlElm, true),
     };
   };
 
@@ -136,6 +147,7 @@ const inputControlGroupItem = (
 const ctrlElmRef = (
   ctrl: ReactiveFormControl,
   ctrlData: ControlData,
+  ctrlState: ControlState,
   ctrlElm: ControlElement,
   isParentGroup: boolean,
 ) => {
@@ -145,7 +157,7 @@ const ctrlElmRef = (
   let labellingElm = labellingElms[LabellingType.labelledby].get(ctrl);
 
   if (!ctrlId) {
-    ctrlId = ctrlData.id;
+    ctrlId = ctrlData.i;
     if (!ctrlId) {
       ctrlId = ctrlElmIds.get(ctrlElm);
       if (!ctrlId) {
@@ -174,20 +186,21 @@ const ctrlElmRef = (
     setAttribute(ctrlElm, 'formnovalidate');
   }
 
-  ctrlData.id = setAttribute(ctrlElm, 'id', ctrlId);
+  ctrlData.i = setAttribute(ctrlElm, 'id', ctrlId);
 
   if (!isParentGroup) {
     if (!ctrlName) {
-      ctrlName = ctrlData.name;
+      ctrlName = ctrlData.n;
       if (!ctrlName) {
         ctrlName = ctrlId;
       }
     }
-    ctrlData.name = setAttribute(ctrlElm, 'name', ctrlName);
+    ctrlData.n = setAttribute(ctrlElm, 'name', ctrlName);
   }
 
   ctrls.set(ctrlElm, ctrl);
   ctrlElms.set(ctrl, ctrlElm);
+  ctrlElm[Control] = ctrlState;
 };
 
 const ctrlGroupItemElmRef = (
@@ -196,5 +209,6 @@ const ctrlGroupItemElmRef = (
   childValue: string,
 ) => {
   const child = getGroupChild(parentCtrl, childValue);
-  return ctrlElmRef(child.ctrl, child.data, childCtrlElm, false);
+  const ctrlState = setControlState(child.data);
+  return ctrlElmRef(child.ctrl, child.data, ctrlState, childCtrlElm, false);
 };

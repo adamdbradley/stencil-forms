@@ -8,7 +8,7 @@ import {
   descriptionFor,
   isValid,
   isInvalid,
-  isValidating,
+  isActivelyValidating,
   validationFor,
   validationMessage,
 } from '../../index';
@@ -18,13 +18,17 @@ import { controlNumber } from '../../control';
   tag: 'my-form',
   styles: `
     form button {
+      position: relative;
       cursor: pointer;
       background: #ccc;
       margin: 10px 0 0 0;
     }
-    form:invalid button {
-      pointer-events: none;
-      opacity: 0.4;
+    form:invalid button::after {
+      position: absolute;
+      padding-left: 20px;
+      content: 'Form invalid';
+      color: red;
+      white-space: nowrap;
     }
     input:valid {
       border: 1px solid green;
@@ -53,6 +57,7 @@ export class MyForm {
   @Prop() vegetarian = false;
   @Prop() specialInstructions = '';
   @Prop() favoriteCar = '';
+  @Prop() counter = 0;
 
   onSubmit = (ev: Event) => {
     ev.preventDefault();
@@ -66,48 +71,48 @@ export class MyForm {
   render() {
     const fullName = bind(this, 'fullName');
 
-    const email = bind(this, 'email');
+    // const email = bind(this, 'email');
 
-    const userName = bind(this, 'userName', {
-      debounce: 500,
-      validatingMessage: (value) => `Checking if "${value}" is already taken...`,
-      validate: (value) => {
-        console.log(`checking "${value}" username...`);
-        return new Promise((resolve) => {
-          setTimeout(() => {
-            console.log(`finished checking "${value}" username`);
-            resolve();
-          }, 5000);
-        });
-      },
-    });
+    // const userName = bind(this, 'userName', {
+    //   debounce: 500,
+    //   validatingMessage: (value) => `Checking if "${value}" is already taken...`,
+    //   validate: (value) => {
+    //     console.log(`checking "${value}" username...`);
+    //     return new Promise((resolve) => {
+    //       setTimeout(() => {
+    //         console.log(`finished checking "${value}" username`);
+    //         resolve();
+    //       }, 5000);
+    //     });
+    //   },
+    // });
 
     const age = bindNumber(this, 'age', {
       validate: (value) => {
         if (value < 18) {
-          return 'Must be 18 or older';
+          return `Must be 18 or older, but you entered ${value}`;
         }
       },
     });
 
-    const volume = controlNumber(this.volume, {
-      onValueChange: (value) => (this.volume = value),
-    });
+    // const volume = controlNumber(this.volume, {
+    //   onValueChange: (value) => (this.volume = value),
+    // });
 
-    const vegetarian = controlBoolean(this.vegetarian, {
-      onValueChange: (value) => (this.vegetarian = value),
-    });
+    // const vegetarian = controlBoolean(this.vegetarian, {
+    //   onValueChange: (value) => (this.vegetarian = value),
+    // });
 
-    const specialInstructions = bind(this, 'specialInstructions');
+    // const specialInstructions = bind(this, 'specialInstructions');
 
-    const favoriteCar = controlGroup(this.favoriteCar, {
-      onValueChange: (value) => (this.favoriteCar = value),
-    });
+    // const favoriteCar = controlGroup(this.favoriteCar, {
+    //   onValueChange: (value) => (this.favoriteCar = value),
+    // });
 
     return (
       <Host>
         <form onSubmit={this.onSubmit}>
-          {/* <section>
+          <section>
             <div>
               <label {...labelFor(fullName)}>Name</label>
             </div>
@@ -116,8 +121,8 @@ export class MyForm {
               <input {...fullName()} />
             </div>
             <span {...validationFor(fullName)}>{validationMessage(fullName)}</span>
-          </section> 
-          <hr />
+          </section>
+          {/* <hr />
           <section>
             <div>
               <label {...labelFor(email)}>Email</label>
@@ -128,7 +133,7 @@ export class MyForm {
             </div>
             <div {...validationFor(email)}>{validationMessage(email)}</div>
           </section>
-          <hr />*/}
+          <hr />
 
           <section
             class={{
@@ -146,19 +151,19 @@ export class MyForm {
             </div>
             <div {...validationFor(userName)}>{validationMessage(userName)}</div>
           </section>
+*/}
 
-          {/* 
           <section>
             <div>
               <label {...labelFor(age)}>Age</label>
             </div>
             <div {...descriptionFor(age)}>How many years young are you? {this.age}</div>
             <div>
-              <input type="number" min="0" max="150" {...age()} />
+              <input formNoValidate type="number" min="0" max="150" {...age()} />
             </div>
             <div {...validationFor(age)}>{validationMessage(age)}</div>
           </section>
-
+          {/* 
           <hr />
 
           <section>
@@ -223,7 +228,13 @@ export class MyForm {
           <section>
             <button type="submit">Submit</button>
           </section>
+          <hr />
         </form>
+        <section>
+          Counter:
+          <button onClick={() => this.counter--}>-</button> {this.counter}{' '}
+          <button onClick={() => this.counter++}>+</button>
+        </section>
       </Host>
     );
   }

@@ -22,8 +22,8 @@ const normalizeControlOpts = (
 ): ControlData => {
   const propName = 'ctrl' + state.i++;
   return {
-    id: propName,
-    name: propName,
+    i: propName,
+    n: propName,
     changeEventName,
     valuePropName,
     valuePropType,
