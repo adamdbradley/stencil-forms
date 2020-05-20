@@ -1,10 +1,16 @@
 import { checkValidity } from './validation';
-import { ControlElement, ReactiveFormControlOptions, ControlData } from './types';
-import { ctrls, ctrlDatas, debounces } from './utils/state';
+import { ControlElement, ReactiveFormControlOptions, ControlData, ControlState } from './types';
+import { ctrls, ctrlDatas, debounces, Control } from './utils/state';
 import { isFunction, isNumber } from './utils/helpers';
 
-export const sharedOnInvalidHandler = (_ev: Event) => {
-  console.log('onInvalid', _ev);
+export const sharedOnInvalidHandler = (ev: Event) => {
+  ev.preventDefault();
+
+  const ctrlElm = ev.currentTarget as ControlElement;
+  const ctrlState: ControlState = ctrlElm[Control];
+
+  // add a space at the end to ensure we trigger a re-render
+  ctrlState.validationMessage = ctrlElm.validationMessage + ' ';
 };
 
 export const sharedOnValueChangeHandler = (ev: KeyboardEvent) => {

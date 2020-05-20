@@ -413,8 +413,12 @@ const isActivelyValidating = (ctrl) => activeValidatingMessage(ctrl) !== '';
 const isValid = (ctrl) => validationMessage(ctrl) === '';
 const isInvalid = (ctrl) => validationMessage(ctrl) !== '';
 
-const sharedOnInvalidHandler = (_ev) => {
-    console.log('onInvalid', _ev);
+const sharedOnInvalidHandler = (ev) => {
+    ev.preventDefault();
+    const ctrlElm = ev.currentTarget;
+    const ctrlState = ctrlElm[Control];
+    // add a space at the end to ensure we trigger a re-render
+    ctrlState.validationMessage = ctrlElm.validationMessage + ' ';
 };
 const sharedOnValueChangeHandler = (ev) => {
     const ctrlElm = ev.currentTarget;
