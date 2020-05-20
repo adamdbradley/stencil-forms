@@ -6,6 +6,7 @@ export const config: Config = {
   outputTargets: [
     {
       type: 'www',
+      dir: '../../docs',
       serviceWorker: false,
     },
   ],

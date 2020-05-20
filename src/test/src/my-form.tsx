@@ -26,7 +26,7 @@ import { controlNumber } from '../../control';
     form:invalid button::after {
       position: absolute;
       padding-left: 20px;
-      content: 'Form invalid';
+      content: 'form:invalid';
       color: red;
       white-space: nowrap;
     }
