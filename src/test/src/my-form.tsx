@@ -42,21 +42,21 @@ export class MyForm {
   render() {
     const fullName = bind(this, 'fullName');
 
-    // const email = bind(this, 'email');
+    const email = bind(this, 'email');
 
-    // const userName = bind(this, 'userName', {
-    //   debounce: 500,
-    //   validatingMessage: (value) => `Checking if "${value}" is already taken...`,
-    //   validate: (value) => {
-    //     console.log(`checking "${value}" username...`);
-    //     return new Promise((resolve) => {
-    //       setTimeout(() => {
-    //         console.log(`finished checking "${value}" username`);
-    //         resolve();
-    //       }, 5000);
-    //     });
-    //   },
-    // });
+    const userName = bind(this, 'userName', {
+      debounce: 500,
+      validatingMessage: (value) => `Checking if "${value}" is already taken...`,
+      validate: (value) => {
+        console.log(`checking "${value}" username...`);
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            console.log(`finished checking "${value}" username`);
+            resolve();
+          }, 5000);
+        });
+      },
+    });
 
     const age = bindNumber(this, 'age', {
       validate: (value) => {
@@ -66,24 +66,24 @@ export class MyForm {
       },
     });
 
-    // const volume = controlNumber(this.volume, {
-    //   onValueChange: (value) => (this.volume = value),
-    // });
+    const volume = controlNumber(this.volume, {
+      onValueChange: (value) => (this.volume = value),
+    });
 
-    // const vegetarian = controlBoolean(this.vegetarian, {
-    //   onValueChange: (value) => (this.vegetarian = value),
-    // });
+    const vegetarian = controlBoolean(this.vegetarian, {
+      onValueChange: (value) => (this.vegetarian = value),
+    });
 
-    // const specialInstructions = bind(this, 'specialInstructions');
+    const specialInstructions = bind(this, 'specialInstructions');
 
-    // const favoriteCar = controlGroup(this.favoriteCar, {
-    //   onValueChange: (value) => (this.favoriteCar = value),
-    // });
+    const favoriteCar = controlGroup(this.favoriteCar, {
+      onValueChange: (value) => (this.favoriteCar = value),
+    });
 
     return (
       <Host>
         <form onSubmit={this.onSubmit}>
-          {/* <section>
+          <section>
             <div>
               <label {...labelFor(fullName)}>Name</label>
             </div>
@@ -93,7 +93,7 @@ export class MyForm {
             </div>
             <span {...validationFor(fullName)}>{validationMessage(fullName)}</span>
           </section>
-          <hr />
+
           <section>
             <div>
               <label {...labelFor(email)}>Email</label>
@@ -104,11 +104,10 @@ export class MyForm {
             </div>
             <div {...validationFor(email)}>{validationMessage(email)}</div>
           </section>
-          <hr />
 
           <section
             class={{
-              'is-validating': isValidating(userName),
+              'is-validating': isActivelyValidating(userName),
               'is-valid': isValid(userName),
               'is-invalid': isInvalid(userName),
             }}
@@ -122,7 +121,6 @@ export class MyForm {
             </div>
             <div {...validationFor(userName)}>{validationMessage(userName)}</div>
           </section>
-*/}
 
           <section>
             <div>
@@ -134,8 +132,6 @@ export class MyForm {
             </div>
             <div {...validationFor(age)}>{validationMessage(age)}</div>
           </section>
-          {/* 
-          <hr />
 
           <section>
             <div>
@@ -148,8 +144,6 @@ export class MyForm {
             <div {...validationFor(volume)}>{validationMessage(volume)}</div>
           </section>
 
-          <hr />
-
           <section>
             <div>
               <label {...labelFor(vegetarian)}>Vegetarian</label>
@@ -160,8 +154,6 @@ export class MyForm {
             </div>
             <div {...validationFor(vegetarian)}>{validationMessage(vegetarian)}</div>
           </section>
-
-          <hr />
 
           <section>
             <div>
@@ -176,9 +168,7 @@ export class MyForm {
             <div {...validationFor(specialInstructions)}>{validationMessage(specialInstructions)}</div>
           </section>
 
-          <hr />
-
-          <section {...favoriteCar()}>
+          {/* <section {...favoriteCar()}>
             <div {...labelFor(favoriteCar)}>Favorite Car</div>
             <div {...descriptionFor(favoriteCar)}>What's your favorite car? {this.favoriteCar}</div>
             <div>
@@ -195,17 +185,18 @@ export class MyForm {
             </div>
             <div {...validationFor(favoriteCar)}>{validationMessage(favoriteCar)}</div>
           </section>
-          <hr /> */}
+
+          */}
+
           <section>
             <button type="submit">Submit</button>
           </section>
-          <hr />
         </form>
 
         {this.json !== '' ? <pre>Submit: {this.json}</pre> : null}
 
         <section>
-          Counter:
+          Counter (just to test re-rendering scenarios):
           <button onClick={() => this.counter--}>-</button> {this.counter}{' '}
           <button onClick={() => this.counter++}>+</button>
         </section>

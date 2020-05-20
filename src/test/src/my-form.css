@@ -25,8 +25,15 @@ input:invalid {
   border: 1px solid yellow;
 }
 .is-valid {
-  border: 1px solid green;
+  background-color: rgba(0, 128, 0, 0.1);
 }
 .is-invalid {
-  border: 1px solid red;
+  border: 1px solid rgba(255, 0, 0, 0.1);
+}
+pre {
+  background: #eee;
+}
+section {
+  padding: 10px;
+  border-bottom: 1px solid gray;
 }

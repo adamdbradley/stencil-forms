@@ -652,7 +652,7 @@ const normalizeControlOpts = (ctrlOpts, changeEventName, valuePropName, valuePro
         valuePropType }, ctrlOpts);
 };
 
-const myFormCss = "form button{position:relative;cursor:pointer;background:#ccc;margin:10px 0 0 0}form:invalid button::after{position:absolute;padding-left:20px;content:'form:invalid';color:red;white-space:nowrap}[role='alert']{color:red}input:valid{border:1px solid green}input:invalid{border:1px solid red}.is-validating{background:#eee;border:1px solid yellow}.is-valid{border:1px solid green}.is-invalid{border:1px solid red}";
+const myFormCss = "form button{position:relative;cursor:pointer;background:#ccc;margin:10px 0 0 0}form:invalid button::after{position:absolute;padding-left:20px;content:'form:invalid';color:red;white-space:nowrap}[role='alert']{color:red}input:valid{border:1px solid green}input:invalid{border:1px solid red}.is-validating{background:#eee;border:1px solid yellow}.is-valid{background-color:rgba(0, 128, 0, 0.1)}.is-invalid{border:1px solid rgba(255, 0, 0, 0.1)}pre{background:#eee}section{padding:10px;border-bottom:1px solid gray}";
 
 const MyForm = class {
     constructor(hostRef) {
@@ -677,20 +677,20 @@ const MyForm = class {
     }
     render() {
         const fullName = bind(this, 'fullName');
-        // const email = bind(this, 'email');
-        // const userName = bind(this, 'userName', {
-        //   debounce: 500,
-        //   validatingMessage: (value) => `Checking if "${value}" is already taken...`,
-        //   validate: (value) => {
-        //     console.log(`checking "${value}" username...`);
-        //     return new Promise((resolve) => {
-        //       setTimeout(() => {
-        //         console.log(`finished checking "${value}" username`);
-        //         resolve();
-        //       }, 5000);
-        //     });
-        //   },
-        // });
+        const email = bind(this, 'email');
+        const userName = bind(this, 'userName', {
+            debounce: 500,
+            validatingMessage: (value) => `Checking if "${value}" is already taken...`,
+            validate: (value) => {
+                console.log(`checking "${value}" username...`);
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        console.log(`finished checking "${value}" username`);
+                        resolve();
+                    }, 5000);
+                });
+            },
+        });
         const age = bindNumber(this, 'age', {
             validate: (value) => {
                 if (value < 18) {
@@ -698,17 +698,21 @@ const MyForm = class {
                 }
             },
         });
-        // const volume = controlNumber(this.volume, {
-        //   onValueChange: (value) => (this.volume = value),
-        // });
-        // const vegetarian = controlBoolean(this.vegetarian, {
-        //   onValueChange: (value) => (this.vegetarian = value),
-        // });
-        // const specialInstructions = bind(this, 'specialInstructions');
-        // const favoriteCar = controlGroup(this.favoriteCar, {
-        //   onValueChange: (value) => (this.favoriteCar = value),
-        // });
-        return (h(Host, null, h("form", { onSubmit: this.onSubmit }, h("section", null, h("div", null, h("label", Object.assign({}, labelFor(age)), "Age")), h("div", Object.assign({}, descriptionFor(age)), "How many years young are you? ", this.age), h("div", null, h("input", Object.assign({ formNoValidate: true, type: "number", min: "0", max: "150" }, age()))), h("div", Object.assign({}, validationFor(age)), validationMessage(age))), h("section", null, h("button", { type: "submit" }, "Submit")), h("hr", null)), this.json !== '' ? h("pre", null, "Submit: ", this.json) : null, h("section", null, "Counter:", h("button", { onClick: () => this.counter-- }, "-"), " ", this.counter, ' ', h("button", { onClick: () => this.counter++ }, "+"))));
+        const volume = controlNumber(this.volume, {
+            onValueChange: (value) => (this.volume = value),
+        });
+        const vegetarian = controlBoolean(this.vegetarian, {
+            onValueChange: (value) => (this.vegetarian = value),
+        });
+        const specialInstructions = bind(this, 'specialInstructions');
+        const favoriteCar = controlGroup(this.favoriteCar, {
+            onValueChange: (value) => (this.favoriteCar = value),
+        });
+        return (h(Host, null, h("form", { onSubmit: this.onSubmit }, h("section", null, h("div", null, h("label", Object.assign({}, labelFor(fullName)), "Name")), h("div", Object.assign({}, descriptionFor(fullName)), "What's your full name? ", this.fullName), h("div", null, h("input", Object.assign({ required: true }, fullName()))), h("span", Object.assign({}, validationFor(fullName)), validationMessage(fullName))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(email)), "Email")), h("div", Object.assign({}, descriptionFor(email)), "Best email to contact you at? ", this.email), h("div", null, h("input", Object.assign({ id: "my-email-id", name: "my-email-name", type: "email", required: true }, email()))), h("div", Object.assign({}, validationFor(email)), validationMessage(email))), h("section", { class: {
+                'is-validating': isActivelyValidating(userName),
+                'is-valid': isValid(userName),
+                'is-invalid': isInvalid(userName),
+            } }, h("div", null, h("label", Object.assign({}, labelFor(userName)), "User Name")), h("div", Object.assign({}, descriptionFor(userName)), "Enter a unique username? (500ms debounce) ", this.userName), h("div", null, h("input", Object.assign({ required: true }, userName()))), h("div", Object.assign({}, validationFor(userName)), validationMessage(userName))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(age)), "Age")), h("div", Object.assign({}, descriptionFor(age)), "How many years young are you? ", this.age), h("div", null, h("input", Object.assign({ formNoValidate: true, type: "number", min: "0", max: "150" }, age()))), h("div", Object.assign({}, validationFor(age)), validationMessage(age))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(volume)), "Volume")), h("div", Object.assign({}, descriptionFor(age)), "These go to eleven: ", this.volume), h("div", null, h("input", Object.assign({ type: "range", min: "0", max: "11" }, volume()))), h("div", Object.assign({}, validationFor(volume)), validationMessage(volume))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(vegetarian)), "Vegetarian")), h("div", Object.assign({}, descriptionFor(vegetarian)), "Are you a vegetarian? ", String(this.vegetarian)), h("div", null, h("input", Object.assign({ type: "checkbox" }, vegetarian()))), h("div", Object.assign({}, validationFor(vegetarian)), validationMessage(vegetarian))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(specialInstructions)), "Special Instructions")), h("div", Object.assign({}, descriptionFor(specialInstructions)), "Do you have dietary restrictions? ", this.specialInstructions), h("div", null, h("textarea", Object.assign({}, specialInstructions()))), h("div", Object.assign({}, validationFor(specialInstructions)), validationMessage(specialInstructions))), h("section", null, h("button", { type: "submit" }, "Submit"))), this.json !== '' ? h("pre", null, "Submit: ", this.json) : null, h("section", null, "Counter (just to test re-rendering scenarios):", h("button", { onClick: () => this.counter-- }, "-"), " ", this.counter, ' ', h("button", { onClick: () => this.counter++ }, "+"))));
     }
 };
 MyForm.style = myFormCss;
