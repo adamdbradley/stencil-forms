@@ -16,40 +16,7 @@ import { controlNumber } from '../../control';
 
 @Component({
   tag: 'my-form',
-  styles: `
-    form button {
-      position: relative;
-      cursor: pointer;
-      background: #ccc;
-      margin: 10px 0 0 0;
-    }
-    form:invalid button::after {
-      position: absolute;
-      padding-left: 20px;
-      content: 'form:invalid';
-      color: red;
-      white-space: nowrap;
-    }
-    [role="alert"] {
-      color: red;
-    }
-    input:valid {
-      border: 1px solid green;
-    }
-    input:invalid {
-      border: 1px solid red;
-    }
-    .is-validating {
-      background: #eee;
-      border: 1px solid yellow;
-    }
-    .is-valid {
-      border: 1px solid green;
-    }
-    .is-invalid {
-      border: 1px solid red;
-    }
-  `,
+  styleUrl: 'my-form.css',
 })
 export class MyForm {
   @Prop() fullName = 'Marty McFly';
