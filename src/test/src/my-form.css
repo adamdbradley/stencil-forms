@@ -65,6 +65,14 @@ input:invalid {
   font-style: italic;
 }
 
+.is-dirty {
+  color: purple;
+}
+
+.is-touched {
+  color: blue;
+}
+
 pre {
   background: #eee;
   padding: 10px;

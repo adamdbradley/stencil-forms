@@ -19,52 +19,50 @@ export const sharedOnValueChangeHandler = (ev) => {
         clearTimeout(inputDebounces.get(ctrlElm));
     }
     if (ev.key === 'Enter' && isFunction(ctrlData.onEnterKey)) {
-        checkValidity(ctrlData, ctrlElm, ev, afterInputValidity);
+        checkValidity(ctrlData, ctrlElm, ev, setValueChange);
         ctrlData.onEnterKey(value, ctrlElm.validity, ev);
     }
     else if (ev.key === 'Escape' && isFunction(ctrlData.onEscapeKey)) {
-        checkValidity(ctrlData, ctrlElm, ev, afterInputValidity);
+        checkValidity(ctrlData, ctrlElm, ev, setValueChange);
         ctrlData.onEscapeKey(value, ctrlElm.validity, ev);
     }
     else if (isFunction(ctrlData.onValueChange)) {
         if (isNumber(ctrlData.debounce)) {
             inputDebounces.set(ctrlElm, setTimeout(() => {
                 const value = getValueFromControlElement(ctrlData, ctrlElm);
-                checkValidity(ctrlData, ctrlElm, ev, afterInputValidity);
+                checkValidity(ctrlData, ctrlElm, ev, setValueChange);
                 ctrlData.onValueChange(value, ctrlElm.validity, ev);
             }, ctrlData.debounce));
         }
         else {
-            checkValidity(ctrlData, ctrlElm, ev, afterInputValidity);
-            ctrlData.onValueChange(value, ctrlElm.validity, ev);
+            checkValidity(ctrlData, ctrlElm, ev, setValueChange);
+            setValueChange(ctrlData, ctrlElm, value, ev);
         }
     }
 };
-const afterInputValidity = (ctrlData, ctrlElm, value, ev) => {
+const setValueChange = (ctrlData, ctrlElm, value, ev) => {
     if (ctrlData && ctrlElm) {
+        const ctrlState = ctrlElm[Control];
+        ctrlState.d = true;
         ctrlData.onValueChange(value, ctrlElm.validity, ev);
     }
 };
 export const sharedOnFocus = (ev) => {
-    if (ev) {
-        const ctrlElm = ev.currentTarget;
-        const ctrl = ctrls.get(ctrlElm);
-        const ctrlData = ctrlDatas.get(ctrl);
-        if (ctrlData && ev.type === 'blur') {
-            checkValidity(ctrlData, ctrlElm, ev, afterFocusValidity);
-        }
-    }
-};
-const afterFocusValidity = (opts, ctrlElm, value, ev) => {
-    if (ev) {
+    const ctrlElm = ev === null || ev === void 0 ? void 0 : ev.currentTarget;
+    const ctrl = ctrls.get(ctrlElm);
+    const ctrlData = ctrlDatas.get(ctrl);
+    if (ctrlData) {
+        const ctrlState = ctrlElm[Control];
+        const value = getValueFromControlElement(ctrlData, ctrlElm);
         if (ev.type === 'blur') {
-            if (isFunction(opts.onBlur)) {
-                opts.onBlur(value, ctrlElm.validity, ev);
+            ctrlState.t = true;
+            if (isFunction(ctrlData.onBlur)) {
+                ctrlData.onBlur(value, ctrlElm.validity, ev);
             }
         }
         else {
-            if (isFunction(opts.onFocus)) {
-                opts.onFocus(value, ctrlElm.validity, ev);
+            if (isFunction(ctrlData.onFocus)) {
+                ctrlData.onFocus(value, ctrlElm.validity, ev);
             }
         }
     }

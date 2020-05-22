@@ -13,7 +13,7 @@ import {
   validationMessage,
 } from '../../index';
 import { controlNumber } from '../../control';
-import { activeValidatingMessage } from '../../validation';
+import { activeValidatingMessage, isTouched, isDirty } from '../../validation';
 
 @Component({
   tag: 'my-form',
@@ -93,18 +93,43 @@ export class MyForm {
               <input required {...fullName()} />
             </div>
             <span {...validationFor(fullName)}>{validationMessage(fullName)}</span>
-          </section>
+          </section> */}
 
           <section>
             <div>
               <label {...labelFor(email)}>Email</label>
             </div>
-            <div {...descriptionFor(email)}>Best email to contact you at? {this.email}</div>
+            <div
+              class={{
+                'is-dirty': isDirty(email),
+              }}
+              {...descriptionFor(email)}
+            >
+              (Purple means the input is "dirty" because the value has changed)
+            </div>
             <div>
               <input id="my-email-id" name="my-email-name" type="email" required {...email()} />
             </div>
             <div {...validationFor(email)}>{validationMessage(email)}</div>
-          </section> */}
+          </section>
+
+          <section>
+            <div>
+              <label {...labelFor(age)}>Age</label>
+            </div>
+            <div
+              class={{
+                'is-touched': isTouched(age),
+              }}
+              {...descriptionFor(age)}
+            >
+              (Blue means it's "touched" because the blur event happened)
+            </div>
+            <div>
+              <input type="number" min="0" max="150" {...age()} />
+            </div>
+            <div {...validationFor(age)}>{validationMessage(age)}</div>
+          </section>
 
           <section
             class={{
@@ -116,9 +141,7 @@ export class MyForm {
             <div>
               <label {...labelFor(userName)}>User Name</label>
             </div>
-            <div {...descriptionFor(userName)}>
-              Enter a unique username? (500ms debounce, 3s async validation) {this.userName}
-            </div>
+            <div {...descriptionFor(userName)}>(500ms debounce, 3s async validation)</div>
             <div>
               <input required {...userName()} />
             </div>
@@ -128,23 +151,6 @@ export class MyForm {
             <div {...validationFor(userName)}>{validationMessage(userName)}</div>
           </section>
 
-          <section>
-            <div>
-              <label {...labelFor(age)}>Age</label>
-            </div>
-            <div
-              class={{
-                'is-touched': isActivelyValidating(userName),
-              }}
-              {...descriptionFor(age)}
-            >
-              Blue means it's touched {this.age}
-            </div>
-            <div>
-              <input type="number" min="0" max="150" {...age()} />
-            </div>
-            <div {...validationFor(age)}>{validationMessage(age)}</div>
-          </section>
           {/* 
           <section>
             <div>
