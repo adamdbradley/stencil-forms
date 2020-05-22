@@ -16,8 +16,8 @@ export interface ReactiveFormBindOptions {
     onEscapeKey?: (value: any, validity: ValidityState, ev: KeyboardEvent) => void;
     onFocus?: (value: any, validity: ValidityState, ev: FocusEvent) => void;
     onInvalid?: (value: any, validity: ValidityState, ev: UIEvent) => void;
-    validate?: (value: any, ev: Event) => ReactiveValidateResult | Promise<ReactiveValidateResult>;
-    validatingMessage?: string | ((value: any, ev: Event) => string);
+    validate?: (value: any, ev: Event | null) => ReactiveValidateResult | Promise<ReactiveValidateResult>;
+    validatingMessage?: string | ((value: any, ev: Event | null) => string);
     /**
      * The property name to use when assign the value to the input. The default
      * for `checkbox` and `radio` is `checked`, and the default for all others
@@ -62,8 +62,31 @@ export interface ControlData extends ReactiveFormControlOptions {
 }
 /** @internal */
 export interface ControlState {
-    validatingMessage: string;
-    validationMessage: string;
+    /**
+     * Is first load
+     */
+    i: boolean;
+    /**
+     * Is Dirty
+     */
+    d: boolean;
+    /**
+     * Is Touched
+     */
+    t: boolean;
+    /**
+     * The message while actively validating
+     */
+    v: string;
+    /**
+     * The validation error message
+     */
+    e: string;
+    /**
+     * Most recent async callback id. Used so that we can
+     * ignore older async callbacks.
+     */
+    c: number;
 }
 /** @internal */
 export declare type ReactiveControlProperties = {

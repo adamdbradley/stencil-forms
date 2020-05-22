@@ -1,5 +1,5 @@
 import { inputControl, inputControlGroup } from './input-control';
-import { state } from './utils/state';
+import { state } from './state';
 export const control = (value, ctrlOpts) => inputControl(value, normalizeControlOpts(ctrlOpts, 'onInput', 'value', 'string'));
 export const controlBoolean = (value, ctrlOpts) => inputControl(value, normalizeControlOpts(ctrlOpts, 'onChange', 'checked', 'boolean'));
 export const controlNumber = (value, ctrlOpts) => inputControl(value, normalizeControlOpts(ctrlOpts, 'onInput', 'value', 'number'));

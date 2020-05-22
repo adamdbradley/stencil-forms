@@ -1,5 +1,5 @@
-import { Control, ctrlChildren, ctrlDatas, ctrlElms, ctrlElmIds, ctrls, labellingElms, setControlState, state, } from './utils/state';
-import { isFunction, isString, setAttribute } from './utils/helpers';
+import { Control, ctrlChildren, ctrlDatas, ctrlElms, ctrlElmIds, ctrls, labellingElms, setControlState, state, } from './state';
+import { isString, setAttribute } from './helpers';
 import { getGroupChild, setDescribedbyAttributes, setErrormessageAttributes, setLabelledbyAttributes, } from './labelling-for';
 import { sharedOnInvalidHandler, sharedOnValueChangeHandler, sharedOnFocus } from './handlers';
 import { checkValidity } from './validation';
@@ -19,13 +19,9 @@ export const inputControl = (value, ctrlData) => {
             // add the shared event listeners
             onInvalid: sharedOnInvalidHandler,
             [ctrlData.changeEventName]: sharedOnValueChangeHandler,
+            onFocus: sharedOnFocus,
+            onBlur: sharedOnFocus,
         };
-        if (isFunction(ctrlData.onFocus)) {
-            props.onBlur = sharedOnFocus;
-        }
-        if (isFunction(ctrlData.onBlur)) {
-            props.onFocus = sharedOnFocus;
-        }
         return props;
     };
     // add to the weakmap the data for this control
@@ -87,6 +83,8 @@ const inputControlGroupItem = (selectedGroupValue, parentCtrl, parentCtrlData, v
         // however, it's always false if the group's "selectedValue" is null or undefined
         checked: selectedGroupValue != null ? String(selectedGroupValue) === value : false,
         [parentCtrlData.changeEventName]: sharedOnValueChangeHandler,
+        onFocus: sharedOnFocus,
+        onBlur: sharedOnFocus,
         // ref for <input type="radio">
         ref: (childCtrlElm) => childCtrlElm && ctrlGroupItemElmRef(parentCtrl, childCtrlElm, value),
     };
@@ -121,7 +119,7 @@ const ctrlElmRef = (ctrl, ctrlData, ctrlState, ctrlElm, isParentGroup) => {
         // errormessage
         setErrormessageAttributes(ctrlId, ctrlElm, labellingElm);
     }
-    if (ctrlState.validationMessage !== '') {
+    if (ctrlState.e !== '') {
         setAttribute(ctrlElm, 'aria-invalid', 'true');
     }
     else {
@@ -140,10 +138,13 @@ const ctrlElmRef = (ctrl, ctrlData, ctrlState, ctrlElm, isParentGroup) => {
     ctrls.set(ctrlElm, ctrl);
     ctrlElms.set(ctrl, ctrlElm);
     ctrlElm[Control] = ctrlState;
-    checkValidity(ctrlData, ctrlElm, null, null);
+    if (ctrlState.i) {
+        checkValidity(ctrlData, ctrlElm, null, null);
+        ctrlState.i = false;
+    }
 };
 const ctrlGroupItemElmRef = (parentCtrl, childCtrlElm, childValue) => {
     const child = getGroupChild(parentCtrl, childValue);
-    const ctrlState = setControlState(child.data);
-    return ctrlElmRef(child.ctrl, child.data, ctrlState, childCtrlElm, false);
+    const ctrlState = setControlState(child === null || child === void 0 ? void 0 : child.data);
+    return ctrlElmRef(child === null || child === void 0 ? void 0 : child.ctrl, child === null || child === void 0 ? void 0 : child.data, ctrlState, childCtrlElm, false);
 };

@@ -9,8 +9,8 @@ import {
   LabellingType,
   setControlState,
   state,
-} from './utils/state';
-import { isFunction, isString, setAttribute } from './utils/helpers';
+} from './state';
+import { isString, setAttribute } from './helpers';
 import {
   ControlData,
   ControlElement,
@@ -41,7 +41,7 @@ export const inputControl = (value: any, ctrlData: ControlData) => {
     // create the object to be used as a property spread in the render()
     const props: ReactiveControlProperties = {
       // set the value
-      [ctrlData.valuePropName]: getPropValue(ctrlData.valuePropType, value),
+      [ctrlData.valuePropName!]: getPropValue(ctrlData.valuePropType!, value),
 
       // get the reference to this form control element
       // and remember it so we can look up the form control by the element
@@ -49,16 +49,11 @@ export const inputControl = (value: any, ctrlData: ControlData) => {
 
       // add the shared event listeners
       onInvalid: sharedOnInvalidHandler,
-      [ctrlData.changeEventName]: sharedOnValueChangeHandler,
+      [ctrlData.changeEventName!]: sharedOnValueChangeHandler,
+
+      onFocus: sharedOnFocus,
+      onBlur: sharedOnFocus,
     };
-
-    if (isFunction(ctrlData.onFocus)) {
-      props.onBlur = sharedOnFocus;
-    }
-
-    if (isFunction(ctrlData.onBlur)) {
-      props.onFocus = sharedOnFocus;
-    }
 
     return props;
   };
@@ -138,7 +133,10 @@ const inputControlGroupItem = (
     // however, it's always false if the group's "selectedValue" is null or undefined
     checked: selectedGroupValue != null ? String(selectedGroupValue) === value : false,
 
-    [parentCtrlData.changeEventName]: sharedOnValueChangeHandler,
+    [parentCtrlData.changeEventName!]: sharedOnValueChangeHandler,
+
+    onFocus: sharedOnFocus,
+    onBlur: sharedOnFocus,
 
     // ref for <input type="radio">
     ref: (childCtrlElm: ControlElement) => childCtrlElm && ctrlGroupItemElmRef(parentCtrl, childCtrlElm, value),
@@ -158,9 +156,9 @@ const ctrlElmRef = (
   let labellingElm = labellingElms[LabellingType.labelledby].get(ctrl);
 
   if (!ctrlId) {
-    ctrlId = ctrlData.i;
+    ctrlId = ctrlData.i!;
     if (!ctrlId) {
-      ctrlId = ctrlElmIds.get(ctrlElm);
+      ctrlId = ctrlElmIds.get(ctrlElm)!;
       if (!ctrlId) {
         ctrlElmIds.set(ctrlElm, (ctrlId = 'ctrl' + state.i++));
       }
@@ -186,7 +184,7 @@ const ctrlElmRef = (
     setErrormessageAttributes(ctrlId, ctrlElm, labellingElm);
   }
 
-  if (ctrlState.validationMessage !== '') {
+  if (ctrlState.e !== '') {
     setAttribute(ctrlElm, 'aria-invalid', 'true');
   } else {
     ctrlElm.removeAttribute('aria-invalid');
@@ -196,7 +194,7 @@ const ctrlElmRef = (
 
   if (!isParentGroup) {
     if (!ctrlName) {
-      ctrlName = ctrlData.n;
+      ctrlName = ctrlData.n!;
       if (!ctrlName) {
         ctrlName = ctrlId;
       }
@@ -206,11 +204,11 @@ const ctrlElmRef = (
 
   ctrls.set(ctrlElm, ctrl);
   ctrlElms.set(ctrl, ctrlElm);
-  ctrlElm[Control] = ctrlState;
+  (ctrlElm as any)[Control] = ctrlState;
 
-  if (ctrlState.isInitialLoad) {
+  if (ctrlState.i) {
     checkValidity(ctrlData, ctrlElm, null, null);
-    ctrlState.isInitialLoad = false;
+    ctrlState.i = false;
   }
 };
 
@@ -220,6 +218,6 @@ const ctrlGroupItemElmRef = (
   childValue: string,
 ) => {
   const child = getGroupChild(parentCtrl, childValue);
-  const ctrlState = setControlState(child.data);
-  return ctrlElmRef(child.ctrl, child.data, ctrlState, childCtrlElm, false);
+  const ctrlState = setControlState(child?.data!);
+  return ctrlElmRef(child?.ctrl!, child?.data!, ctrlState, childCtrlElm, false);
 };

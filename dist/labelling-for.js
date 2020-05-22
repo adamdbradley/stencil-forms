@@ -1,5 +1,5 @@
-import { ctrlChildren, ctrlElms, ctrlDatas, labellingElms, state } from './utils/state';
-import { isString, setAttribute } from './utils/helpers';
+import { ctrlChildren, ctrlElms, ctrlDatas, labellingElms, state } from './state';
+import { isString, setAttribute } from './helpers';
 const labellingFor = (ctrl, groupItemValue, labellingType, setAttrs) => {
     state.r = null;
     if (isString(groupItemValue)) {
@@ -28,6 +28,7 @@ const labellingFor = (ctrl, groupItemValue, labellingType, setAttrs) => {
     // or labelling element for the wrapping group
     return {
         ref: (labellingElm) => {
+            var _a;
             if (labellingElm) {
                 // we now have the labelling element, which could happen before or
                 // after having the control input element
@@ -35,7 +36,7 @@ const labellingFor = (ctrl, groupItemValue, labellingType, setAttrs) => {
                 if (ctrlElm) {
                     // we already have the control element, so that means we'll
                     // have the "id" and "name" data to when setting the attrs
-                    setAttrs(ctrlDatas.get(ctrl).i, ctrlElm, labellingElm);
+                    setAttrs((_a = ctrlDatas.get(ctrl)) === null || _a === void 0 ? void 0 : _a.i, ctrlElm, labellingElm);
                 }
                 else {
                     // we haven't gotten a reference to the control element yet
@@ -72,6 +73,9 @@ export const validationFor = (ctrl, groupItemValue) => labellingFor(ctrl, groupI
 export const labelFor = (ctrl, groupItemValue) => labellingFor(ctrl, groupItemValue, 0 /* labelledby */, setLabelledbyAttributes);
 export const getGroupChild = (parentCtrl, groupItemValue) => {
     const ctrlChildMap = ctrlChildren.get(parentCtrl);
+    if (!ctrlChildMap) {
+        return;
+    }
     let child = ctrlChildMap.get(groupItemValue);
     if (!child) {
         const parentCtrlData = ctrlDatas.get(parentCtrl);

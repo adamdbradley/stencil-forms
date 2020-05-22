@@ -1,6 +1,6 @@
 import { ControlData, ReactiveFormBindOptions, ReactiveFormValuePropType } from './types';
-import { toDashCase } from './utils/helpers';
-import { InstanceId, state } from './utils/state';
+import { toDashCase } from './helpers';
+import { InstanceId, state } from './state';
 import { inputControl, inputControlGroup } from './input-control';
 
 export const bind = <T extends any, PropName extends keyof T>(
@@ -30,7 +30,7 @@ export const bindGroup = <T extends any, PropName extends keyof T>(
   inputControlGroup(instance[propName], normalizeBindOpts(bindOpts, instance, propName, 'onChange', 'value', 'string'));
 
 const normalizeBindOpts = (
-  bindOpts: ReactiveFormBindOptions,
+  bindOpts: ReactiveFormBindOptions | undefined,
   instance: any,
   propName: any,
   changeEventName: string,

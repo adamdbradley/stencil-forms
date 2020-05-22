@@ -23,7 +23,7 @@ export const labellingElms = [
 export const ctrlChildren = /*@__PURE__*/ new WeakMap();
 export const ctrls = /*@__PURE__*/ new WeakMap();
 export const ctrlDatas = /*@__PURE__*/ new WeakMap();
-export const debounces = /*@__PURE__*/ new WeakMap();
+export const inputDebounces = /*@__PURE__*/ new WeakMap();
 export const InstanceId = /*@__PURE__*/ Symbol();
 const CurrentControlIndex = /*@__PURE__*/ Symbol();
 export const Control = /*@__PURE__*/ Symbol();
@@ -40,8 +40,12 @@ export const setControlState = (ctrlData) => {
     }
     if (ctrlData.x === ctrlStates.length) {
         ctrlStates.push(createStore({
-            validatingMessage: '',
-            validationMessage: '',
+            d: false,
+            t: false,
+            i: true,
+            v: '',
+            e: '',
+            c: 0,
         }).state);
     }
     return ctrlStates[ctrlData.x];
@@ -65,5 +69,5 @@ export const getControlState = (ctrl) => {
         }
     }
     ctrlElm = ctrlElms.get(ctrl);
-    return ctrlElm ? ctrlElm[Control] : null;
+    return ctrlElm ? ctrlElm[Control] : {};
 };

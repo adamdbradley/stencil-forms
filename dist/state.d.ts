@@ -1,4 +1,4 @@
-import { ControlData, ControlElement, ControlState, ReactiveFormControl, ReactiveFormControlGroup } from '../types';
+import { ControlData, ControlElement, ControlState, ReactiveFormControl, ReactiveFormControlGroup } from './types';
 export declare const state: {
     /**
      * Unique id incrementer
@@ -7,7 +7,7 @@ export declare const state: {
     /**
      * last rendering ref
      */
-    r: any;
+    r: null;
 };
 export declare const ctrlElmIds: WeakMap<ControlElement, string>;
 export declare const ctrlElms: WeakMap<ReactiveFormControl | ReactiveFormControlGroup, ControlElement>;
@@ -26,7 +26,7 @@ export declare const ctrlChildren: WeakMap<ReactiveFormControl | ReactiveFormCon
 }>>;
 export declare const ctrls: WeakMap<ControlElement, ReactiveFormControl | ReactiveFormControlGroup>;
 export declare const ctrlDatas: WeakMap<ReactiveFormControl, ControlData>;
-export declare const debounces: WeakMap<ControlElement, any>;
+export declare const inputDebounces: WeakMap<ControlElement, any>;
 export declare const InstanceId: unique symbol;
 export declare const Control: unique symbol;
 export declare const setControlState: (ctrlData: ControlData) => ControlState;

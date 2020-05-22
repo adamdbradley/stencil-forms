@@ -11,6 +11,9 @@ export const toDashCase = (str: string) =>
     .trim()
     .replace(/ /g, '-');
 
-export const setAttribute = (elm: HTMLElement, attrName: string, attrValue = '') => (
-  elm.setAttribute(attrName, attrValue), attrValue
+export const setAttribute = (elm: HTMLElement | undefined, attrName: string, attrValue = '') => (
+  elm?.setAttribute(attrName, attrValue), attrValue
 );
+
+export const showNativeReport = (elm: HTMLElement | undefined) =>
+  !elm?.hasAttribute('formnovalidate') && !(elm as HTMLInputElement)?.form?.hasAttribute('novalidate');

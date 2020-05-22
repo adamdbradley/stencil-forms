@@ -1,6 +1,6 @@
 import { inputControl, inputControlGroup } from './input-control';
 import { ReactiveFormControlOptions, ReactiveFormValuePropType, ControlData } from './types';
-import { state } from './utils/state';
+import { state } from './state';
 
 export const control = (value: any, ctrlOpts: ReactiveFormControlOptions) =>
   inputControl(value, normalizeControlOpts(ctrlOpts, 'onInput', 'value', 'string'));

@@ -1,4 +1,4 @@
-import { ControlData, ControlElement, ControlState, ReactiveFormControl, ReactiveFormControlGroup } from '../types';
+import { ControlData, ControlElement, ControlState, ReactiveFormControl, ReactiveFormControlGroup } from './types';
 import { createStore } from '@stencil/store';
 import { getRenderingRef } from '@stencil/core';
 
@@ -42,7 +42,7 @@ export const ctrls = /*@__PURE__*/ new WeakMap<ControlElement, ReactiveFormContr
 
 export const ctrlDatas = /*@__PURE__*/ new WeakMap<ReactiveFormControl, ControlData>();
 
-export const debounces = /*@__PURE__*/ new WeakMap<ControlElement, any>();
+export const inputDebounces = /*@__PURE__*/ new WeakMap<ControlElement, any>();
 
 export const InstanceId = /*@__PURE__*/ Symbol();
 
@@ -66,9 +66,12 @@ export const setControlState = (ctrlData: ControlData) => {
   if (ctrlData.x === ctrlStates.length) {
     ctrlStates.push(
       createStore<ControlState>({
-        isInitialLoad: true,
-        validatingMessage: '',
-        validationMessage: '',
+        d: false,
+        t: false,
+        i: true,
+        v: '',
+        e: '',
+        c: 0,
       }).state,
     );
   }
@@ -78,9 +81,9 @@ export const setControlState = (ctrlData: ControlData) => {
 
 export const getControlState = (ctrl: ReactiveFormControl): ControlState => {
   let renderingRef = getRenderingRef();
-  let ctrlData: ControlData;
+  let ctrlData: ControlData | undefined;
   let ctrlStates: ControlState[];
-  let ctrlElm: ControlElement;
+  let ctrlElm: ControlElement | undefined;
   let ctrlState: ControlState;
 
   if (renderingRef) {
@@ -88,7 +91,7 @@ export const getControlState = (ctrl: ReactiveFormControl): ControlState => {
     if (ctrlData) {
       ctrlStates = renderingRef[ControlStates];
       if (ctrlStates) {
-        ctrlState = ctrlStates[ctrlData.x];
+        ctrlState = ctrlStates[ctrlData.x!];
         if (ctrlState) {
           return ctrlState;
         }
@@ -97,5 +100,5 @@ export const getControlState = (ctrl: ReactiveFormControl): ControlState => {
   }
 
   ctrlElm = ctrlElms.get(ctrl);
-  return ctrlElm ? ctrlElm[Control] : null;
+  return ctrlElm ? (ctrlElm as any)[Control] : {};
 };

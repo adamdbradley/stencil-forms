@@ -1,8 +1,14 @@
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
 form button {
   position: relative;
   cursor: pointer;
   background: #ccc;
   margin: 10px 0 0 0;
+  padding: 5px;
+  font-size: 16px;
 }
 
 form:invalid button {
@@ -56,9 +62,18 @@ input:invalid {
 
 pre {
   background: #eee;
+  padding: 10px;
 }
 
 section {
   padding: 10px;
   border-bottom: 1px solid gray;
+}
+
+section:last-child {
+  border-bottom: none;
+}
+
+.counter {
+  font-size: 12px;
 }

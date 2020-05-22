@@ -83,7 +83,7 @@ export class MyForm {
     return (
       <Host>
         <form onSubmit={this.onSubmit}>
-          <section>
+          {/* <section>
             <div>
               <label {...labelFor(fullName)}>Name</label>
             </div>
@@ -103,7 +103,7 @@ export class MyForm {
               <input id="my-email-id" name="my-email-name" type="email" required {...email()} />
             </div>
             <div {...validationFor(email)}>{validationMessage(email)}</div>
-          </section>
+          </section> */}
 
           <section
             class={{
@@ -128,13 +128,20 @@ export class MyForm {
             <div>
               <label {...labelFor(age)}>Age</label>
             </div>
-            <div {...descriptionFor(age)}>How many years young are you? {this.age}</div>
+            <div
+              class={{
+                'is-touched': isActivelyValidating(userName),
+              }}
+              {...descriptionFor(age)}
+            >
+              Blue means it's touched {this.age}
+            </div>
             <div>
-              <input formNoValidate type="number" min="0" max="150" {...age()} />
+              <input type="number" min="0" max="150" {...age()} />
             </div>
             <div {...validationFor(age)}>{validationMessage(age)}</div>
           </section>
-
+          {/* 
           <section>
             <div>
               <label {...labelFor(volume)}>Volume</label>
@@ -168,9 +175,9 @@ export class MyForm {
               <textarea {...specialInstructions()} />
             </div>
             <div {...validationFor(specialInstructions)}>{validationMessage(specialInstructions)}</div>
-          </section>
-
-          {/* <section {...favoriteCar()}>
+          </section> */}
+          {/* 
+          <section {...favoriteCar()}>
             <div {...labelFor(favoriteCar)}>Favorite Car</div>
             <div {...descriptionFor(favoriteCar)}>What's your favorite car? {this.favoriteCar}</div>
             <div>
@@ -195,9 +202,9 @@ export class MyForm {
           </section>
         </form>
 
-        {this.json !== '' ? <pre>Submit: {this.json}</pre> : null}
+        {this.json !== '' ? <pre>Form Submit {this.json}</pre> : null}
 
-        <section>
+        <section class="counter">
           Counter (just to test re-rendering scenarios):
           <button onClick={() => this.counter--}>-</button> {this.counter}{' '}
           <button onClick={() => this.counter++}>+</button>

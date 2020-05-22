@@ -1,10 +1,10 @@
-import { ctrlChildren, ctrlElms, ctrlDatas, labellingElms, LabellingType, state } from './utils/state';
-import { isString, setAttribute } from './utils/helpers';
+import { ctrlChildren, ctrlElms, ctrlDatas, labellingElms, LabellingType, state } from './state';
+import { isString, setAttribute } from './helpers';
 import { ReactiveFormControl, ControlElement } from './types';
 
 const labellingFor = (
   ctrl: ReactiveFormControl,
-  groupItemValue: string,
+  groupItemValue: string | undefined,
   labellingType: LabellingType,
   setAttrs: (ctrlId: string, ctrlElm: ControlElement, labellingElm: HTMLElement) => void,
 ) => {
@@ -15,12 +15,12 @@ const labellingFor = (
     return {
       ref: (groupItemLabellingElm: HTMLElement) => {
         if (groupItemLabellingElm) {
-          const child = getGroupChild(ctrl, groupItemValue);
+          const child = getGroupChild(ctrl, groupItemValue)!;
           const ctrlElm = ctrlElms.get(child.ctrl);
           if (ctrlElm) {
             // we already have the control element, so that means we'll
             // have the "id" and "name" data to when setting the attrs
-            setAttrs(child.data.i, ctrlElm, groupItemLabellingElm);
+            setAttrs(child.data.i!, ctrlElm, groupItemLabellingElm);
           } else {
             // we haven't gotten a reference to the control element yet
             // so let's remember this labelling element for now and will
@@ -43,7 +43,7 @@ const labellingFor = (
         if (ctrlElm) {
           // we already have the control element, so that means we'll
           // have the "id" and "name" data to when setting the attrs
-          setAttrs(ctrlDatas.get(ctrl).i, ctrlElm, labellingElm);
+          setAttrs(ctrlDatas.get(ctrl)?.i!, ctrlElm, labellingElm);
         } else {
           // we haven't gotten a reference to the control element yet
           // so let's remember this labelling element for now and will
@@ -96,9 +96,13 @@ export const labelFor = (ctrl: ReactiveFormControl, groupItemValue?: string) =>
 
 export const getGroupChild = (parentCtrl: ReactiveFormControl, groupItemValue: string) => {
   const ctrlChildMap = ctrlChildren.get(parentCtrl);
+  if (!ctrlChildMap) {
+    return;
+  }
+
   let child = ctrlChildMap.get(groupItemValue);
   if (!child) {
-    const parentCtrlData = ctrlDatas.get(parentCtrl);
+    const parentCtrlData = ctrlDatas.get(parentCtrl)!;
     if (!parentCtrlData.g) {
       parentCtrlData.g = parentCtrlData.n;
     }

@@ -1,5 +1,5 @@
-import { toDashCase } from './utils/helpers';
-import { InstanceId, state } from './utils/state';
+import { toDashCase } from './helpers';
+import { InstanceId, state } from './state';
 import { inputControl, inputControlGroup } from './input-control';
 export const bind = (instance, propName, bindOpts) => inputControl(instance[propName], normalizeBindOpts(bindOpts, instance, propName, 'onInput', 'value', 'string'));
 export const bindBoolean = (instance, propName, bindOpts) => inputControl(instance[propName], normalizeBindOpts(bindOpts, instance, propName, 'onChange', 'checked', 'boolean'));

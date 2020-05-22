@@ -220,15 +220,11 @@ const registerStyle = (scopeId, cssText, allowCS) => {
     styles.set(scopeId, style);
 };
 const addStyle = (styleContainerNode, cmpMeta, mode, hostElm) => {
-    let scopeId = BUILD.mode ? getScopeId(cmpMeta.$tagName$, mode) : getScopeId(cmpMeta.$tagName$);
+    let scopeId = getScopeId(cmpMeta, mode);
     let style = styles.get(scopeId);
     // if an element is NOT connected then getRootNode() will return the wrong root node
     // so the fallback is to always use the document for the root node in those cases
     styleContainerNode = styleContainerNode.nodeType === 11 /* DocumentFragment */ ? styleContainerNode : doc;
-    if (BUILD.mode && !style) {
-        scopeId = getScopeId(cmpMeta.$tagName$);
-        style = styles.get(scopeId);
-    }
     if (style) {
         if (typeof style === 'string') {
             styleContainerNode = styleContainerNode.head || styleContainerNode;
@@ -296,7 +292,7 @@ const attachStyles = (hostRef) => {
     }
     endAttachStyles();
 };
-const getScopeId = (tagName, mode) => 'sc-' + (BUILD.mode && mode ? tagName + '-' + mode : tagName);
+const getScopeId = (cmp, mode) => 'sc-' + (BUILD.mode && mode && cmp.$flags$ & 32 /* hasMode */ ? cmp.$tagName$ + '-' + mode : cmp.$tagName$);
 const convertScopedToShadow = (css) => css.replace(/\/\*!@([^\/]+)\*\/[^\{]+\{/g, '$1{');
 // Private
 const computeMode = (elm) => modeResolutionChain.map(h => h(elm)).find(m => !!m);
@@ -1313,7 +1309,7 @@ const dispatchHooks = (hostRef, isInitialLoad) => {
         promise = then(promise, () => safeCall(instance, 'componentWillRender'));
     }
     endSchedule();
-    return then(promise, () => (updateComponent(hostRef, instance, isInitialLoad)));
+    return then(promise, () => updateComponent(hostRef, instance, isInitialLoad));
 };
 const updateComponent = (hostRef, instance, isInitialLoad) => {
     // updateComponent
@@ -1333,10 +1329,10 @@ const updateComponent = (hostRef, instance, isInitialLoad) => {
             // looks like we've got child nodes to render into this host element
             // or we need to update the css class/attrs on the host element
             // DOM WRITE!
-            renderVdom(hostRef, callRender(instance));
+            renderVdom(hostRef, callRender(hostRef, instance));
         }
         else {
-            elm.textContent = callRender(instance);
+            elm.textContent = callRender(hostRef, instance);
         }
     }
     if (BUILD.cssVarShim && plt.$cssShim$) {
@@ -1345,9 +1341,6 @@ const updateComponent = (hostRef, instance, isInitialLoad) => {
     if (BUILD.isDev) {
         hostRef.$renderCount$++;
         hostRef.$flags$ &= ~1024 /* devOnRender */;
-    }
-    if (BUILD.updatable && BUILD.taskQueue) {
-        hostRef.$flags$ &= ~16 /* isQueuedForUpdate */;
     }
     if (BUILD.hydrateServerSide) {
         try {
@@ -1366,9 +1359,6 @@ const updateComponent = (hostRef, instance, isInitialLoad) => {
         catch (e) {
             consoleError(e);
         }
-    }
-    if (BUILD.updatable || BUILD.lazyLoad) {
-        hostRef.$flags$ |= 2 /* hasRendered */;
     }
     if (BUILD.asyncLoading && rc) {
         // ok, so turns out there are some child host elements
@@ -1395,10 +1385,16 @@ const updateComponent = (hostRef, instance, isInitialLoad) => {
         postUpdateComponent(hostRef);
     }
 };
-const callRender = (instance) => {
+const callRender = (hostRef, instance) => {
     try {
         renderingRef = instance;
         instance = BUILD.allRenderFn ? instance.render() : instance.render && instance.render();
+        if (BUILD.updatable && BUILD.taskQueue) {
+            hostRef.$flags$ &= ~16 /* isQueuedForUpdate */;
+        }
+        if (BUILD.updatable || BUILD.lazyLoad) {
+            hostRef.$flags$ |= 2 /* hasRendered */;
+        }
     }
     catch (e) {
         consoleError(e);
@@ -1967,7 +1963,7 @@ const initializeComponent = async (elm, hostRef, cmpMeta, hmrVersionId, Cstr) =>
         else {
             Cstr = elm.constructor;
         }
-        const scopeId = BUILD.mode ? getScopeId(cmpMeta.$tagName$, hostRef.$modeName$) : getScopeId(cmpMeta.$tagName$);
+        const scopeId = getScopeId(cmpMeta, hostRef.$modeName$);
         if (BUILD.style && !styles.has(scopeId) && Cstr.style) {
             const endRegisterStyles = createTime('registerStyles', cmpMeta.$tagName$);
             // this component has styles but we haven't registered them yet
@@ -1976,7 +1972,7 @@ const initializeComponent = async (elm, hostRef, cmpMeta, hmrVersionId, Cstr) =>
                 style = style[hostRef.$modeName$];
             }
             if (!BUILD.hydrateServerSide && BUILD.shadowDom && BUILD.shadowDomShim && cmpMeta.$flags$ & 8 /* needsShadowDomShim */) {
-                style = await __sc_import_stencil_forms('./shadow-css-495c65cf.js').then(m => m.scopeCss(style, scopeId, false));
+                style = await __sc_import_stencil_forms('./shadow-css-68b0802e.js').then(m => m.scopeCss(style, scopeId, false));
             }
             registerStyle(scopeId, style, !!(cmpMeta.$flags$ & 1 /* shadowDomEncapsulation */));
             endRegisterStyles();
@@ -2169,7 +2165,7 @@ const forceModeUpdate = (elm) => {
         if (hostRef.$modeName$ !== mode) {
             const cmpMeta = hostRef.$cmpMeta$;
             const oldScopeId = elm['s-sc'];
-            const scopeId = getScopeId(cmpMeta.$tagName$, mode);
+            const scopeId = getScopeId(cmpMeta, mode);
             const style = elm.constructor.style[mode];
             const flags = cmpMeta.$flags$;
             if (style) {
@@ -2792,7 +2788,7 @@ const patchEsm = () => {
     // @ts-ignore
     if (BUILD.cssVarShim && !(CSS && CSS.supports && CSS.supports('color', 'var(--c)'))) {
         // @ts-ignore
-        return __sc_import_stencil_forms(/* webpackChunkName: "polyfills-css-shim" */ './css-shim-3333ed1f.js').then(() => {
+        return __sc_import_stencil_forms(/* webpackChunkName: "polyfills-css-shim" */ './css-shim-504c23e4.js').then(() => {
             if ((plt.$cssShim$ = win.__cssshim)) {
                 return plt.$cssShim$.i();
             }
@@ -2855,7 +2851,7 @@ const patchBrowser = () => {
         if (BUILD.dynamicImportShim && !win.customElements) {
             // module support, but no custom elements support (Old Edge)
             // @ts-ignore
-            return __sc_import_stencil_forms(/* webpackChunkName: "polyfills-dom" */ './dom-f87898ff.js').then(() => opts);
+            return __sc_import_stencil_forms(/* webpackChunkName: "polyfills-dom" */ './dom-d2d72955.js').then(() => opts);
         }
     }
     return promiseResolve(opts);
