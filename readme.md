@@ -296,15 +296,11 @@ and the input passes the constraint validation, then the input is considered val
 validation(value, validityState, event)
 ```
 
-`value`: The first argument passed to the validation function will already be cast to the correct type. For example,
-if `bindNumber()` was used, the value would already be a JavaScript `number` or `NaN` if invalid. If it
-is a checkbox using `bindBoolean()` the value would already be a `boolean`. Otherwise the value will always
-be a string.
-
-`validityState`: The second argument is the control element's [ValidityState](https://developer.mozilla.org/en-US/docs/Web/API/ValidityState). The validity state provide useful validation information directly from the browser.
-
-`event`: The third argument is the actual event that was trigger, which may have come from a KeyboardEvent, MouseEvent, etc.
-
+| Arg | Description |
+|-----|-------------|
+| `value` | The first argument passed to the validation function will already be cast to the correct type. For example, if `bindNumber()` was used, the value would already be a JavaScript `number` or `NaN` if invalid. If it is a checkbox using `bindBoolean()` the value would already be a `boolean`. Otherwise the value will always be a string. |
+| `validityState` | The second argument is the control element's [ValidityState](https://developer.mozilla.org/en-US/docs/Web/API/ValidityState). The validity state provide useful validation information directly from the browser. |
+| `event` | The third argument is the actual event that was trigger, which may have come from a KeyboardEvent, MouseEvent, etc. |
 
 ### Validation Message
 
