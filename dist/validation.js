@@ -16,10 +16,10 @@ export const checkValidity = (ctrlData, ctrlElm, ev, cb) => {
             const results = ctrlData.validate(value, ev);
             if (isPromise(results)) {
                 // results return a promise, let's wait on those
-                ctrlState.v = isString(ctrlData.validatingMessage)
-                    ? ctrlData.validatingMessage
-                    : isFunction(ctrlData.validatingMessage)
-                        ? ctrlData.validatingMessage(value, ev)
+                ctrlState.v = isString(ctrlData.activelyValidatingMessage)
+                    ? ctrlData.activelyValidatingMessage
+                    : isFunction(ctrlData.activelyValidatingMessage)
+                        ? ctrlData.activelyValidatingMessage(value, ev)
                         : `Validating...`;
                 ctrlElm.setCustomValidity(ctrlState.v);
                 results.then((promiseResults) => checkValidateResults(promiseResults, ctrlData, ctrlElm, value, ev, callbackId, cb));
@@ -75,7 +75,7 @@ export const validationMessage = (ctrl) => {
  * this method will return the message provided in `validatingMessage`.
  * All other times this method will return an empty string.
  */
-export const activeValidatingMessage = (ctrl) => {
+export const activelyValidatingMessage = (ctrl) => {
     const ctrlState = getControlState(ctrl);
     if (ctrlState) {
         return ctrlState.v;
@@ -87,7 +87,7 @@ export const activeValidatingMessage = (ctrl) => {
  * this method will return `true` if the validation method is still pending.
  * All other times this method will return `false`.
  */
-export const isActivelyValidating = (ctrl) => activeValidatingMessage(ctrl) !== '';
+export const isActivelyValidating = (ctrl) => activelyValidatingMessage(ctrl) !== '';
 /**
  * If the value has changed, or control has been "touched",
  * and if the value does not pass the browser's

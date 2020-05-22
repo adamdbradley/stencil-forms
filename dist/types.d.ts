@@ -17,7 +17,7 @@ export interface ReactiveFormBindOptions {
     onFocus?: (value: any, validity: ValidityState, ev: FocusEvent) => void;
     onInvalid?: (value: any, validity: ValidityState, ev: UIEvent) => void;
     validate?: (value: any, ev: Event | null) => ReactiveValidateResult | Promise<ReactiveValidateResult>;
-    validatingMessage?: string | ((value: any, ev: Event | null) => string);
+    activelyValidatingMessage?: string | ((value: any, ev: Event | null) => string);
     /**
      * The property name to use when assign the value to the input. The default
      * for `checkbox` and `radio` is `checked`, and the default for all others

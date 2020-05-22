@@ -85,12 +85,35 @@ const setAriaLinkedIdAttributes = (
   labellingIdSuffix: string,
 ) => setAttribute(ctrlElm, 'aria-' + ariaAttr, setAttribute(labellingElm, 'id', ctrlId + '-' + labellingIdSuffix));
 
+/**
+ * The `descriptionFor(ctrl)` method is used to establish a relationship between
+ * an input control and this text that described it. This is very similar to
+ * label, but the description provides more information that the user might need.
+ * When using this method, the element it's attached to will automatically link
+ * up the description by adding the `aria-describedby` attribute to the control
+ * element, and a unique id to the description element.
+ */
 export const descriptionFor = (ctrl: ReactiveFormControl, groupItemValue?: string) =>
   labellingFor(ctrl, groupItemValue, LabellingType.describedby, setDescribedbyAttributes);
 
+/**
+ * The `validationFor(ctrl)` method is used to establish a relationship between
+ * an input control and it's error message. When using this method, the element
+ * it's attached to will automatically link up the error by adding the
+ * `aria-errormessage` attribute to the control element, and a unique id to the
+ * message element. Additionally, it will add `role="alert"` and `aria-atomic="true"`
+ * to the message element.
+ */
 export const validationFor = (ctrl: ReactiveFormControl, groupItemValue?: string) =>
   labellingFor(ctrl, groupItemValue, LabellingType.errormessage, setErrormessageAttributes);
 
+/**
+ * The `labelFor(ctrl)` method is used to establish a relationship between
+ * an input control and this text that labels it. When the labelling element is
+ * an actual `<label>`, it will add the `for` attribute to the label, pointing
+ * it to the correct control id. When the labelling element is not a `<label>`
+ * it will then use `aria-labelledby`.
+ */
 export const labelFor = (ctrl: ReactiveFormControl, groupItemValue?: string) =>
   labellingFor(ctrl, groupItemValue, LabellingType.labelledby, setLabelledbyAttributes);
 

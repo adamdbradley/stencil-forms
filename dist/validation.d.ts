@@ -17,7 +17,7 @@ export declare const validationMessage: (ctrl: ReactiveFormControl) => string;
  * this method will return the message provided in `validatingMessage`.
  * All other times this method will return an empty string.
  */
-export declare const activeValidatingMessage: (ctrl: ReactiveFormControl) => string;
+export declare const activelyValidatingMessage: (ctrl: ReactiveFormControl) => string;
 /**
  * If a custom validation method was provided, and returns a promise,
  * this method will return `true` if the validation method is still pending.

@@ -3,17 +3,19 @@ import {
   bind,
   bindNumber,
   controlBoolean,
+  controlNumber,
   controlGroup,
   labelFor,
   descriptionFor,
   isValid,
   isInvalid,
   isActivelyValidating,
+  activelyValidatingMessage,
+  isDirty,
+  isTouched,
   validationFor,
   validationMessage,
 } from '../../index';
-import { controlNumber } from '../../control';
-import { activeValidatingMessage, isTouched, isDirty } from '../../validation';
 
 @Component({
   tag: 'my-form',
@@ -47,7 +49,7 @@ export class MyForm {
 
     const userName = bind(this, 'userName', {
       debounce: 500,
-      validatingMessage: (value) => `Checking if "${value}" is already taken...`,
+      activelyValidatingMessage: (value) => `Checking if "${value}" is already taken...`,
       validate: (value) => {
         console.log(`async checking "${value}" username, this will take 3 seconds...`);
         return new Promise((resolve) => {
@@ -146,7 +148,7 @@ export class MyForm {
               <input required {...userName()} />
             </div>
             <div class="actively-validating" hidden={!isActivelyValidating(userName)}>
-              {activeValidatingMessage(userName)}
+              {activelyValidatingMessage(userName)}
             </div>
             <div {...validationFor(userName)}>{validationMessage(userName)}</div>
           </section>

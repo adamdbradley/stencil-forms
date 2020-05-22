@@ -71,9 +71,27 @@ HTML Output:
 ## Labels and Accessibility
 
 - [Basic form hints](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/forms/Basic_form_hints)
-- Links the various elements together using `id` and aria attributes, such as `aria-labelledby`, `aria-describedby`, `aria-errormessage`, `aria-live` and `aria-invalid`.
-- Links the `<label>` element to the `<input>` using label's `for` attribute
-- Adds the `aria-labelledby` attribute when the labelling element is not a `<label>`
+- Links the various elements together using `id` and aria attributes, such as `aria-labelledby`, `aria-describedby`, `aria-errormessage`,  and `aria-invalid`.
+- Links the `<label>` element to the `<input>` using label's `for` attribute.
+- Adds the `aria-labelledby` attribute when the labelling element is not a `<label>`.
+- Ensures unique id's are added so elements can establish a relationship.
+
+### Labelling Elements
+
+| Method | Description |
+|--------|-------------|
+| `labelFor(ctr)` | The `labelFor(ctrl)` method is used to establish a relationship between an input control and this text that labels it. When the labelling element is an actual `<label>`, it will add the `for` attribute to the label, pointing it to the correct control id. When the labelling element is not a `<label>` it will then use `aria-labelledby`. |
+| `validationFor(ctr)` | The `validationFor(ctrl)` method is used to establish a relationship between an input control and it's error message. When using this method, the element it's attached to will automatically link up the error by adding the `aria-errormessage` attribute to the control element, and a unique id to the message element. Additionally, it will add `role="alert"` and `aria-atomic="true"` to the message element. |
+| `descriptionFor(ctr)` | The `descriptionFor(ctrl)` method is used to establish a relationship between an input control and this text that described it. This is very similar to label, but the description provides more information that the user might need. When using this method, the element it's attached to will automatically link up the description by adding the `aria-describedby` attribute to the control element, and a unique id to the description element. |
+
+### Message Output
+
+| Method | Description |
+|--------|-------------|
+| `validationMessage(ctrl)` | If the value has changed, or control has been "touched", and if the value does not pass the browser's [constraint validation](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation) then this method returns the message provided by the browser and the custom validation method will not be called. If the value does pass constraint validation then the custom `validation()` method will be called and returns the message. If the value passes both the constraint validation and custom valdation, then this method returns and empty string. |
+| `activelyValidatingMessage(ctrl)` | If a custom validation method was provided, and returns a promise, this method will return the message provided in `validatingMessage`. All other times this method will return an empty string. |
+
+See the Validation Message section for more info on how to customize messages.
 
 ```tsx
 render() {
@@ -207,7 +225,15 @@ We first recommend styling using only the CSS pseudo-classes, however, in some s
 the may not be enough to get the full styling required, such as styling a wrapping element 
 around an invalid input. The input itself can be easily styled, but styling the surrounding 
 element, or an element in entirely different part of the DOM is a challenge. If further
-customization is required there are more utility classes available.
+customization, these utility methods are available:
+
+| Method | Description |
+|--------|-------------|
+| `isActivelyValidating(ctrl)` | If a custom validation method was provided, and returns a promise, this method will return `true` if the validation method is still pending. All other times this method will return `false`. |
+| `isDirty(ctrl)` | When the user changes the value of the form control element, the control is "dirty" and this method returns `true`. If control's initial value has not changed then this method returns `false`. |
+| `isInvalid(ctrl)` | If the value has changed or control has been "touched", and if the value does not pass the browser's [constraint validation](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation) then this method returns `true` and the custom validation method will not be called. If the value does pass constraint validation then the custom `validation()` method will be called, and if the custom validation method returns a message then this method will return `true`. If the value passes both the constraint validation and custom valdation, then this method returns `false`. However, if custom validation is async and is pending a response then this method will return `null`. |
+| `isTouched(ctrl)` | When the user blurs the form control element, the control is marked as "touched" and this method returns `true`. If the control has not had a blur event then this method will return `false`. |
+| `isValid(ctrl)` | If the value has changed, or control has been "touched", and if the value does not pass the browser's [constraint validation](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation) then this method returns `false` and the custom validation method will not be called. If the value does pass constraint validation then the custom `validation()` method will be called, and if the custom validation method returns a message then this method will return `false`. If the value passes both the constraint validation and custom valdation, then this method returns `true`. However, if custom validation is async and is pending a response then this method will return `null`. |
 
 When showing and hiding validation messages and displays, it's always best to change their
 display using CSS classes or HTML attributes. While methods like `isInvalid(ctrl)` can be 
@@ -217,18 +243,17 @@ are not relocated, which in many cases will cause the input to either loose focu
 the cursor position is not maintained while the user is typing (which I'm sure you can 
 agree would be quite frustrating). 
 
-The recommended way to conditionally show and hide validation messages is by either changing
-the CSS classes on the element, or changing the `hidden` attribute. 
+The recommended way to conditionally show and hide validation messages is by either changing the CSS classes on the element, or changing the `hidden` attribute. 
 
 ```tsx
 render() {
   return (
     <Host class={{
-      'is-invalid': isInvalid(age)
+      'is-invalid': isInvalid(mph)
     }}>
-      <label {...labelFor(age)}>What's My Age Again?</label>
-      <input type="number" {...age()}>
-      <p hidden={isValid(age)}>{validationMessage(age)}</p>
+      <label {...labelFor(mph)}>Miles Per Hour:</label>
+      <input type="number" {...mph()}>
+      <p hidden={isValid(mph)}>{validationMessage(mph)}</p>
     </Host>
   );
 }
@@ -249,7 +274,103 @@ the user is typing.
 
 ## Validation
 
-Form validation uses the browser's built-in [ValidityState](https://developer.mozilla.org/en-US/docs/Web/API/ValidityState).
+Form validation uses the browser's built-in 
+[constraint validation](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation) first. For example, if the `required` attribute is added to an `<input>`,
+the browser's default validation and message will apply first. If an input does pass the browser's
+constraint validation it will then check against an optionally provided `validate()` method.
+
+The validate method should return a custom message as a string, and will use the browser's
+[ValidityState](https://developer.mozilla.org/en-US/docs/Web/API/ValidityState) to inform
+the browser the input is not valid, and the form cannot be submitted. Note that this library
+does not attach any listeners to a `<form>` element's `submit` event, but is instead built
+around the browser's native implementation of validation, which will not submit the form 
+if it's invalid.
+
+If a `validate()` function is not provided, or it returns `null`, `undefined` or an empty string,
+and the input passes the constraint validation, then the input is considered valid.
+
+### Validation Message
+
+By default, an validation message will display using the browser's defaul UI. However, to customize
+the display you can use the `validationMessage(ctrl)` method. When validationMessage() is used instead,
+then the browser's default UI is prevented with the `formnovalidate` attribute, and your custom
+validation method is displayed within the template. By placing the message within the template, this
+gives developers full control on styling and your form's custom UI.
+
+```tsx
+render() {
+  const age = bindNumber(this, 'age', {
+    validate: (value) => {
+      if (value < 18) {
+        return `Must be 18 or older, but you entered ${value}`;
+      }
+    },
+  });
+
+  return (
+    <Host>
+      <label {...labelFor(age)}>What's my age again?</label>
+      <input {...age()}>
+      <div hidden={isValid(age)}>
+        {validationMessage(age)}
+      </div>
+    </Host>
+  );
+}
+```
+
+### Async Validation
+
+In most cases it may be best to have the validation synchronous. However, some scenarios may
+way to hit an external server to validate an input, requiring the validation to be asynchronous.
+
+The custom validate method can also return a `Promise`, which should resolve with a string value (empty
+string meaning the value is valid). While the active validation is pending, a custom validating message
+can be provided and can be shown until the validation is done. 
+
+```tsx
+render() {
+  const userName = bind(this, 'userName', {
+    debounce: 500,
+    validate: (value) => {
+      console.log(`checking "${value}" username, this will take 2 seconds...`);
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          console.log(`finished checking "${value}" username`);
+          resolve('');
+        }, 2000);
+      });
+    },
+    activelyValidatingMessage: (value) => {
+      return `Checking if "${value}" is already taken...`;
+    },
+  });
+
+  return (
+    <Host>
+      <label {...labelFor(userName)}>User Name:</label>
+      <input {...userName()}>
+      <div hidden={!isActivelyValidating(userName)}>
+        <img src="spinner.gif"/>
+        {activelyValidatingMessage(age)}
+      </div>
+      <div hidden={isValid(userName)}>
+        {validationMessage(userName)}
+      </div>
+    </Host>
+  );
+}
+```
+
+In the example above, the input will first debounce for 500ms. After the user has stopped typing for
+500ms, this example returns a promise that resolves in 2 seconds. In a real world example
+this could be a `fetch()` request to an API. While the validation is actively pending, the 
+optional `validatingMessage(value)` is used to get the message to show while checking. Additionally,
+the `isActivelyValidating(ctrl)` utility method can be used to customize CSS classes or attributes
+to change the UI, and the `activelyValidatingMessage(ctrl)` method is used to get the custom message.
+
+Once the promise resolves, the resolved value is used as the validation message. An empty string means
+the value is valid, otherwise a string with a custom message means it is invalid. 
 
 ## Bind Options
 
