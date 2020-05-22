@@ -13,6 +13,7 @@ import {
   validationMessage,
 } from '../../index';
 import { controlNumber } from '../../control';
+import { activeValidatingMessage } from '../../validation';
 
 @Component({
   tag: 'my-form',
@@ -120,6 +121,9 @@ export class MyForm {
             </div>
             <div>
               <input required {...userName()} />
+            </div>
+            <div class="actively-validating" hidden={!isActivelyValidating(userName)}>
+              {activeValidatingMessage(userName)}
             </div>
             <div {...validationFor(userName)}>{validationMessage(userName)}</div>
           </section>

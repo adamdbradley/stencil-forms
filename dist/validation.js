@@ -38,7 +38,9 @@ export const checkValidity = (ctrlData, ctrlElm, ev, cb) => {
 const checkValidateResults = (results, ctrlData, ctrlElm, value, ev, callbackId, cb) => {
     const ctrlState = ctrlElm[Control];
     const msg = isString(results) ? results.trim() : '';
-    if (ctrlState && ctrlElm && ctrlState.c === callbackId) {
+    if (ctrlState &&
+        ctrlElm &&
+        (ctrlState.c === callbackId || (!ctrlElm.validity.valid && !ctrlElm.validity.customError))) {
         ctrlElm.setCustomValidity(msg);
         ctrlState.e = ctrlElm.validationMessage;
         ctrlState.v = '';

@@ -389,7 +389,9 @@ const checkValidity = (ctrlData, ctrlElm, ev, cb) => {
 const checkValidateResults = (results, ctrlData, ctrlElm, value, ev, callbackId, cb) => {
     const ctrlState = ctrlElm[Control];
     const msg = isString(results) ? results.trim() : '';
-    if (ctrlState && ctrlElm && ctrlState.c === callbackId) {
+    if (ctrlState &&
+        ctrlElm &&
+        (ctrlState.c === callbackId || (!ctrlElm.validity.valid && !ctrlElm.validity.customError))) {
         ctrlElm.setCustomValidity(msg);
         ctrlState.e = ctrlElm.validationMessage;
         ctrlState.v = '';
@@ -735,7 +737,7 @@ const normalizeControlOpts = (ctrlOpts, changeEventName, valuePropName, valuePro
         valuePropType }, ctrlOpts);
 };
 
-const myFormCss = "body{font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Open Sans', 'Helvetica Neue', sans-serif}form button{position:relative;cursor:pointer;background:#ccc;margin:10px 0 0 0;padding:5px;font-size:16px}form:invalid button{background:#eee;color:#aaa}form:invalid button::after{position:absolute;padding-left:20px;content:'form:invalid';color:red;white-space:nowrap}form:valid button::after{position:absolute;padding-left:20px;content:'form:valid';color:green;white-space:nowrap}label{font-weight:bold}[role='alert']{color:red}input:valid{border:1px solid green}input:invalid{border:1px solid red}.is-validating{background:rgba(255, 255, 0, 0.2)}.is-valid{background:rgba(0, 128, 0, 0.2)}.is-invalid{background:rgba(255, 0, 0, 0.1)}pre{background:#eee;padding:10px}section{padding:10px;border-bottom:1px solid gray}section:last-child{border-bottom:none}.counter{font-size:12px}";
+const myFormCss = "body{font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Open Sans', 'Helvetica Neue', sans-serif}form button{position:relative;cursor:pointer;background:#ccc;margin:10px 0 0 0;padding:5px;font-size:16px}form:invalid button{background:#eee;color:#aaa}form:invalid button::after{position:absolute;padding-left:20px;content:'form:invalid';color:red;white-space:nowrap}form:valid button::after{position:absolute;padding-left:20px;content:'form:valid';color:green;white-space:nowrap}label{font-weight:bold}[role='alert']{color:red}input:valid{border:1px solid green}input:invalid{border:1px solid red}.is-validating{background:rgba(255, 255, 0, 0.2)}.is-valid{background:rgba(0, 128, 0, 0.2)}.is-invalid{background:rgba(255, 0, 0, 0.1)}.actively-validating{background-color:#ddd;font-style:italic}pre{background:#eee;padding:10px}section{padding:10px;border-bottom:1px solid gray}section:last-child{border-bottom:none}.counter{font-size:12px}";
 
 const MyForm = class {
     constructor(hostRef) {
@@ -795,7 +797,7 @@ const MyForm = class {
                 'is-validating': isActivelyValidating(userName),
                 'is-valid': isValid(userName),
                 'is-invalid': isInvalid(userName),
-            } }, h("div", null, h("label", Object.assign({}, labelFor(userName)), "User Name")), h("div", Object.assign({}, descriptionFor(userName)), "Enter a unique username? (500ms debounce, 3s async validation) ", this.userName), h("div", null, h("input", Object.assign({ required: true }, userName()))), h("div", Object.assign({}, validationFor(userName)), validationMessage(userName))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(age)), "Age")), h("div", Object.assign({ class: {
+            } }, h("div", null, h("label", Object.assign({}, labelFor(userName)), "User Name")), h("div", Object.assign({}, descriptionFor(userName)), "Enter a unique username? (500ms debounce, 3s async validation) ", this.userName), h("div", null, h("input", Object.assign({ required: true }, userName()))), h("div", { class: "actively-validating", hidden: !isActivelyValidating(userName) }, activeValidatingMessage(userName)), h("div", Object.assign({}, validationFor(userName)), validationMessage(userName))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(age)), "Age")), h("div", Object.assign({ class: {
                 'is-touched': isActivelyValidating(userName),
             } }, descriptionFor(age)), "Blue means it's touched ", this.age), h("div", null, h("input", Object.assign({ type: "number", min: "0", max: "150" }, age()))), h("div", Object.assign({}, validationFor(age)), validationMessage(age))), h("section", null, h("button", { type: "submit" }, "Submit"))), this.json !== '' ? h("pre", null, "Form Submit ", this.json) : null, h("section", { class: "counter" }, "Counter (just to test re-rendering scenarios):", h("button", { onClick: () => this.counter-- }, "-"), " ", this.counter, ' ', h("button", { onClick: () => this.counter++ }, "+"))));
     }

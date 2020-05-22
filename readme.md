@@ -165,6 +165,88 @@ HTML Output:
 </section>
 ```
 
+## CSS Pseudo-Class
+
+A great feature due to this library's use of the browser's native form validation is that
+it's baked-in with  with some very useful CSS pseudo-classes for inputs and forms.
+__Using CSS pseudo-classes is our first recommendation when styling form validation.__
+
+For example, the `:invalid` [pseudo-class](https://developer.mozilla.org/en-US/docs/Web/CSS/:invalid) 
+will automatically apply to an invalid input, and to it's wrapping `<form>` element. Below are some
+useful form and input specific CSS pseudo-classes.
+
+- [:checked](https://developer.mozilla.org/en-US/docs/Web/CSS/:checked)
+- [:default](https://developer.mozilla.org/en-US/docs/Web/CSS/:default)
+- [:disabled](https://developer.mozilla.org/en-US/docs/Web/CSS/:disabled)
+- [:enabled](https://developer.mozilla.org/en-US/docs/Web/CSS/:enabled)
+- [:focus](https://developer.mozilla.org/en-US/docs/Web/CSS/:focus)
+- [:focus-visible](https://developer.mozilla.org/en-US/docs/Web/CSS/:focus-visible)
+- [:focus-within](https://developer.mozilla.org/en-US/docs/Web/CSS/:focus-within)
+- [:indeterminate](https://developer.mozilla.org/en-US/docs/Web/CSS/:indeterminate)
+- [:invalid](https://developer.mozilla.org/en-US/docs/Web/CSS/:invalid)
+- [:in-range](https://developer.mozilla.org/en-US/docs/Web/CSS/:in-range)
+- [:optional](https://developer.mozilla.org/en-US/docs/Web/CSS/:optional)
+- [:out-of-range](https://developer.mozilla.org/en-US/docs/Web/CSS/:out-of-range)
+- [:placeholder-shown](https://developer.mozilla.org/en-US/docs/Web/CSS/:placeholder-shown)
+- [:read-write](https://developer.mozilla.org/en-US/docs/Web/CSS/:read-write)
+- [:read-only](https://developer.mozilla.org/en-US/docs/Web/CSS/:read-only)
+- [:required](https://developer.mozilla.org/en-US/docs/Web/CSS/:required)
+- [:valid](https://developer.mozilla.org/en-US/docs/Web/CSS/:valid)
+
+Here is an example of styling an invalid `<textarea>`:
+
+```css
+textarea:invalid {
+  border: 1px solid red;
+}
+```
+
+## Validation Utilities
+
+We first recommend styling using only the CSS pseudo-classes, however, in some situations, 
+the may not be enough to get the full styling required, such as styling a wrapping element 
+around an invalid input. The input itself can be easily styled, but styling the surrounding 
+element, or an element in entirely different part of the DOM is a challenge. If further
+customization is required there are more utility classes available.
+
+When showing and hiding validation messages and displays, it's always best to change their
+display using CSS classes or HTML attributes. While methods like `isInvalid(ctrl)` can be 
+used to conditionally render within JSX, it's recommended to instead keep the same HTML 
+structure in place. By keeping the same structure, this ensures elements like `<input>` 
+are not relocated, which in many cases will cause the input to either loose focus, or 
+the cursor position is not maintained while the user is typing (which I'm sure you can 
+agree would be quite frustrating). 
+
+The recommended way to conditionally show and hide validation messages is by either changing
+the CSS classes on the element, or changing the `hidden` attribute. 
+
+```tsx
+render() {
+  return (
+    <Host class={{
+      'is-invalid': isInvalid(age)
+    }}>
+      <label {...labelFor(age)}>What's My Age Again?</label>
+      <input type="number" {...age()}>
+      <p hidden={isValid(age)}>{validationMessage(age)}</p>
+    </Host>
+  );
+}
+```
+
+In the example above, the `is-invalid` CSS class would be added to the wrapping element when
+the `age` input is invalid, because the utility `isInvalid(age)` would return `true`. This 
+library does not provide any default CSS, or use specific CSS class names which apps must 
+use. Instead, whatever your CSS class does to show this input is invalid is up to the app, 
+and even the CSS class name can be decided by the developer.
+
+Additionally, this example is also showing how the `hidden` attribute can be used on an 
+element to show and hide the validation message. Note that the HTML structure is always the 
+same, and it's actually only changing the attributes. Again it's recommended to always keep 
+the same HTML structure in order to prevent inputs from loosing focus or cursor position while
+the user is typing.
+
+
 ## Validation
 
 Form validation uses the browser's built-in [ValidityState](https://developer.mozilla.org/en-US/docs/Web/API/ValidityState).
@@ -174,7 +256,6 @@ Form validation uses the browser's built-in [ValidityState](https://developer.mo
 `ReactiveFormBindOptions`
 
 https://github.com/adamdbradley/stencil-forms/blob/master/src/types.ts
-
 
 ## Advanced
 
