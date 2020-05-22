@@ -51,7 +51,9 @@ const checkValidateResults = (results, ctrlData, ctrlElm, value, ev, callbackId,
     }
 };
 /**
- * If the value does not pass the browser's [constraint validation](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation)
+ * If the value has changed, or control has been "touched",
+ * and if the value does not pass the browser's
+ * [constraint validation](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation)
  * then this method returns the message provided by the browser and
  * the custom validation method will not be called. If the value does
  * pass constraint validation then the custom `validation()` method
@@ -63,7 +65,7 @@ export const validationMessage = (ctrl) => {
     const ctrlElm = ctrlElms.get(ctrl);
     const ctrlState = getControlState(ctrl);
     setAttribute(ctrlElm, 'formnovalidate');
-    if (ctrlState) {
+    if (ctrlState && (ctrlState.d || ctrlState.t) && ctrlState.v === '') {
         return ctrlState.e;
     }
     return '';
@@ -87,7 +89,9 @@ export const activeValidatingMessage = (ctrl) => {
  */
 export const isActivelyValidating = (ctrl) => activeValidatingMessage(ctrl) !== '';
 /**
- * If the value does not pass the browser's [constraint validation](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation)
+ * If the value has changed, or control has been "touched",
+ * and if the value does not pass the browser's
+ * [constraint validation](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation)
  * then this method returns `false` and the custom validation method
  * will not be called. If the value does pass constraint validation
  * then the custom `validation()` method will be called, and if the
@@ -99,13 +103,15 @@ export const isActivelyValidating = (ctrl) => activeValidatingMessage(ctrl) !== 
  */
 export const isValid = (ctrl) => {
     const ctrlState = getControlState(ctrl);
-    if (ctrlState.v === '') {
+    if ((ctrlState.d || ctrlState.t) && ctrlState.v === '') {
         return ctrlState.e === '';
     }
     return null;
 };
 /**
- * If the value does not pass the browser's [constraint validation](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation)
+ * If the value has changed or control has been "touched",
+ * and if the value does not pass the browser's
+ * [constraint validation](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation)
  * then this method returns `true` and the custom validation method
  * will not be called. If the value does pass constraint validation
  * then the custom `validation()` method will be called, and if the
@@ -117,7 +123,7 @@ export const isValid = (ctrl) => {
  */
 export const isInvalid = (ctrl) => {
     const ctrlState = getControlState(ctrl);
-    if (ctrlState.v === '') {
+    if ((ctrlState.d || ctrlState.t) && ctrlState.v === '') {
         return ctrlState.e !== '';
     }
     return null;

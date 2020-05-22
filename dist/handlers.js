@@ -9,6 +9,8 @@ export const sharedOnInvalidHandler = (ev) => {
     }
     // add a space at the end to ensure we trigger a re-render
     ctrlState.e = ctrlElm.validationMessage + ' ';
+    // a control is automatically "dirty" if it has been invalid at least once.
+    ctrlState.d = true;
 };
 export const sharedOnValueChangeHandler = (ev) => {
     const ctrlElm = ev.currentTarget;

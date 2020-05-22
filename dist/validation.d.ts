@@ -1,7 +1,9 @@
 import { ControlData, ControlElement, ReactiveFormControl } from './types';
 export declare const checkValidity: (ctrlData: ControlData, ctrlElm: ControlElement, ev: any, cb: ((ctrlData: ControlData, ctrlElm: ControlElement, value: any, ev: any) => void) | null) => any;
 /**
- * If the value does not pass the browser's [constraint validation](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation)
+ * If the value has changed, or control has been "touched",
+ * and if the value does not pass the browser's
+ * [constraint validation](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation)
  * then this method returns the message provided by the browser and
  * the custom validation method will not be called. If the value does
  * pass constraint validation then the custom `validation()` method
@@ -23,7 +25,9 @@ export declare const activeValidatingMessage: (ctrl: ReactiveFormControl) => str
  */
 export declare const isActivelyValidating: (ctrl: ReactiveFormControl) => boolean;
 /**
- * If the value does not pass the browser's [constraint validation](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation)
+ * If the value has changed, or control has been "touched",
+ * and if the value does not pass the browser's
+ * [constraint validation](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation)
  * then this method returns `false` and the custom validation method
  * will not be called. If the value does pass constraint validation
  * then the custom `validation()` method will be called, and if the
@@ -35,7 +39,9 @@ export declare const isActivelyValidating: (ctrl: ReactiveFormControl) => boolea
  */
 export declare const isValid: (ctrl: ReactiveFormControl) => boolean | null;
 /**
- * If the value does not pass the browser's [constraint validation](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation)
+ * If the value has changed or control has been "touched",
+ * and if the value does not pass the browser's
+ * [constraint validation](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation)
  * then this method returns `true` and the custom validation method
  * will not be called. If the value does pass constraint validation
  * then the custom `validation()` method will be called, and if the

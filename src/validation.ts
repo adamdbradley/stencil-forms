@@ -75,7 +75,9 @@ const checkValidateResults = (
 };
 
 /**
- * If the value does not pass the browser's [constraint validation](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation)
+ * If the value has changed, or control has been "touched",
+ * and if the value does not pass the browser's
+ * [constraint validation](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation)
  * then this method returns the message provided by the browser and
  * the custom validation method will not be called. If the value does
  * pass constraint validation then the custom `validation()` method
@@ -89,7 +91,7 @@ export const validationMessage = (ctrl: ReactiveFormControl) => {
 
   setAttribute(ctrlElm, 'formnovalidate');
 
-  if (ctrlState) {
+  if (ctrlState && (ctrlState.d || ctrlState.t) && ctrlState.v === '') {
     return ctrlState.e;
   }
   return '';
@@ -116,7 +118,9 @@ export const activeValidatingMessage = (ctrl: ReactiveFormControl) => {
 export const isActivelyValidating = (ctrl: ReactiveFormControl) => activeValidatingMessage(ctrl) !== '';
 
 /**
- * If the value does not pass the browser's [constraint validation](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation)
+ * If the value has changed, or control has been "touched",
+ * and if the value does not pass the browser's
+ * [constraint validation](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation)
  * then this method returns `false` and the custom validation method
  * will not be called. If the value does pass constraint validation
  * then the custom `validation()` method will be called, and if the
@@ -128,14 +132,16 @@ export const isActivelyValidating = (ctrl: ReactiveFormControl) => activeValidat
  */
 export const isValid = (ctrl: ReactiveFormControl) => {
   const ctrlState = getControlState(ctrl);
-  if (ctrlState.v === '') {
+  if ((ctrlState.d || ctrlState.t) && ctrlState.v === '') {
     return ctrlState.e === '';
   }
   return null;
 };
 
 /**
- * If the value does not pass the browser's [constraint validation](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation)
+ * If the value has changed or control has been "touched",
+ * and if the value does not pass the browser's
+ * [constraint validation](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation)
  * then this method returns `true` and the custom validation method
  * will not be called. If the value does pass constraint validation
  * then the custom `validation()` method will be called, and if the
@@ -147,7 +153,7 @@ export const isValid = (ctrl: ReactiveFormControl) => {
  */
 export const isInvalid = (ctrl: ReactiveFormControl) => {
   const ctrlState = getControlState(ctrl);
-  if (ctrlState.v === '') {
+  if ((ctrlState.d || ctrlState.t) && ctrlState.v === '') {
     return ctrlState.e !== '';
   }
   return null;
