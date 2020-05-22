@@ -26,16 +26,16 @@ No clue 🔥
 
 ## Goals
 
-- Reduce boilerplate and complexity in order to wire-up reactive inputs
-- Do not re-invent form validation, but rather provide utility functions on top of [web standardized validation](https://developer.mozilla.org/en-US/docs/Web/API/ValidityState) already provided by the browser
-- User provides the actual input elements and any attributes in order to use existing [constraint validation](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation) rather than providing a new API
-- Do not provide any sort of UI, but rather provide utilities to make it easier to build custom UI which works directly with standards-based form validation
-- Improve Accessibility right out-of-the-box by linking inputs to their labels, descriptions and error messages with the appropriate [aria attributes](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/forms/Basic_form_hints)
-- Type all form values in order to speed up development and refactoring by printing errors when binding values are not correctly set
-- Do not require a specific HTML structure in order for the library to work
-- Do not provide custom JSX/HTML output so that developers can continue to build custom forms for their UI without interference from the library
+- Reduce boilerplate and complexity in order to wire-up reactive inputs.
+- Do not re-invent form validation, but rather provide utility functions on top of [web standardized validation](https://developer.mozilla.org/en-US/docs/Web/API/ValidityState) already provided by the browser.
+- User provides the actual input elements and any attributes in order to use existing [constraint validation](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation) rather than providing a new API.
+- Library should not dictate any sort of UI, but rather provide utilities to make it easier to build custom UI which works directly with standards-based form validation.
+- Improve Accessibility out-of-the-box by linking inputs to their labels, descriptions and error messages with the appropriate [aria attributes](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/forms/Basic_form_hints).
+- Built-in TypeScript support to ensure form values are typed in order to speed up development and refactoring by printing errors when binding values are incorrect.
+- Ability for validation logic to be reused in multiple forms and let developers build up their own library of validation, but not tied directly to any one component, template or structure.
+- Library should not require a specific HTML structure in order for it to work.
+- Library should not provide it's own custom JSX or CSS output, but rather ensure developers can continue to build custom forms for their UI without interference from the library.
 - Default to standard event listeners, such as `onInput` and `onChange`, but allow for custom event names that trigger value change events, such as Ionic's `ionOnChange`.
-
 
 
 ## Example
@@ -289,6 +289,23 @@ if it's invalid.
 If a `validate()` function is not provided, or it returns `null`, `undefined` or an empty string,
 and the input passes the constraint validation, then the input is considered valid.
 
+
+### Arguments
+
+```tsx
+validation(value, validityState, event)
+```
+
+`value`: The first argument passed to the validation function will already be cast to the correct type. For example,
+if `bindNumber()` was used, the value would already be a JavaScript `number` or `NaN` if invalid. If it
+is a checkbox using `bindBoolean()` the value would already be a `boolean`. Otherwise the value will always
+be a string.
+
+`validityState`: The second argument is the control element's [ValidityState](https://developer.mozilla.org/en-US/docs/Web/API/ValidityState). The validity state provide useful validation information directly from the browser.
+
+`event`: The third argument is the actual event that was trigger, which may have come from a KeyboardEvent, MouseEvent, etc.
+
+
 ### Validation Message
 
 By default, an validation message will display using the browser's defaul UI. However, to customize
@@ -371,6 +388,44 @@ to change the UI, and the `activelyValidatingMessage(ctrl)` method is used to ge
 
 Once the promise resolves, the resolved value is used as the validation message. An empty string means
 the value is valid, otherwise a string with a custom message means it is invalid. 
+
+### Validation Logic Reuse
+
+In the examples so far we've placed the validation logic directly within the `render()` functions. However,
+the `validation()` methods do not need to be context aware, making them easy to reuse in various forms 
+throughout the app. 
+
+```tsx
+// validation.ts
+export const validateAge = (age: number) => {
+  if (age < 18) {
+    return 'Must be 18 years or older';
+  }
+}
+```
+
+```tsx
+// user-input.tsx
+import { validateAge } from './validation';
+
+...
+
+render() {
+  const age = bindNumber(this, 'age', {
+    validate: validateAge,
+  });
+
+  return (
+    <Host>
+      <label {...labelFor(age)}>What's my age again?</label>
+      <input {...age()}>
+      <div hidden={isValid(age)}>
+        {validationMessage(age)}
+      </div>
+    </Host>
+  );
+}
+```
 
 ## Bind Options
 

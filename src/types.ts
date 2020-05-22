@@ -16,7 +16,11 @@ export interface ReactiveFormBindOptions {
   onEscapeKey?: (value: any, validity: ValidityState, ev: KeyboardEvent) => void;
   onFocus?: (value: any, validity: ValidityState, ev: FocusEvent) => void;
   onInvalid?: (value: any, validity: ValidityState, ev: UIEvent) => void;
-  validate?: (value: any, ev: Event | null) => ReactiveValidateResult | Promise<ReactiveValidateResult>;
+  validate?: (
+    value: any,
+    validity: ValidityState,
+    ev: Event | null,
+  ) => ReactiveValidateResult | Promise<ReactiveValidateResult>;
   activelyValidatingMessage?: string | ((value: any, ev: Event | null) => string);
   /**
    * The property name to use when assign the value to the input. The default

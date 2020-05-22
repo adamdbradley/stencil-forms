@@ -13,7 +13,7 @@ export const checkValidity = (ctrlData, ctrlElm, ev, cb) => {
         }
         else if (isFunction(ctrlData.validate)) {
             // has custom validate fn and the native browser constraints are valid
-            const results = ctrlData.validate(value, ev);
+            const results = ctrlData.validate(value, ctrlElm.validity, ev);
             if (isPromise(results)) {
                 // results return a promise, let's wait on those
                 ctrlState.v = isString(ctrlData.activelyValidatingMessage)
