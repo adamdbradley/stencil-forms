@@ -18,7 +18,7 @@ export const sharedOnInvalidHandler = (ev: Event) => {
   ctrlState.d = true;
 };
 
-export const sharedOnValueChangeHandler = (ev: KeyboardEvent) => {
+export const sharedOnValueChangeHandler = (ev: InputEvent) => {
   const ctrlElm = ev.currentTarget as ControlElement;
   const ctrl = ctrls.get(ctrlElm)!;
   const ctrlData = ctrlDatas.get(ctrl)!;
@@ -28,13 +28,7 @@ export const sharedOnValueChangeHandler = (ev: KeyboardEvent) => {
     clearTimeout(inputDebounces.get(ctrlElm));
   }
 
-  if (ev.key === 'Enter' && isFunction(ctrlData.onEnterKey)) {
-    checkValidity(ctrlData, ctrlElm, ev, setValueChange);
-    ctrlData.onEnterKey(value, ctrlElm.validity, ev);
-  } else if (ev.key === 'Escape' && isFunction(ctrlData.onEscapeKey)) {
-    checkValidity(ctrlData, ctrlElm, ev, setValueChange);
-    ctrlData.onEscapeKey(value, ctrlElm.validity, ev);
-  } else if (isFunction(ctrlData.onValueChange)) {
+  if (isFunction(ctrlData.onValueChange)) {
     if (isNumber(ctrlData.debounce)) {
       inputDebounces.set(
         ctrlElm,
@@ -48,6 +42,24 @@ export const sharedOnValueChangeHandler = (ev: KeyboardEvent) => {
       checkValidity(ctrlData, ctrlElm, ev, setValueChange);
       setValueChange(ctrlData, ctrlElm, value, ev);
     }
+  }
+};
+
+export const sharedOnKeyDownHandler = (ev: KeyboardEvent) => {
+  const ctrlElm = ev.currentTarget as ControlElement;
+  const ctrl = ctrls.get(ctrlElm)!;
+  const ctrlData = ctrlDatas.get(ctrl)!;
+  const value = getValueFromControlElement(ctrlData, ctrlElm);
+  if (isNumber(ctrlData.debounce)) {
+    clearTimeout(inputDebounces.get(ctrlElm));
+    inputDebounces.set(
+      ctrlElm,
+      setTimeout(() => {
+        ctrlData.onKeyDown!(ev.key, value, ev);
+      }, ctrlData.debounce),
+    );
+  } else {
+    ctrlData.onKeyDown!(ev.key, value, ev);
   }
 };
 

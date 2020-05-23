@@ -12,8 +12,7 @@ export interface ReactiveFormBindOptions {
    */
   debounce?: number;
   onBlur?: (value: any, validity: ValidityState, ev: FocusEvent) => void;
-  onEnterKey?: (value: any, validity: ValidityState, ev: KeyboardEvent) => void;
-  onEscapeKey?: (value: any, validity: ValidityState, ev: KeyboardEvent) => void;
+  onKeyDown?: (key: string, value: any, ev: KeyboardEvent) => void;
   onFocus?: (value: any, validity: ValidityState, ev: FocusEvent) => void;
   onInvalid?: (value: any, validity: ValidityState, ev: UIEvent) => void;
   /**
@@ -108,21 +107,20 @@ export interface ControlState {
   c: number;
 }
 
-/** @internal */
 export type ReactiveControlProperties = {
   checked?: boolean;
   // id: string;
   // name?: string;
-  onBlur?: (ev: FocusEvent) => void;
-  onChange?: (ev: Event) => void;
-  onClick?: (ev: Event) => void;
-  onFocus?: (ev: FocusEvent) => void;
-  onInput?: (ev: KeyboardEvent) => void;
-  onInvalid?: (ev: Event) => void;
-  ref?: (elm: ControlElement) => void;
+  onBlur?: (ev: any) => void;
+  onChange?: (ev: any) => void;
+  onClick?: (ev: any) => void;
+  onFocus?: (ev: any) => void;
+  onKeyDown?: (ev: any) => void;
+  onInput?: (ev: any) => void;
+  onInvalid?: (ev: any) => void;
+  ref?: (elm: any) => void;
   role?: string;
   value?: string;
 };
 
-/** @internal */
 export type ControlElement = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;

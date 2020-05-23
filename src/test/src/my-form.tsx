@@ -77,7 +77,11 @@ export class MyForm {
       onValueChange: (value) => (this.vegetarian = value),
     });
 
-    const specialInstructions = bind(this, 'specialInstructions');
+    const specialInstructions = bind(this, 'specialInstructions', {
+      onKeyDown: (key, value) => {
+        console.log('key', key, 'value', value);
+      },
+    });
 
     const favoriteCar = controlGroup(this.favoriteCar, {
       onValueChange: (value) => (this.favoriteCar = value),

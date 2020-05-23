@@ -10,7 +10,7 @@ import {
   setControlState,
   state,
 } from './state';
-import { isString, setAttribute } from './helpers';
+import { isString, setAttribute, isFunction } from './helpers';
 import {
   ControlData,
   ControlElement,
@@ -26,7 +26,7 @@ import {
   setErrormessageAttributes,
   setLabelledbyAttributes,
 } from './labelling-for';
-import { sharedOnInvalidHandler, sharedOnValueChangeHandler, sharedOnFocus } from './handlers';
+import { sharedOnInvalidHandler, sharedOnValueChangeHandler, sharedOnFocus, sharedOnKeyDownHandler } from './handlers';
 import { checkValidity } from './validation';
 
 export const inputControl = (value: any, ctrlData: ControlData) => {
@@ -54,6 +54,10 @@ export const inputControl = (value: any, ctrlData: ControlData) => {
       onFocus: sharedOnFocus,
       onBlur: sharedOnFocus,
     };
+
+    if (isFunction(ctrlData.onKeyDown)) {
+      props.onKeyDown = sharedOnKeyDownHandler;
+    }
 
     return props;
   };
