@@ -32,7 +32,8 @@ form:valid button::after {
   white-space: nowrap;
 }
 
-label {
+label,
+.group-label {
   font-weight: bold;
 }
 

@@ -86,7 +86,7 @@ export class MyForm {
     return (
       <Host>
         <form onSubmit={this.onSubmit}>
-          {/* <section>
+          <section>
             <div>
               <label {...labelFor(fullName)}>Name</label>
             </div>
@@ -95,7 +95,7 @@ export class MyForm {
               <input required {...fullName()} />
             </div>
             <span {...validationFor(fullName)}>{validationMessage(fullName)}</span>
-          </section> */}
+          </section>
 
           <section>
             <div>
@@ -153,7 +153,6 @@ export class MyForm {
             <div {...validationFor(userName)}>{validationMessage(userName)}</div>
           </section>
 
-          {/* 
           <section>
             <div>
               <label {...labelFor(volume)}>Volume</label>
@@ -187,10 +186,12 @@ export class MyForm {
               <textarea {...specialInstructions()} />
             </div>
             <div {...validationFor(specialInstructions)}>{validationMessage(specialInstructions)}</div>
-          </section> */}
-          {/* 
+          </section>
+
           <section {...favoriteCar()}>
-            <div {...labelFor(favoriteCar)}>Favorite Car</div>
+            <div class="group-label" {...labelFor(favoriteCar)}>
+              Favorite Car
+            </div>
             <div {...descriptionFor(favoriteCar)}>What's your favorite car? {this.favoriteCar}</div>
             <div>
               <label {...labelFor(favoriteCar, 'mustang')}>Mustang</label>
@@ -206,8 +207,6 @@ export class MyForm {
             </div>
             <div {...validationFor(favoriteCar)}>{validationMessage(favoriteCar)}</div>
           </section>
-
-          */}
 
           <section>
             <button type="submit">Submit</button>

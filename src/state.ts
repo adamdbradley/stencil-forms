@@ -54,6 +54,9 @@ const ControlStates = /*@__PURE__*/ Symbol();
 
 export const setControlState = (ctrlData: ControlData) => {
   const renderingRef = getRenderingRef();
+  if (!renderingRef) {
+    return null;
+  }
   const ctrlStates: ControlState[] = (renderingRef[ControlStates] = renderingRef[ControlStates] || []);
 
   if (state.r !== renderingRef) {

@@ -93,7 +93,7 @@ export const inputControlGroup = (selectedValue: any, ctrlData: ControlData): an
 
     if (isString(groupItemValue)) {
       // group item, like <input type="radio">
-      return inputControlGroupItem(selectedValue, ctrl, ctrlData, groupItemValue);
+      return inputControlGroupItem(selectedValue, ctrl, ctrlData, ctrlState, groupItemValue);
     }
 
     // group container, like <div role="group">
@@ -117,6 +117,7 @@ const inputControlGroupItem = (
   selectedGroupValue: any,
   parentCtrl: ReactiveFormControlGroup,
   parentCtrlData: ControlData,
+  ctrlState: ControlState | null,
   value: string,
 ): any => {
   getGroupChild(parentCtrl, value);
@@ -139,14 +140,15 @@ const inputControlGroupItem = (
     onBlur: sharedOnFocus,
 
     // ref for <input type="radio">
-    ref: (childCtrlElm: ControlElement) => childCtrlElm && ctrlGroupItemElmRef(parentCtrl, childCtrlElm, value),
+    ref: (childCtrlElm: ControlElement) =>
+      childCtrlElm && ctrlGroupItemElmRef(parentCtrl, ctrlState, childCtrlElm, value),
   };
 };
 
 const ctrlElmRef = (
   ctrl: ReactiveFormControl,
   ctrlData: ControlData,
-  ctrlState: ControlState,
+  ctrlState: ControlState | null,
   ctrlElm: ControlElement,
   isParentGroup: boolean,
 ) => {
@@ -184,7 +186,7 @@ const ctrlElmRef = (
     setErrormessageAttributes(ctrlId, ctrlElm, labellingElm);
   }
 
-  if (ctrlState.e !== '') {
+  if (ctrlState?.e !== '') {
     setAttribute(ctrlElm, 'aria-invalid', 'true');
   } else {
     ctrlElm.removeAttribute('aria-invalid');
@@ -206,7 +208,7 @@ const ctrlElmRef = (
   ctrlElms.set(ctrl, ctrlElm);
   (ctrlElm as any)[Control] = ctrlState;
 
-  if (ctrlState.i) {
+  if (ctrlState?.i) {
     checkValidity(ctrlData, ctrlElm, null, null);
     ctrlState.i = false;
   }
@@ -214,10 +216,11 @@ const ctrlElmRef = (
 
 const ctrlGroupItemElmRef = (
   parentCtrl: ReactiveFormControlGroup,
+  ctrlState: ControlState | null,
   childCtrlElm: ControlElement,
   childValue: string,
 ) => {
   const child = getGroupChild(parentCtrl, childValue);
-  const ctrlState = setControlState(child?.data!);
+  (childCtrlElm as any)[Control] = ctrlState;
   return ctrlElmRef(child?.ctrl!, child?.data!, ctrlState, childCtrlElm, false);
 };

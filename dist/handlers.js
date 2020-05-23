@@ -56,15 +56,21 @@ export const sharedOnFocus = (ev) => {
     if (ctrlData) {
         const ctrlState = ctrlElm[Control];
         const value = getValueFromControlElement(ctrlData, ctrlElm);
+        const validity = ctrlElm.validity;
         if (ev.type === 'blur') {
             ctrlState.t = true;
             if (isFunction(ctrlData.onBlur)) {
-                ctrlData.onBlur(value, ctrlElm.validity, ev);
+                ctrlData.onBlur(value, validity, ev);
             }
         }
         else {
+            // focus
+            if (!ctrlState.t && isFunction(ctrlData.onTouch)) {
+                // onTouch should only fire on the first focus
+                ctrlData.onTouch(value, validity, ev);
+            }
             if (isFunction(ctrlData.onFocus)) {
-                ctrlData.onFocus(value, ctrlElm.validity, ev);
+                ctrlData.onFocus(value, validity, ev);
             }
         }
     }

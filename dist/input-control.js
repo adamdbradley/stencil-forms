@@ -54,7 +54,7 @@ export const inputControlGroup = (selectedValue, ctrlData) => {
         state.r = null;
         if (isString(groupItemValue)) {
             // group item, like <input type="radio">
-            return inputControlGroupItem(selectedValue, ctrl, ctrlData, groupItemValue);
+            return inputControlGroupItem(selectedValue, ctrl, ctrlData, ctrlState, groupItemValue);
         }
         // group container, like <div role="group">
         return {
@@ -69,7 +69,7 @@ export const inputControlGroup = (selectedValue, ctrlData) => {
     // and what's called to get all of the props
     return ctrl;
 };
-const inputControlGroupItem = (selectedGroupValue, parentCtrl, parentCtrlData, value) => {
+const inputControlGroupItem = (selectedGroupValue, parentCtrl, parentCtrlData, ctrlState, value) => {
     getGroupChild(parentCtrl, value);
     // grouped control input item, like <input type="radio"> a group
     // only has one "value" and the individual group item that has
@@ -86,7 +86,7 @@ const inputControlGroupItem = (selectedGroupValue, parentCtrl, parentCtrlData, v
         onFocus: sharedOnFocus,
         onBlur: sharedOnFocus,
         // ref for <input type="radio">
-        ref: (childCtrlElm) => childCtrlElm && ctrlGroupItemElmRef(parentCtrl, childCtrlElm, value),
+        ref: (childCtrlElm) => childCtrlElm && ctrlGroupItemElmRef(parentCtrl, ctrlState, childCtrlElm, value),
     };
 };
 const ctrlElmRef = (ctrl, ctrlData, ctrlState, ctrlElm, isParentGroup) => {
@@ -119,7 +119,7 @@ const ctrlElmRef = (ctrl, ctrlData, ctrlState, ctrlElm, isParentGroup) => {
         // errormessage
         setErrormessageAttributes(ctrlId, ctrlElm, labellingElm);
     }
-    if (ctrlState.e !== '') {
+    if ((ctrlState === null || ctrlState === void 0 ? void 0 : ctrlState.e) !== '') {
         setAttribute(ctrlElm, 'aria-invalid', 'true');
     }
     else {
@@ -138,13 +138,13 @@ const ctrlElmRef = (ctrl, ctrlData, ctrlState, ctrlElm, isParentGroup) => {
     ctrls.set(ctrlElm, ctrl);
     ctrlElms.set(ctrl, ctrlElm);
     ctrlElm[Control] = ctrlState;
-    if (ctrlState.i) {
+    if (ctrlState === null || ctrlState === void 0 ? void 0 : ctrlState.i) {
         checkValidity(ctrlData, ctrlElm, null, null);
         ctrlState.i = false;
     }
 };
-const ctrlGroupItemElmRef = (parentCtrl, childCtrlElm, childValue) => {
+const ctrlGroupItemElmRef = (parentCtrl, ctrlState, childCtrlElm, childValue) => {
     const child = getGroupChild(parentCtrl, childValue);
-    const ctrlState = setControlState(child === null || child === void 0 ? void 0 : child.data);
+    childCtrlElm[Control] = ctrlState;
     return ctrlElmRef(child === null || child === void 0 ? void 0 : child.ctrl, child === null || child === void 0 ? void 0 : child.data, ctrlState, childCtrlElm, false);
 };

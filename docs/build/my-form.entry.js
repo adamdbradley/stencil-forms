@@ -1,17 +1,5 @@
 import { g as getRenderingRef, f as forceUpdate, r as registerInstance, h, H as Host } from './index-9d08cb11.js';
 
-const isFunction = (v) => typeof v === 'function';
-const isNumber = (v) => typeof v === 'number';
-const isString = (v) => typeof v === 'string';
-const isPromise = (v) => !!v && (typeof v === 'object' || isFunction(v)) && isFunction(v.then);
-const toDashCase = (str) => str
-    .toLowerCase()
-    .replace(/([A-Z0-9])/g, (g) => ' ' + g[0])
-    .trim()
-    .replace(/ /g, '-');
-const setAttribute = (elm, attrName, attrValue = '') => (elm === null || elm === void 0 ? void 0 : elm.setAttribute(attrName, attrValue), attrValue);
-const showNativeReport = (elm) => { var _a, _b; return !(elm === null || elm === void 0 ? void 0 : elm.hasAttribute('formnovalidate')) && !((_b = (_a = elm) === null || _a === void 0 ? void 0 : _a.form) === null || _b === void 0 ? void 0 : _b.hasAttribute('novalidate')); };
-
 const appendToMap = (map, propName, value) => {
     const items = map.get(propName);
     if (!items) {
@@ -213,6 +201,9 @@ const Control = /*@__PURE__*/ Symbol();
 const ControlStates = /*@__PURE__*/ Symbol();
 const setControlState = (ctrlData) => {
     const renderingRef = getRenderingRef();
+    if (!renderingRef) {
+        return null;
+    }
     const ctrlStates = (renderingRef[ControlStates] = renderingRef[ControlStates] || []);
     if (state.r !== renderingRef) {
         state.r = renderingRef;
@@ -254,6 +245,244 @@ const getControlState = (ctrl) => {
     ctrlElm = ctrlElms.get(ctrl);
     return ctrlElm ? ctrlElm[Control] : {};
 };
+
+const isFunction = (v) => typeof v === 'function';
+const isNumber = (v) => typeof v === 'number';
+const isString = (v) => typeof v === 'string';
+const isPromise = (v) => !!v && (typeof v === 'object' || isFunction(v)) && isFunction(v.then);
+const toDashCase = (str) => str
+    .toLowerCase()
+    .replace(/([A-Z0-9])/g, (g) => ' ' + g[0])
+    .trim()
+    .replace(/ /g, '-');
+const setAttribute = (elm, attrName, attrValue = '') => (elm === null || elm === void 0 ? void 0 : elm.setAttribute(attrName, attrValue), attrValue);
+const showNativeReport = (elm) => { var _a, _b; return !(elm === null || elm === void 0 ? void 0 : elm.hasAttribute('formnovalidate')) && !((_b = (_a = elm) === null || _a === void 0 ? void 0 : _a.form) === null || _b === void 0 ? void 0 : _b.hasAttribute('novalidate')); };
+
+const sharedOnInvalidHandler = (ev) => {
+    const ctrlElm = ev.currentTarget;
+    const ctrlState = ctrlElm[Control];
+    if (!showNativeReport(ctrlElm)) {
+        ev.preventDefault();
+    }
+    // add a space at the end to ensure we trigger a re-render
+    ctrlState.e = ctrlElm.validationMessage + ' ';
+    // a control is automatically "dirty" if it has been invalid at least once.
+    ctrlState.d = true;
+};
+const sharedOnValueChangeHandler = (ev) => {
+    const ctrlElm = ev.currentTarget;
+    const ctrl = ctrls.get(ctrlElm);
+    const ctrlData = ctrlDatas.get(ctrl);
+    const value = getValueFromControlElement(ctrlData, ctrlElm);
+    if (isNumber(ctrlData.debounce)) {
+        clearTimeout(inputDebounces.get(ctrlElm));
+    }
+    if (ev.key === 'Enter' && isFunction(ctrlData.onEnterKey)) {
+        checkValidity(ctrlData, ctrlElm, ev, setValueChange);
+        ctrlData.onEnterKey(value, ctrlElm.validity, ev);
+    }
+    else if (ev.key === 'Escape' && isFunction(ctrlData.onEscapeKey)) {
+        checkValidity(ctrlData, ctrlElm, ev, setValueChange);
+        ctrlData.onEscapeKey(value, ctrlElm.validity, ev);
+    }
+    else if (isFunction(ctrlData.onValueChange)) {
+        if (isNumber(ctrlData.debounce)) {
+            inputDebounces.set(ctrlElm, setTimeout(() => {
+                const value = getValueFromControlElement(ctrlData, ctrlElm);
+                checkValidity(ctrlData, ctrlElm, ev, setValueChange);
+                ctrlData.onValueChange(value, ctrlElm.validity, ev);
+            }, ctrlData.debounce));
+        }
+        else {
+            checkValidity(ctrlData, ctrlElm, ev, setValueChange);
+            setValueChange(ctrlData, ctrlElm, value, ev);
+        }
+    }
+};
+const setValueChange = (ctrlData, ctrlElm, value, ev) => {
+    if (ctrlData && ctrlElm) {
+        const ctrlState = ctrlElm[Control];
+        ctrlState.d = true;
+        ctrlData.onValueChange(value, ctrlElm.validity, ev);
+    }
+};
+const sharedOnFocus = (ev) => {
+    const ctrlElm = ev === null || ev === void 0 ? void 0 : ev.currentTarget;
+    const ctrl = ctrls.get(ctrlElm);
+    const ctrlData = ctrlDatas.get(ctrl);
+    if (ctrlData) {
+        const ctrlState = ctrlElm[Control];
+        const value = getValueFromControlElement(ctrlData, ctrlElm);
+        const validity = ctrlElm.validity;
+        if (ev.type === 'blur') {
+            ctrlState.t = true;
+            if (isFunction(ctrlData.onBlur)) {
+                ctrlData.onBlur(value, validity, ev);
+            }
+        }
+        else {
+            // focus
+            if (!ctrlState.t && isFunction(ctrlData.onTouch)) {
+                // onTouch should only fire on the first focus
+                ctrlData.onTouch(value, validity, ev);
+            }
+            if (isFunction(ctrlData.onFocus)) {
+                ctrlData.onFocus(value, validity, ev);
+            }
+        }
+    }
+};
+const getValueFromControlElement = (ctrlData, ctrlElm) => {
+    const value = ctrlElm[ctrlData.valuePropName];
+    if (ctrlData.valuePropType === 'boolean') {
+        return String(value) === 'true';
+    }
+    if (ctrlData.valuePropType === 'number') {
+        return parseFloat(value);
+    }
+    return String(value);
+};
+
+const checkValidity = (ctrlData, ctrlElm, ev, cb) => {
+    if (ctrlElm && ctrlElm.validity) {
+        const ctrlState = ctrlElm[Control];
+        const value = getValueFromControlElement(ctrlData, ctrlElm);
+        const callbackId = ++ctrlState.c;
+        ctrlElm.setCustomValidity((ctrlState.e = ''));
+        if (!ctrlElm.validity.valid) {
+            // native browser constraint
+            ctrlState.e = ctrlElm.validationMessage;
+        }
+        else if (isFunction(ctrlData.validate)) {
+            // has custom validate fn and the native browser constraints are valid
+            const results = ctrlData.validate(value, ctrlElm.validity, ev);
+            if (isPromise(results)) {
+                // results return a promise, let's wait on those
+                ctrlState.v = isString(ctrlData.activelyValidatingMessage)
+                    ? ctrlData.activelyValidatingMessage
+                    : isFunction(ctrlData.activelyValidatingMessage)
+                        ? ctrlData.activelyValidatingMessage(value, ev)
+                        : `Validating...`;
+                ctrlElm.setCustomValidity(ctrlState.v);
+                results.then((promiseResults) => checkValidateResults(promiseResults, ctrlData, ctrlElm, value, ev, callbackId, cb));
+            }
+            else {
+                // results were not a promise
+                checkValidateResults(results, ctrlData, ctrlElm, value, ev, callbackId, cb);
+            }
+        }
+        else {
+            // no validate fn
+            checkValidateResults('', ctrlData, ctrlElm, value, ev, callbackId, cb);
+        }
+    }
+};
+const checkValidateResults = (results, ctrlData, ctrlElm, value, ev, callbackId, cb) => {
+    const ctrlState = ctrlElm[Control];
+    const msg = isString(results) ? results.trim() : '';
+    if (ctrlState &&
+        ctrlElm &&
+        (ctrlState.c === callbackId || (!ctrlElm.validity.valid && !ctrlElm.validity.customError))) {
+        ctrlElm.setCustomValidity(msg);
+        ctrlState.e = ctrlElm.validationMessage;
+        ctrlState.v = '';
+        if (!ctrlElm.validity.valid && showNativeReport(ctrlElm)) {
+            ctrlElm.reportValidity();
+        }
+        cb && cb(ctrlData, ctrlElm, value, ev);
+    }
+};
+/**
+ * If the value has changed, or control has been "touched",
+ * and if the value does not pass the browser's
+ * [constraint validation](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation)
+ * then this method returns the message provided by the browser and
+ * the custom validation method will not be called. If the value does
+ * pass constraint validation then the custom `validation()` method
+ * will be called and returns the message. If the value passes both the
+ * constraint validation and custom valdation, then this method returns
+ * and empty string.
+ */
+const validationMessage = (ctrl) => {
+    const ctrlElm = ctrlElms.get(ctrl);
+    const ctrlState = getControlState(ctrl);
+    setAttribute(ctrlElm, 'formnovalidate');
+    if (ctrlState && (ctrlState.d || ctrlState.t) && ctrlState.v === '') {
+        return ctrlState.e;
+    }
+    return '';
+};
+/**
+ * If a custom validation method was provided, and returns a promise,
+ * this method will return the message provided in `validatingMessage`.
+ * All other times this method will return an empty string.
+ */
+const activelyValidatingMessage = (ctrl) => {
+    const ctrlState = getControlState(ctrl);
+    if (ctrlState) {
+        return ctrlState.v;
+    }
+    return '';
+};
+/**
+ * If a custom validation method was provided, and returns a promise,
+ * this method will return `true` if the validation method is still pending.
+ * All other times this method will return `false`.
+ */
+const isActivelyValidating = (ctrl) => activelyValidatingMessage(ctrl) !== '';
+/**
+ * If the value has changed, or control has been "touched",
+ * and if the value does not pass the browser's
+ * [constraint validation](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation)
+ * then this method returns `false` and the custom validation method
+ * will not be called. If the value does pass constraint validation
+ * then the custom `validation()` method will be called, and if the
+ * custom validation method returns a message then this method will
+ * return `false`. If the value passes both the constraint validation
+ * and custom valdation, then this method returns `true`. However,
+ * if custom validation is async and is pending a response then this
+ * method will return `null`.
+ */
+const isValid = (ctrl) => {
+    const ctrlState = getControlState(ctrl);
+    if ((ctrlState.d || ctrlState.t) && ctrlState.v === '') {
+        return ctrlState.e === '';
+    }
+    return null;
+};
+/**
+ * If the value has changed or control has been "touched",
+ * and if the value does not pass the browser's
+ * [constraint validation](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation)
+ * then this method returns `true` and the custom validation method
+ * will not be called. If the value does pass constraint validation
+ * then the custom `validation()` method will be called, and if the
+ * custom validation method returns a message then this method will
+ * return `true`. If the value passes both the constraint validation
+ * and custom valdation, then this method returns `false`. However,
+ * if custom validation is async and is pending a response then this
+ * method will return `null`.
+ */
+const isInvalid = (ctrl) => {
+    const ctrlState = getControlState(ctrl);
+    if ((ctrlState.d || ctrlState.t) && ctrlState.v === '') {
+        return ctrlState.e !== '';
+    }
+    return null;
+};
+/**
+ * When the user changes the value of the form control element, the
+ * control is "dirty" and this method returns `true`. If control's
+ * initial value has not changed then this method returns `false`.
+ */
+const isDirty = (ctrl) => !!getControlState(ctrl).d;
+/**
+ * When the user blurs the form control element, the control is
+ * marked as "touched" and this method returns `true`. If the
+ * control has not had a blur event then this method will return
+ * `false`.
+ */
+const isTouched = (ctrl) => !!getControlState(ctrl).t;
 
 const labellingFor = (ctrl, groupItemValue, labellingType, setAttrs) => {
     state.r = null;
@@ -323,8 +552,31 @@ const setLabelledbyAttributes = (ctrlId, ctrlElm, labellingElm) => {
     }
 };
 const setAriaLinkedIdAttributes = (ctrlId, ctrlElm, labellingElm, ariaAttr, labellingIdSuffix) => setAttribute(ctrlElm, 'aria-' + ariaAttr, setAttribute(labellingElm, 'id', ctrlId + '-' + labellingIdSuffix));
+/**
+ * The `descriptionFor(ctrl)` method is used to establish a relationship between
+ * an input control and this text that described it. This is very similar to
+ * label, but the description provides more information that the user might need.
+ * When using this method, the element it's attached to will automatically link
+ * up the description by adding the `aria-describedby` attribute to the control
+ * element, and a unique id to the description element.
+ */
 const descriptionFor = (ctrl, groupItemValue) => labellingFor(ctrl, groupItemValue, 2 /* describedby */, setDescribedbyAttributes);
+/**
+ * The `validationFor(ctrl)` method is used to establish a relationship between
+ * an input control and it's error message. When using this method, the element
+ * it's attached to will automatically link up the error by adding the
+ * `aria-errormessage` attribute to the control element, and a unique id to the
+ * message element. Additionally, it will add `role="alert"` and `aria-atomic="true"`
+ * to the message element.
+ */
 const validationFor = (ctrl, groupItemValue) => labellingFor(ctrl, groupItemValue, 1 /* errormessage */, setErrormessageAttributes);
+/**
+ * The `labelFor(ctrl)` method is used to establish a relationship between
+ * an input control and this text that labels it. When the labelling element is
+ * an actual `<label>`, it will add the `for` attribute to the label, pointing
+ * it to the correct control id. When the labelling element is not a `<label>`
+ * it will then use `aria-labelledby`.
+ */
 const labelFor = (ctrl, groupItemValue) => labellingFor(ctrl, groupItemValue, 0 /* labelledby */, setLabelledbyAttributes);
 const getGroupChild = (parentCtrl, groupItemValue) => {
     const ctrlChildMap = ctrlChildren.get(parentCtrl);
@@ -350,226 +602,6 @@ const getGroupChild = (parentCtrl, groupItemValue) => {
         ctrlDatas.set(child.ctrl, child.data);
     }
     return child;
-};
-
-const checkValidity = (ctrlData, ctrlElm, ev, cb) => {
-    if (ctrlElm && ctrlElm.validity) {
-        const ctrlState = ctrlElm[Control];
-        const value = getValueFromControlElement(ctrlData, ctrlElm);
-        const callbackId = ++ctrlState.c;
-        ctrlElm.setCustomValidity((ctrlState.e = ''));
-        if (!ctrlElm.validity.valid) {
-            // native browser constraint
-            ctrlState.e = ctrlElm.validationMessage;
-        }
-        else if (isFunction(ctrlData.validate)) {
-            // has custom validate fn and the native browser constraints are valid
-            const results = ctrlData.validate(value, ev);
-            if (isPromise(results)) {
-                // results return a promise, let's wait on those
-                ctrlState.v = isString(ctrlData.validatingMessage)
-                    ? ctrlData.validatingMessage
-                    : isFunction(ctrlData.validatingMessage)
-                        ? ctrlData.validatingMessage(value, ev)
-                        : `Validating...`;
-                ctrlElm.setCustomValidity(ctrlState.v);
-                results.then((promiseResults) => checkValidateResults(promiseResults, ctrlData, ctrlElm, value, ev, callbackId, cb));
-            }
-            else {
-                // results were not a promise
-                checkValidateResults(results, ctrlData, ctrlElm, value, ev, callbackId, cb);
-            }
-        }
-        else {
-            // no validate fn
-            checkValidateResults('', ctrlData, ctrlElm, value, ev, callbackId, cb);
-        }
-    }
-};
-const checkValidateResults = (results, ctrlData, ctrlElm, value, ev, callbackId, cb) => {
-    const ctrlState = ctrlElm[Control];
-    const msg = isString(results) ? results.trim() : '';
-    if (ctrlState &&
-        ctrlElm &&
-        (ctrlState.c === callbackId || (!ctrlElm.validity.valid && !ctrlElm.validity.customError))) {
-        ctrlElm.setCustomValidity(msg);
-        ctrlState.e = ctrlElm.validationMessage;
-        ctrlState.v = '';
-        if (!ctrlElm.validity.valid && showNativeReport(ctrlElm)) {
-            ctrlElm.reportValidity();
-        }
-        cb && cb(ctrlData, ctrlElm, value, ev);
-    }
-};
-/**
- * If the value has changed, or control has been "touched",
- * and if the value does not pass the browser's
- * [constraint validation](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation)
- * then this method returns the message provided by the browser and
- * the custom validation method will not be called. If the value does
- * pass constraint validation then the custom `validation()` method
- * will be called and returns the message. If the value passes both the
- * constraint validation and custom valdation, then this method returns
- * and empty string.
- */
-const validationMessage = (ctrl) => {
-    const ctrlElm = ctrlElms.get(ctrl);
-    const ctrlState = getControlState(ctrl);
-    setAttribute(ctrlElm, 'formnovalidate');
-    if (ctrlState && (ctrlState.d || ctrlState.t) && ctrlState.v === '') {
-        return ctrlState.e;
-    }
-    return '';
-};
-/**
- * If a custom validation method was provided, and returns a promise,
- * this method will return the message provided in `validatingMessage`.
- * All other times this method will return an empty string.
- */
-const activeValidatingMessage = (ctrl) => {
-    const ctrlState = getControlState(ctrl);
-    if (ctrlState) {
-        return ctrlState.v;
-    }
-    return '';
-};
-/**
- * If a custom validation method was provided, and returns a promise,
- * this method will return `true` if the validation method is still pending.
- * All other times this method will return `false`.
- */
-const isActivelyValidating = (ctrl) => activeValidatingMessage(ctrl) !== '';
-/**
- * If the value has changed, or control has been "touched",
- * and if the value does not pass the browser's
- * [constraint validation](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation)
- * then this method returns `false` and the custom validation method
- * will not be called. If the value does pass constraint validation
- * then the custom `validation()` method will be called, and if the
- * custom validation method returns a message then this method will
- * return `false`. If the value passes both the constraint validation
- * and custom valdation, then this method returns `true`. However,
- * if custom validation is async and is pending a response then this
- * method will return `null`.
- */
-const isValid = (ctrl) => {
-    const ctrlState = getControlState(ctrl);
-    if ((ctrlState.d || ctrlState.t) && ctrlState.v === '') {
-        return ctrlState.e === '';
-    }
-    return null;
-};
-/**
- * If the value has changed or control has been "touched",
- * and if the value does not pass the browser's
- * [constraint validation](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation)
- * then this method returns `true` and the custom validation method
- * will not be called. If the value does pass constraint validation
- * then the custom `validation()` method will be called, and if the
- * custom validation method returns a message then this method will
- * return `true`. If the value passes both the constraint validation
- * and custom valdation, then this method returns `false`. However,
- * if custom validation is async and is pending a response then this
- * method will return `null`.
- */
-const isInvalid = (ctrl) => {
-    const ctrlState = getControlState(ctrl);
-    if ((ctrlState.d || ctrlState.t) && ctrlState.v === '') {
-        return ctrlState.e !== '';
-    }
-    return null;
-};
-/**
- * When the user changes the value of the form control element, the
- * control is "dirty" and this method returns `true`. If control's
- * initial value has not changed then this method returns `false`.
- */
-const isDirty = (ctrl) => !!getControlState(ctrl).d;
-/**
- * When the user blurs the form control element, the control is
- * marked as "touched" and this method returns `true`. If the
- * control has not had a blur event then this method will return
- * `false`.
- */
-const isTouched = (ctrl) => !!getControlState(ctrl).t;
-
-const sharedOnInvalidHandler = (ev) => {
-    const ctrlElm = ev.currentTarget;
-    const ctrlState = ctrlElm[Control];
-    if (!showNativeReport(ctrlElm)) {
-        ev.preventDefault();
-    }
-    // add a space at the end to ensure we trigger a re-render
-    ctrlState.e = ctrlElm.validationMessage + ' ';
-    // a control is automatically "dirty" if it has been invalid at least once.
-    ctrlState.d = true;
-};
-const sharedOnValueChangeHandler = (ev) => {
-    const ctrlElm = ev.currentTarget;
-    const ctrl = ctrls.get(ctrlElm);
-    const ctrlData = ctrlDatas.get(ctrl);
-    const value = getValueFromControlElement(ctrlData, ctrlElm);
-    if (isNumber(ctrlData.debounce)) {
-        clearTimeout(inputDebounces.get(ctrlElm));
-    }
-    if (ev.key === 'Enter' && isFunction(ctrlData.onEnterKey)) {
-        checkValidity(ctrlData, ctrlElm, ev, setValueChange);
-        ctrlData.onEnterKey(value, ctrlElm.validity, ev);
-    }
-    else if (ev.key === 'Escape' && isFunction(ctrlData.onEscapeKey)) {
-        checkValidity(ctrlData, ctrlElm, ev, setValueChange);
-        ctrlData.onEscapeKey(value, ctrlElm.validity, ev);
-    }
-    else if (isFunction(ctrlData.onValueChange)) {
-        if (isNumber(ctrlData.debounce)) {
-            inputDebounces.set(ctrlElm, setTimeout(() => {
-                const value = getValueFromControlElement(ctrlData, ctrlElm);
-                checkValidity(ctrlData, ctrlElm, ev, setValueChange);
-                ctrlData.onValueChange(value, ctrlElm.validity, ev);
-            }, ctrlData.debounce));
-        }
-        else {
-            checkValidity(ctrlData, ctrlElm, ev, setValueChange);
-            setValueChange(ctrlData, ctrlElm, value, ev);
-        }
-    }
-};
-const setValueChange = (ctrlData, ctrlElm, value, ev) => {
-    if (ctrlData && ctrlElm) {
-        const ctrlState = ctrlElm[Control];
-        ctrlState.d = true;
-        ctrlData.onValueChange(value, ctrlElm.validity, ev);
-    }
-};
-const sharedOnFocus = (ev) => {
-    const ctrlElm = ev === null || ev === void 0 ? void 0 : ev.currentTarget;
-    const ctrl = ctrls.get(ctrlElm);
-    const ctrlData = ctrlDatas.get(ctrl);
-    if (ctrlData) {
-        const ctrlState = ctrlElm[Control];
-        const value = getValueFromControlElement(ctrlData, ctrlElm);
-        if (ev.type === 'blur') {
-            ctrlState.t = true;
-            if (isFunction(ctrlData.onBlur)) {
-                ctrlData.onBlur(value, ctrlElm.validity, ev);
-            }
-        }
-        else {
-            if (isFunction(ctrlData.onFocus)) {
-                ctrlData.onFocus(value, ctrlElm.validity, ev);
-            }
-        }
-    }
-};
-const getValueFromControlElement = (ctrlData, ctrlElm) => {
-    const value = ctrlElm[ctrlData.valuePropName];
-    if (ctrlData.valuePropType === 'boolean') {
-        return String(value) === 'true';
-    }
-    if (ctrlData.valuePropType === 'number') {
-        return parseFloat(value);
-    }
-    return String(value);
 };
 
 const inputControl = (value, ctrlData) => {
@@ -623,7 +655,7 @@ const inputControlGroup = (selectedValue, ctrlData) => {
         state.r = null;
         if (isString(groupItemValue)) {
             // group item, like <input type="radio">
-            return inputControlGroupItem(selectedValue, ctrl, ctrlData, groupItemValue);
+            return inputControlGroupItem(selectedValue, ctrl, ctrlData, ctrlState, groupItemValue);
         }
         // group container, like <div role="group">
         return {
@@ -638,7 +670,7 @@ const inputControlGroup = (selectedValue, ctrlData) => {
     // and what's called to get all of the props
     return ctrl;
 };
-const inputControlGroupItem = (selectedGroupValue, parentCtrl, parentCtrlData, value) => {
+const inputControlGroupItem = (selectedGroupValue, parentCtrl, parentCtrlData, ctrlState, value) => {
     getGroupChild(parentCtrl, value);
     // grouped control input item, like <input type="radio"> a group
     // only has one "value" and the individual group item that has
@@ -655,7 +687,7 @@ const inputControlGroupItem = (selectedGroupValue, parentCtrl, parentCtrlData, v
         onFocus: sharedOnFocus,
         onBlur: sharedOnFocus,
         // ref for <input type="radio">
-        ref: (childCtrlElm) => childCtrlElm && ctrlGroupItemElmRef(parentCtrl, childCtrlElm, value),
+        ref: (childCtrlElm) => childCtrlElm && ctrlGroupItemElmRef(parentCtrl, ctrlState, childCtrlElm, value),
     };
 };
 const ctrlElmRef = (ctrl, ctrlData, ctrlState, ctrlElm, isParentGroup) => {
@@ -688,7 +720,7 @@ const ctrlElmRef = (ctrl, ctrlData, ctrlState, ctrlElm, isParentGroup) => {
         // errormessage
         setErrormessageAttributes(ctrlId, ctrlElm, labellingElm);
     }
-    if (ctrlState.e !== '') {
+    if ((ctrlState === null || ctrlState === void 0 ? void 0 : ctrlState.e) !== '') {
         setAttribute(ctrlElm, 'aria-invalid', 'true');
     }
     else {
@@ -707,14 +739,14 @@ const ctrlElmRef = (ctrl, ctrlData, ctrlState, ctrlElm, isParentGroup) => {
     ctrls.set(ctrlElm, ctrl);
     ctrlElms.set(ctrl, ctrlElm);
     ctrlElm[Control] = ctrlState;
-    if (ctrlState.i) {
+    if (ctrlState === null || ctrlState === void 0 ? void 0 : ctrlState.i) {
         checkValidity(ctrlData, ctrlElm, null, null);
         ctrlState.i = false;
     }
 };
-const ctrlGroupItemElmRef = (parentCtrl, childCtrlElm, childValue) => {
+const ctrlGroupItemElmRef = (parentCtrl, ctrlState, childCtrlElm, childValue) => {
     const child = getGroupChild(parentCtrl, childValue);
-    const ctrlState = setControlState(child === null || child === void 0 ? void 0 : child.data);
+    childCtrlElm[Control] = ctrlState;
     return ctrlElmRef(child === null || child === void 0 ? void 0 : child.ctrl, child === null || child === void 0 ? void 0 : child.data, ctrlState, childCtrlElm, false);
 };
 
@@ -743,7 +775,7 @@ const normalizeControlOpts = (ctrlOpts, changeEventName, valuePropName, valuePro
         valuePropType }, ctrlOpts);
 };
 
-const myFormCss = "body{font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Open Sans', 'Helvetica Neue', sans-serif}form button{position:relative;cursor:pointer;background:#ccc;margin:10px 0 0 0;padding:5px;font-size:16px}form:invalid button{background:#eee;color:#aaa}form:invalid button::after{position:absolute;padding-left:20px;content:'form:invalid';color:red;white-space:nowrap}form:valid button::after{position:absolute;padding-left:20px;content:'form:valid';color:green;white-space:nowrap}label{font-weight:bold}[role='alert']{color:red}input:valid{border:1px solid green}input:invalid{border:1px solid red}.is-validating{background:rgba(255, 255, 0, 0.2)}.is-valid{background:rgba(0, 128, 0, 0.2)}.is-invalid{background:rgba(255, 0, 0, 0.1)}.actively-validating{background-color:#ddd;font-style:italic}.is-dirty{color:purple}.is-touched{color:blue}pre{background:#eee;padding:10px}section{padding:10px;border-bottom:1px solid gray}section:last-child{border-bottom:none}.counter{font-size:12px}";
+const myFormCss = "body{font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Open Sans', 'Helvetica Neue', sans-serif}form button{position:relative;cursor:pointer;background:#ccc;margin:10px 0 0 0;padding:5px;font-size:16px}form:invalid button{background:#eee;color:#aaa}form:invalid button::after{position:absolute;padding-left:20px;content:'form:invalid';color:red;white-space:nowrap}form:valid button::after{position:absolute;padding-left:20px;content:'form:valid';color:green;white-space:nowrap}label,.group-label{font-weight:bold}[role='alert']{color:red}input:valid{border:1px solid green}input:invalid{border:1px solid red}.is-validating{background:rgba(255, 255, 0, 0.2)}.is-valid{background:rgba(0, 128, 0, 0.2)}.is-invalid{background:rgba(255, 0, 0, 0.1)}.actively-validating{background-color:#ddd;font-style:italic}.is-dirty{color:purple}.is-touched{color:blue}pre{background:#eee;padding:10px}section{padding:10px;border-bottom:1px solid gray}section:last-child{border-bottom:none}.counter{font-size:12px}";
 
 const MyForm = class {
     constructor(hostRef) {
@@ -771,7 +803,7 @@ const MyForm = class {
         const email = bind(this, 'email');
         const userName = bind(this, 'userName', {
             debounce: 500,
-            validatingMessage: (value) => `Checking if "${value}" is already taken...`,
+            activelyValidatingMessage: (value) => `Checking if "${value}" is already taken...`,
             validate: (value) => {
                 console.log(`async checking "${value}" username, this will take 3 seconds...`);
                 return new Promise((resolve) => {
@@ -799,7 +831,7 @@ const MyForm = class {
         const favoriteCar = controlGroup(this.favoriteCar, {
             onValueChange: (value) => (this.favoriteCar = value),
         });
-        return (h(Host, null, h("form", { onSubmit: this.onSubmit }, h("section", null, h("div", null, h("label", Object.assign({}, labelFor(email)), "Email")), h("div", Object.assign({ class: {
+        return (h(Host, null, h("form", { onSubmit: this.onSubmit }, h("section", null, h("div", null, h("label", Object.assign({}, labelFor(fullName)), "Name")), h("div", Object.assign({}, descriptionFor(fullName)), "What's your full name? ", this.fullName), h("div", null, h("input", Object.assign({ required: true }, fullName()))), h("span", Object.assign({}, validationFor(fullName)), validationMessage(fullName))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(email)), "Email")), h("div", Object.assign({ class: {
                 'is-dirty': isDirty(email),
             } }, descriptionFor(email)), "(Purple means the input is \"dirty\" because the value has changed)"), h("div", null, h("input", Object.assign({ id: "my-email-id", name: "my-email-name", type: "email", required: true }, email()))), h("div", Object.assign({}, validationFor(email)), validationMessage(email))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(age)), "Age")), h("div", Object.assign({ class: {
                 'is-touched': isTouched(age),
@@ -807,7 +839,7 @@ const MyForm = class {
                 'is-validating': isActivelyValidating(userName),
                 'is-valid': isValid(userName),
                 'is-invalid': isInvalid(userName),
-            } }, h("div", null, h("label", Object.assign({}, labelFor(userName)), "User Name")), h("div", Object.assign({}, descriptionFor(userName)), "(500ms debounce, 3s async validation)"), h("div", null, h("input", Object.assign({ required: true }, userName()))), h("div", { class: "actively-validating", hidden: !isActivelyValidating(userName) }, activeValidatingMessage(userName)), h("div", Object.assign({}, validationFor(userName)), validationMessage(userName))), h("section", null, h("button", { type: "submit" }, "Submit"))), this.json !== '' ? h("pre", null, "Form Submit ", this.json) : null, h("section", { class: "counter" }, "Counter (just to test re-rendering scenarios):", h("button", { onClick: () => this.counter-- }, "-"), " ", this.counter, ' ', h("button", { onClick: () => this.counter++ }, "+"))));
+            } }, h("div", null, h("label", Object.assign({}, labelFor(userName)), "User Name")), h("div", Object.assign({}, descriptionFor(userName)), "(500ms debounce, 3s async validation)"), h("div", null, h("input", Object.assign({ required: true }, userName()))), h("div", { class: "actively-validating", hidden: !isActivelyValidating(userName) }, activelyValidatingMessage(userName)), h("div", Object.assign({}, validationFor(userName)), validationMessage(userName))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(volume)), "Volume")), h("div", Object.assign({}, descriptionFor(age)), "These go to eleven: ", this.volume), h("div", null, h("input", Object.assign({ type: "range", min: "0", max: "11" }, volume()))), h("div", Object.assign({}, validationFor(volume)), validationMessage(volume))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(vegetarian)), "Vegetarian")), h("div", Object.assign({}, descriptionFor(vegetarian)), "Are you a vegetarian? ", String(this.vegetarian)), h("div", null, h("input", Object.assign({ type: "checkbox" }, vegetarian()))), h("div", Object.assign({}, validationFor(vegetarian)), validationMessage(vegetarian))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(specialInstructions)), "Special Instructions")), h("div", Object.assign({}, descriptionFor(specialInstructions)), "Do you have dietary restrictions? ", this.specialInstructions), h("div", null, h("textarea", Object.assign({}, specialInstructions()))), h("div", Object.assign({}, validationFor(specialInstructions)), validationMessage(specialInstructions))), h("section", Object.assign({}, favoriteCar()), h("div", Object.assign({ class: "group-label" }, labelFor(favoriteCar)), "Favorite Car"), h("div", Object.assign({}, descriptionFor(favoriteCar)), "What's your favorite car? ", this.favoriteCar), h("div", null, h("label", Object.assign({}, labelFor(favoriteCar, 'mustang')), "Mustang"), h("input", Object.assign({ type: "radio" }, favoriteCar('mustang')))), h("div", null, h("label", Object.assign({}, labelFor(favoriteCar, 'camaro')), "Camaro"), h("input", Object.assign({ type: "radio" }, favoriteCar('camaro')))), h("div", null, h("label", Object.assign({}, labelFor(favoriteCar, 'challenger')), "Challenger"), h("input", Object.assign({ type: "radio" }, favoriteCar('challenger')))), h("div", Object.assign({}, validationFor(favoriteCar)), validationMessage(favoriteCar))), h("section", null, h("button", { type: "submit" }, "Submit"))), this.json !== '' ? h("pre", null, "Form Submit ", this.json) : null, h("section", { class: "counter" }, "Counter (just to test re-rendering scenarios):", h("button", { onClick: () => this.counter-- }, "-"), " ", this.counter, ' ', h("button", { onClick: () => this.counter++ }, "+"))));
     }
 };
 MyForm.style = myFormCss;

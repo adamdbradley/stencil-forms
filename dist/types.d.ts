@@ -16,6 +16,11 @@ export interface ReactiveFormBindOptions {
     onEscapeKey?: (value: any, validity: ValidityState, ev: KeyboardEvent) => void;
     onFocus?: (value: any, validity: ValidityState, ev: FocusEvent) => void;
     onInvalid?: (value: any, validity: ValidityState, ev: UIEvent) => void;
+    /**
+     * The `onTouch` event is only called the first time the form
+     * control received `onFocus`.
+     */
+    onTouch?: (value: any, validity: ValidityState, ev: FocusEvent) => void;
     validate?: (value: any, validity: ValidityState, ev: Event | null) => ReactiveValidateResult | Promise<ReactiveValidateResult>;
     activelyValidatingMessage?: string | ((value: any, ev: Event | null) => string);
     /**
