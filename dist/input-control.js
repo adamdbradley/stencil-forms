@@ -1,7 +1,7 @@
 import { Control, ctrlChildren, ctrlDatas, ctrlElms, ctrlElmIds, ctrls, labellingElms, setControlState, state, } from './state';
 import { isString, setAttribute, isFunction } from './helpers';
 import { getGroupChild, setDescribedbyAttributes, setErrormessageAttributes, setLabelledbyAttributes, } from './labelling-for';
-import { sharedOnInvalidHandler, sharedOnValueChangeHandler, sharedOnFocus, sharedOnKeyDownHandler } from './handlers';
+import { sharedOnInvalidHandler, sharedOnValueChangeHandler, sharedOnFocus, sharedOnKeyDownHandler, sharedOnKeyUpHandler, } from './handlers';
 import { checkValidity } from './validation';
 export const inputControl = (value, ctrlData) => {
     // create the control arrow fn that'll be used as a weakmap key
@@ -24,6 +24,9 @@ export const inputControl = (value, ctrlData) => {
         };
         if (isFunction(ctrlData.onKeyDown)) {
             props.onKeyDown = sharedOnKeyDownHandler;
+        }
+        if (isFunction(ctrlData.onKeyUp)) {
+            props.onKeyUp = sharedOnKeyUpHandler;
         }
         return props;
     };

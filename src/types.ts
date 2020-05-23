@@ -12,9 +12,10 @@ export interface ReactiveFormBindOptions {
    */
   debounce?: number;
   onBlur?: (value: any, validity: ValidityState, ev: FocusEvent) => void;
-  onKeyDown?: (key: string, value: any, ev: KeyboardEvent) => void;
   onFocus?: (value: any, validity: ValidityState, ev: FocusEvent) => void;
   onInvalid?: (value: any, validity: ValidityState, ev: UIEvent) => void;
+  onKeyDown?: (key: string, value: any, ev: KeyboardEvent) => void;
+  onKeyUp?: (key: string, value: any, ev: KeyboardEvent) => void;
   /**
    * The `onTouch` event is only called the first time the form
    * control received `onFocus`.
@@ -115,8 +116,9 @@ export type ReactiveControlProperties = {
   onChange?: (ev: any) => void;
   onClick?: (ev: any) => void;
   onFocus?: (ev: any) => void;
-  onKeyDown?: (ev: any) => void;
   onInput?: (ev: any) => void;
+  onKeyDown?: (ev: any) => void;
+  onKeyUp?: (ev: any) => void;
   onInvalid?: (ev: any) => void;
   ref?: (elm: any) => void;
   role?: string;

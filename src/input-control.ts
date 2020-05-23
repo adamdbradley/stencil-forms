@@ -26,7 +26,13 @@ import {
   setErrormessageAttributes,
   setLabelledbyAttributes,
 } from './labelling-for';
-import { sharedOnInvalidHandler, sharedOnValueChangeHandler, sharedOnFocus, sharedOnKeyDownHandler } from './handlers';
+import {
+  sharedOnInvalidHandler,
+  sharedOnValueChangeHandler,
+  sharedOnFocus,
+  sharedOnKeyDownHandler,
+  sharedOnKeyUpHandler,
+} from './handlers';
 import { checkValidity } from './validation';
 
 export const inputControl = (value: any, ctrlData: ControlData) => {
@@ -57,6 +63,10 @@ export const inputControl = (value: any, ctrlData: ControlData) => {
 
     if (isFunction(ctrlData.onKeyDown)) {
       props.onKeyDown = sharedOnKeyDownHandler;
+    }
+
+    if (isFunction(ctrlData.onKeyUp)) {
+      props.onKeyUp = sharedOnKeyUpHandler;
     }
 
     return props;

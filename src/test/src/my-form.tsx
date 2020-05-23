@@ -79,7 +79,10 @@ export class MyForm {
 
     const specialInstructions = bind(this, 'specialInstructions', {
       onKeyDown: (key, value) => {
-        console.log('key', key, 'value', value);
+        console.log('onKeyDown, key', key, 'value', value);
+      },
+      onKeyUp: (key, value) => {
+        console.log('onKeyUp, key', key, 'value', value);
       },
     });
 

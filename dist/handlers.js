@@ -49,6 +49,21 @@ export const sharedOnKeyDownHandler = (ev) => {
         ctrlData.onKeyDown(ev.key, value, ev);
     }
 };
+export const sharedOnKeyUpHandler = (ev) => {
+    const ctrlElm = ev.currentTarget;
+    const ctrl = ctrls.get(ctrlElm);
+    const ctrlData = ctrlDatas.get(ctrl);
+    const value = getValueFromControlElement(ctrlData, ctrlElm);
+    if (isNumber(ctrlData.debounce)) {
+        clearTimeout(inputDebounces.get(ctrlElm));
+        inputDebounces.set(ctrlElm, setTimeout(() => {
+            ctrlData.onKeyUp(ev.key, value, ev);
+        }, ctrlData.debounce));
+    }
+    else {
+        ctrlData.onKeyUp(ev.key, value, ev);
+    }
+};
 const setValueChange = (ctrlData, ctrlElm, value, ev) => {
     if (ctrlData && ctrlElm) {
         const ctrlState = ctrlElm[Control];
