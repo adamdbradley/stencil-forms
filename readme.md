@@ -24,6 +24,12 @@ Not even close 🔥
 
 No clue 🔥
 
+### Can I start _testing_ it today?
+
+Absolutely!! 🚀
+
+`npm install --save-dev adamdbradley/stencil-forms` 
+
 ## Goals
 
 - Reduce boilerplate and complexity in order to wire-up reactive inputs.
