@@ -2,17 +2,17 @@ import { inputControl, inputControlGroup } from './input-control';
 import { ReactiveFormControlOptions, ReactiveFormValuePropType, ControlData } from './types';
 import { state } from './state';
 
-export const control = (value: any, ctrlOpts: ReactiveFormControlOptions) =>
-  inputControl(value, normalizeControlOpts(ctrlOpts, 'onInput', 'value', 'string'));
+export const control = (initialValue: any, ctrlOpts: ReactiveFormControlOptions) =>
+  inputControl(initialValue, normalizeControlOpts(ctrlOpts, 'onInput', 'value', 'string'));
 
-export const controlBoolean = (value: any, ctrlOpts: ReactiveFormControlOptions) =>
-  inputControl(value, normalizeControlOpts(ctrlOpts, 'onChange', 'checked', 'boolean'));
+export const controlBoolean = (initialValue: any, ctrlOpts: ReactiveFormControlOptions) =>
+  inputControl(initialValue, normalizeControlOpts(ctrlOpts, 'onChange', 'checked', 'boolean'));
 
-export const controlNumber = (value: any, ctrlOpts: ReactiveFormControlOptions) =>
-  inputControl(value, normalizeControlOpts(ctrlOpts, 'onInput', 'value', 'number'));
+export const controlNumber = (initialValue: any, ctrlOpts: ReactiveFormControlOptions) =>
+  inputControl(initialValue, normalizeControlOpts(ctrlOpts, 'onInput', 'value', 'number'));
 
-export const controlGroup = (selectedValue: any, ctrlOpts: ReactiveFormControlOptions) =>
-  inputControlGroup(selectedValue, normalizeControlOpts(ctrlOpts, 'onChange', 'value', 'string'));
+export const controlGroup = (initialSelectedValue: any, ctrlOpts: ReactiveFormControlOptions) =>
+  inputControlGroup(initialSelectedValue, normalizeControlOpts(ctrlOpts, 'onChange', 'value', 'string'));
 
 const normalizeControlOpts = (
   ctrlOpts: ReactiveFormControlOptions,

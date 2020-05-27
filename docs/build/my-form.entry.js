@@ -792,10 +792,10 @@ const normalizeBindOpts = (bindOpts, instance, propName, changeEventName, valueP
         valuePropType }, bindOpts), { onValueChange: (value) => (instance[propName] = value) });
 };
 
-const control = (value, ctrlOpts) => inputControl(value, normalizeControlOpts(ctrlOpts, 'onInput', 'value', 'string'));
-const controlBoolean = (value, ctrlOpts) => inputControl(value, normalizeControlOpts(ctrlOpts, 'onChange', 'checked', 'boolean'));
-const controlNumber = (value, ctrlOpts) => inputControl(value, normalizeControlOpts(ctrlOpts, 'onInput', 'value', 'number'));
-const controlGroup = (selectedValue, ctrlOpts) => inputControlGroup(selectedValue, normalizeControlOpts(ctrlOpts, 'onChange', 'value', 'string'));
+const control = (initialValue, ctrlOpts) => inputControl(initialValue, normalizeControlOpts(ctrlOpts, 'onInput', 'value', 'string'));
+const controlBoolean = (initialValue, ctrlOpts) => inputControl(initialValue, normalizeControlOpts(ctrlOpts, 'onChange', 'checked', 'boolean'));
+const controlNumber = (initialValue, ctrlOpts) => inputControl(initialValue, normalizeControlOpts(ctrlOpts, 'onInput', 'value', 'number'));
+const controlGroup = (initialSelectedValue, ctrlOpts) => inputControlGroup(initialSelectedValue, normalizeControlOpts(ctrlOpts, 'onChange', 'value', 'string'));
 const normalizeControlOpts = (ctrlOpts, changeEventName, valuePropName, valuePropType) => {
     const propName = 'ctrl' + state.i++;
     return Object.assign({ i: propName, n: propName, changeEventName,

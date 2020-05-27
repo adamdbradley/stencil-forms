@@ -222,7 +222,7 @@ render() {
       'is-invalid': isInvalid(mph)
     }}>
       <label {...labelFor(mph)}>Miles Per Hour:</label>
-      <input type="number" {...mph()}>
+      <input type="number" {...mph()} />
       <p hidden={isValid(mph)}>{validationMessage(mph)}</p>
     </Host>
   );
@@ -300,7 +300,7 @@ render() {
   return (
     <Host>
       <label {...labelFor(age)}>What's my age again?</label>
-      <input {...age()}>
+      <input {...age()} />
       <div hidden={isValid(age)}>
         {validationMessage(age)}
       </div>
@@ -341,7 +341,7 @@ render() {
       <label {...labelFor(userName)}>User Name:</label>
       <input {...userName()}>
       <div hidden={!isActivelyValidating(userName)}>
-        <img src="spinner.gif"/>
+        <img src="spinner.gif" />
         {activelyValidatingMessage(userName)}
       </div>
       <div hidden={isValid(userName)}>
@@ -391,7 +391,7 @@ render() {
   return (
     <Host>
       <label {...labelFor(age)}>What's my age again?</label>
-      <input {...age()}>
+      <input {...age()} />
       <div hidden={isValid(age)}>
         {validationMessage(age)}
       </div>
@@ -408,10 +408,30 @@ https://github.com/adamdbradley/stencil-forms/blob/master/src/types.ts
 
 ## Advanced
 
-https://github.com/adamdbradley/stencil-forms/blob/master/src/test/src/my-form.tsx
+In most cases the `bind(this, 'propName')` methods are the preferred way to wire-up a form control to a property on any instance. However, the lower-level `control()` methods are also available if you'd like more control when updating values after reacting to form input updates. The `bind()` methods get and set to the same property on an instance (usually the component instance). Whereas the `control()` methods sets the initial value of the form control, then simply listen for changes. What happens is after each value update is up to the provided `onValueChange()` method.
 
-`control()`
+In the example below, the `controlNumber()` method is passed the initial value of `88`, which is set to the range input. Next, on every change to the input, the provided `onValueChange(value)` method is called with the updated value. Notice how this method is not tied to one context, which is big difference compared to to `bind()`.
 
-`controlBoolean()`
+```tsx
+render() {
+  const mph = controlNumber(88, {
+    onValueChange: (value) => {
+      console.log('MPH', value);
+    },
+  });
 
-`controlGroup()`
+  return (
+    <Host>
+      <label {...labelFor(mph)}>Miles Per Hour:</label>
+      <input type="range" min="0" max="200" {...mph()} />
+    </Host>
+  );
+}
+```
+
+### Lower-Level Control Methods
+
+- `control(initialValue, opts)`
+- `controlBoolean(initialValue, opts)`
+- `controlNumber(initialValue, opts)`
+- `controlGroup(initialValue, opts)`
