@@ -187,12 +187,11 @@ export class MyForm {
               <label {...labelFor(specialInstructions)}>Special Instructions</label>
             </div>
             <div {...descriptionFor(specialInstructions)}>
-              Do you have dietary restrictions? {this.specialInstructions}
+              (Uses the browser's default error popup message, rather than using a custom validationFor() method.)
             </div>
             <div>
-              <textarea {...specialInstructions()} />
+              <textarea required {...specialInstructions()} />
             </div>
-            <div {...validationFor(specialInstructions)}>{validationMessage(specialInstructions)}</div>
           </section>
 
           <section {...favoriteCar()}>

@@ -1972,7 +1972,7 @@ const initializeComponent = async (elm, hostRef, cmpMeta, hmrVersionId, Cstr) =>
                 style = style[hostRef.$modeName$];
             }
             if (!BUILD.hydrateServerSide && BUILD.shadowDom && BUILD.shadowDomShim && cmpMeta.$flags$ & 8 /* needsShadowDomShim */) {
-                style = await __sc_import_stencil_forms('./shadow-css-68b0802e.js').then(m => m.scopeCss(style, scopeId, false));
+                style = await __sc_import_stencil_forms('./shadow-css-5e35ab35.js').then(m => m.scopeCss(style, scopeId, false));
             }
             registerStyle(scopeId, style, !!(cmpMeta.$flags$ & 1 /* shadowDomEncapsulation */));
             endRegisterStyles();
@@ -2788,7 +2788,7 @@ const patchEsm = () => {
     // @ts-ignore
     if (BUILD.cssVarShim && !(CSS && CSS.supports && CSS.supports('color', 'var(--c)'))) {
         // @ts-ignore
-        return __sc_import_stencil_forms(/* webpackChunkName: "polyfills-css-shim" */ './css-shim-504c23e4.js').then(() => {
+        return __sc_import_stencil_forms(/* webpackChunkName: "polyfills-css-shim" */ './css-shim-0738eac1.js').then(() => {
             if ((plt.$cssShim$ = win.__cssshim)) {
                 return plt.$cssShim$.i();
             }
@@ -2851,7 +2851,7 @@ const patchBrowser = () => {
         if (BUILD.dynamicImportShim && !win.customElements) {
             // module support, but no custom elements support (Old Edge)
             // @ts-ignore
-            return __sc_import_stencil_forms(/* webpackChunkName: "polyfills-dom" */ './dom-d2d72955.js').then(() => opts);
+            return __sc_import_stencil_forms(/* webpackChunkName: "polyfills-dom" */ './dom-91049fd0.js').then(() => opts);
         }
     }
     return promiseResolve(opts);
