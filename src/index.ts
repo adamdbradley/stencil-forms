@@ -6,6 +6,7 @@ export {
   isTouched,
   isValid,
   validationMessage,
+  submitValidity,
 } from './validation';
 export { bind, bindBoolean, bindGroup, bindNumber } from './bind';
 export { control, controlBoolean, controlGroup, controlNumber } from './control';

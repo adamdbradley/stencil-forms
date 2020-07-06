@@ -1,4 +1,4 @@
-import { g as getRenderingRef, f as forceUpdate, r as registerInstance, h, H as Host } from './index-fecf9e6f.js';
+import { g as getRenderingRef, f as forceUpdate, r as registerInstance, h, H as Host } from './index-db6fe4a0.js';
 
 const appendToMap = (map, propName, value) => {
     const items = map.get(propName);
@@ -505,6 +505,13 @@ const isDirty = (ctrl) => !!getControlState(ctrl).d;
  * `false`.
  */
 const isTouched = (ctrl) => !!getControlState(ctrl).t;
+const submitValidity = (message) => {
+    return {
+        ref(btn) {
+            btn.setCustomValidity(message !== null && message !== void 0 ? message : '');
+        }
+    };
+};
 
 const labellingFor = (ctrl, groupItemValue, labellingType, setAttrs) => {
     state.r = null;
@@ -808,6 +815,7 @@ const myFormCss = "body{font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI
 class MyForm {
     constructor(hostRef) {
         registerInstance(this, hostRef);
+        this.login = false;
         this.fullName = 'Marty McFly';
         this.email = '';
         this.userName = '';
@@ -825,6 +833,12 @@ class MyForm {
             this.json = JSON.stringify(Object.fromEntries(formData), null, 2);
             console.warn('submit', this.json);
         };
+    }
+    componentWillLoad() {
+        const search = new URLSearchParams(document.location.search);
+        if (search.get("token") === "test") {
+            this.login = true;
+        }
     }
     render() {
         const fullName = bind(this, 'fullName');
@@ -874,7 +888,7 @@ class MyForm {
                 'is-validating': isActivelyValidating(userName),
                 'is-valid': isValid(userName),
                 'is-invalid': isInvalid(userName),
-            } }, h("div", null, h("label", Object.assign({}, labelFor(userName)), "User Name")), h("div", Object.assign({}, descriptionFor(userName)), "(500ms debounce, 3s async validation)"), h("div", null, h("input", Object.assign({ required: true }, userName()))), h("div", { class: "actively-validating", hidden: !isActivelyValidating(userName) }, activelyValidatingMessage(userName)), h("div", Object.assign({}, validationFor(userName)), validationMessage(userName))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(volume)), "Volume")), h("div", Object.assign({}, descriptionFor(age)), "These go to eleven: ", this.volume), h("div", null, h("input", Object.assign({ type: "range", min: "0", max: "11" }, volume()))), h("div", Object.assign({}, validationFor(volume)), validationMessage(volume))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(vegetarian)), "Vegetarian")), h("div", Object.assign({}, descriptionFor(vegetarian)), "Are you a vegetarian? ", String(this.vegetarian)), h("div", null, h("input", Object.assign({ type: "checkbox" }, vegetarian()))), h("div", Object.assign({}, validationFor(vegetarian)), validationMessage(vegetarian))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(specialInstructions)), "Special Instructions")), h("div", Object.assign({}, descriptionFor(specialInstructions)), "(Uses the browser's default error popup message, rather than using a custom validationFor() method.)"), h("div", null, h("textarea", Object.assign({ required: true }, specialInstructions())))), h("section", Object.assign({}, favoriteCar()), h("div", Object.assign({ class: "group-label" }, labelFor(favoriteCar)), "Favorite Car"), h("div", Object.assign({}, descriptionFor(favoriteCar)), "What's your favorite car? ", this.favoriteCar), h("div", null, h("label", Object.assign({}, labelFor(favoriteCar, 'mustang')), "Mustang"), h("input", Object.assign({ type: "radio" }, favoriteCar('mustang')))), h("div", null, h("label", Object.assign({}, labelFor(favoriteCar, 'camaro')), "Camaro"), h("input", Object.assign({ type: "radio" }, favoriteCar('camaro')))), h("div", null, h("label", Object.assign({}, labelFor(favoriteCar, 'challenger')), "Challenger"), h("input", Object.assign({ type: "radio" }, favoriteCar('challenger')))), h("div", Object.assign({}, validationFor(favoriteCar)), validationMessage(favoriteCar))), h("section", null, h("button", { type: "submit" }, "Submit"))), this.json !== '' ? h("pre", null, "Form Submit ", this.json) : null, h("section", { class: "counter" }, "Counter (just to test re-rendering scenarios):", h("button", { onClick: () => this.counter-- }, "-"), " ", this.counter, ' ', h("button", { onClick: () => this.counter++ }, "+"))));
+            } }, h("div", null, h("label", Object.assign({}, labelFor(userName)), "User Name")), h("div", Object.assign({}, descriptionFor(userName)), "(500ms debounce, 3s async validation)"), h("div", null, h("input", Object.assign({ required: true }, userName()))), h("div", { class: "actively-validating", hidden: !isActivelyValidating(userName) }, activelyValidatingMessage(userName)), h("div", Object.assign({}, validationFor(userName)), validationMessage(userName))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(volume)), "Volume")), h("div", Object.assign({}, descriptionFor(age)), "These go to eleven: ", this.volume), h("div", null, h("input", Object.assign({ type: "range", min: "0", max: "11" }, volume()))), h("div", Object.assign({}, validationFor(volume)), validationMessage(volume))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(vegetarian)), "Vegetarian")), h("div", Object.assign({}, descriptionFor(vegetarian)), "Are you a vegetarian? ", String(this.vegetarian)), h("div", null, h("input", Object.assign({ type: "checkbox" }, vegetarian()))), h("div", Object.assign({}, validationFor(vegetarian)), validationMessage(vegetarian))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(specialInstructions)), "Special Instructions")), h("div", Object.assign({}, descriptionFor(specialInstructions)), "(Uses the browser's default error popup message, rather than using a custom validationFor() method.)"), h("div", null, h("textarea", Object.assign({ required: true }, specialInstructions())))), h("section", Object.assign({}, favoriteCar()), h("div", Object.assign({ class: "group-label" }, labelFor(favoriteCar)), "Favorite Car"), h("div", Object.assign({}, descriptionFor(favoriteCar)), "What's your favorite car? ", this.favoriteCar), h("div", null, h("label", Object.assign({}, labelFor(favoriteCar, 'mustang')), "Mustang"), h("input", Object.assign({ type: "radio" }, favoriteCar('mustang')))), h("div", null, h("label", Object.assign({}, labelFor(favoriteCar, 'camaro')), "Camaro"), h("input", Object.assign({ type: "radio" }, favoriteCar('camaro')))), h("div", null, h("label", Object.assign({}, labelFor(favoriteCar, 'challenger')), "Challenger"), h("input", Object.assign({ type: "radio" }, favoriteCar('challenger')))), h("div", Object.assign({}, validationFor(favoriteCar)), validationMessage(favoriteCar))), h("section", null, h("button", Object.assign({ type: "submit" }, submitValidity(!this.login ? "Bad auth. Add ?token=test" : undefined)), "Submit"))), this.json !== '' ? h("pre", null, "Form Submit ", this.json) : null, h("section", { class: "counter" }, "Counter (just to test re-rendering scenarios):", h("button", { onClick: () => this.counter-- }, "-"), " ", this.counter, ' ', h("button", { onClick: () => this.counter++ }, "+"))));
     }
 }
 MyForm.style = myFormCss;

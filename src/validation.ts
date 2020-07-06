@@ -173,3 +173,11 @@ export const isDirty = (ctrl: ReactiveFormControl) => !!getControlState(ctrl).d;
  * `false`.
  */
 export const isTouched = (ctrl: ReactiveFormControl) => !!getControlState(ctrl).t;
+
+export const submitValidity = (message: string | undefined) => {
+  return {
+    ref(btn: HTMLInputElement) {
+      btn.setCustomValidity(message ?? '');
+    }
+  }
+}

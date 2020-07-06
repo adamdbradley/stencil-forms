@@ -141,3 +141,10 @@ export const isDirty = (ctrl) => !!getControlState(ctrl).d;
  * `false`.
  */
 export const isTouched = (ctrl) => !!getControlState(ctrl).t;
+export const submitValidity = (message) => {
+    return {
+        ref(btn) {
+            btn.setCustomValidity(message !== null && message !== void 0 ? message : '');
+        }
+    };
+};

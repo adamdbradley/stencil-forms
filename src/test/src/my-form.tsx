@@ -15,6 +15,7 @@ import {
   isTouched,
   validationFor,
   validationMessage,
+  submitValidity,
 } from '../../index';
 
 @Component({
@@ -22,6 +23,8 @@ import {
   styleUrl: 'my-form.css',
 })
 export class MyForm {
+
+  @Prop() login = false;
   @Prop() fullName = 'Marty McFly';
   @Prop() email = '';
   @Prop() userName = '';
@@ -33,6 +36,12 @@ export class MyForm {
   @Prop() counter = 0;
   @State() json = '';
 
+  componentWillLoad() {
+    const search = new URLSearchParams(document.location.search);
+    if (search.get("token") === "test") {
+      this.login = true;
+    }
+  }
   onSubmit = (ev: Event) => {
     ev.preventDefault();
     ev.stopPropagation();
@@ -215,7 +224,7 @@ export class MyForm {
           </section>
 
           <section>
-            <button type="submit">Submit</button>
+            <button type="submit" {...submitValidity(!this.login ? "Bad auth. Add ?token=test" : undefined)}>Submit</button>
           </section>
         </form>
 
