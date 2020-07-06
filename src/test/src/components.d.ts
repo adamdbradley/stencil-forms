@@ -12,6 +12,7 @@ export namespace Components {
         "email": string;
         "favoriteCar": string;
         "fullName": string;
+        "login": boolean;
         "specialInstructions": string;
         "userName": string;
         "vegetarian": boolean;
@@ -36,6 +37,7 @@ declare namespace LocalJSX {
         "email"?: string;
         "favoriteCar"?: string;
         "fullName"?: string;
+        "login"?: boolean;
         "specialInstructions"?: string;
         "userName"?: string;
         "vegetarian"?: boolean;
