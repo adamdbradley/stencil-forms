@@ -1,6 +1,6 @@
 import { ControlData, ControlElement, ReactiveFormControl, ReactiveValidateResult, ControlState } from './types';
 import { Control, getControlState, ctrlElms } from './state';
-import { getValueFromControlElement } from './handlers';
+import { getValueFromControlElement } from './value';
 import { isFunction, isPromise, isString, setAttribute, showNativeReport } from './helpers';
 
 export const checkValidity = (
@@ -54,22 +54,18 @@ const checkValidateResults = (
   callbackId: number,
   cb: ((ctrlData: ControlData, ctrlElm: ControlElement, value: any, ev: Event) => void) | null,
 ) => {
-  const ctrlState: ControlState = (ctrlElm as any)[Control];
-  const msg = isString(results) ? results.trim() : '';
+  if (ctrlElm) {
+    const ctrlState: ControlState = (ctrlElm as any)[Control];
+    if (ctrlState && (ctrlState.c === callbackId || (!ctrlElm.validity.valid && !ctrlElm.validity.customError))) {
+      const msg = isString(results) ? results.trim() : '';
+      ctrlElm.setCustomValidity(msg);
+      ctrlState.e = ctrlElm.validationMessage;
+      ctrlState.m = '';
 
-  if (
-    ctrlState &&
-    ctrlElm &&
-    (ctrlState.c === callbackId || (!ctrlElm.validity.valid && !ctrlElm.validity.customError))
-  ) {
-    ctrlElm.setCustomValidity(msg);
-    ctrlState.e = ctrlElm.validationMessage;
-    ctrlState.m = '';
-
-    if (!ctrlElm.validity.valid && showNativeReport(ctrlElm)) {
-      ctrlElm.reportValidity();
+      if (!ctrlElm.validity.valid && showNativeReport(ctrlElm)) {
+        ctrlElm.reportValidity();
+      }
     }
-
     cb && cb(ctrlData, ctrlElm, value, ev);
   }
 };

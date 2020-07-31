@@ -247,6 +247,18 @@ const getControlState = (ctrl) => {
     return ctrlElm ? ctrlElm[Control] : {};
 };
 
+const getValueFromControlElement = (ctrlData, ctrlElm) => {
+    const value = ctrlElm[ctrlData.valuePropName];
+    if (ctrlData.valuePropType === 'boolean') {
+        return String(value) === 'true';
+    }
+    if (ctrlData.valuePropType === 'number') {
+        return parseFloat(value);
+    }
+    return String(value);
+};
+const setValueFromControlElement = (ctrlData, ctrlElm, value) => (ctrlElm[ctrlData.valuePropName] = ctrlData.valuePropType === 'boolean' ? !!value : String(value));
+
 const isFunction = (v) => typeof v === 'function';
 const isNumber = (v) => typeof v === 'number';
 const isString = (v) => typeof v === 'string';
@@ -258,142 +270,6 @@ const toDashCase = (str) => str
     .replace(/ /g, '-');
 const setAttribute = (elm, attrName, attrValue = '') => (elm === null || elm === void 0 ? void 0 : elm.setAttribute(attrName, attrValue), attrValue);
 const showNativeReport = (elm) => { var _a, _b; return !(elm === null || elm === void 0 ? void 0 : elm.hasAttribute('formnovalidate')) && !((_b = (_a = elm) === null || _a === void 0 ? void 0 : _a.form) === null || _b === void 0 ? void 0 : _b.hasAttribute('novalidate')); };
-
-const sharedOnInvalidHandler = (ev) => {
-    const ctrlElm = ev.currentTarget;
-    const ctrlState = ctrlElm[Control];
-    if (!showNativeReport(ctrlElm)) {
-        ev.preventDefault();
-    }
-    // add a space at the end to ensure we trigger a re-render
-    ctrlState.e = ctrlElm.validationMessage + ' ';
-    // a control is automatically "dirty" if it has been invalid at least once.
-    ctrlState.d = true;
-};
-const sharedOnValueChangeHandler = (ev) => {
-    const ctrlElm = ev.currentTarget;
-    const ctrl = ctrls.get(ctrlElm);
-    const ctrlData = ctrlDatas.get(ctrl);
-    const value = getValueFromControlElement(ctrlData, ctrlElm);
-    if (isNumber(ctrlData.debounce)) {
-        clearTimeout(inputDebounces.get(ctrlElm));
-    }
-    if (isFunction(ctrlData.onValueChange)) {
-        if (isNumber(ctrlData.debounce)) {
-            inputDebounces.set(ctrlElm, setTimeout(() => {
-                const value = getValueFromControlElement(ctrlData, ctrlElm);
-                checkValidity(ctrlData, ctrlElm, ev, setValueChange);
-                ctrlData.onValueChange(value, ctrlElm.validity, ev);
-            }, ctrlData.debounce));
-        }
-        else {
-            checkValidity(ctrlData, ctrlElm, ev, setValueChange);
-            setValueChange(ctrlData, ctrlElm, value, ev);
-        }
-    }
-};
-const sharedOnKeyDownHandler = (ev) => {
-    const ctrlElm = ev.currentTarget;
-    const ctrl = ctrls.get(ctrlElm);
-    const ctrlData = ctrlDatas.get(ctrl);
-    const value = getValueFromControlElement(ctrlData, ctrlElm);
-    if (isNumber(ctrlData.debounce)) {
-        clearTimeout(inputDebounces.get(ctrlElm));
-        inputDebounces.set(ctrlElm, setTimeout(() => {
-            ctrlData.onKeyDown(ev.key, value, ev);
-        }, ctrlData.debounce));
-    }
-    else {
-        ctrlData.onKeyDown(ev.key, value, ev);
-    }
-};
-const sharedOnKeyUpHandler = (ev) => {
-    const ctrlElm = ev.currentTarget;
-    const key = ev.key;
-    const ctrl = ctrls.get(ctrlElm);
-    const ctrlData = ctrlDatas.get(ctrl);
-    const ctrlState = getControlState(ctrl);
-    const value = getValueFromControlElement(ctrlData, ctrlElm);
-    if (isNumber(ctrlData.debounce)) {
-        clearTimeout(inputDebounces.get(ctrlElm));
-        inputDebounces.set(ctrlElm, setTimeout(() => sharedOnKeyUp(ctrlElm, ctrlData, ctrlState, value, key, ev), ctrlData.debounce));
-    }
-    else {
-        sharedOnKeyUp(ctrlElm, ctrlData, ctrlState, value, key, ev);
-    }
-};
-const sharedOnKeyUp = (ctrlElm, ctrlData, ctrlState, value, key, ev) => {
-    if (isFunction(ctrlData.onKeyUp)) {
-        ctrlData.onKeyUp(key, value, ev);
-    }
-    if (key === 'Escape') {
-        if (ctrlData.resetOnEscape !== false) {
-            ctrlElm.value = ctrlState.v;
-            if (isFunction(ctrlData.onValueChange)) {
-                ctrlData.onValueChange(ctrlState.v, ctrlElm.validity, ev);
-            }
-        }
-        if (isFunction(ctrlData.onEscapeKey)) {
-            ctrlData.onEscapeKey(value, ctrlState.v, ev);
-        }
-    }
-    if (key === 'Enter') {
-        ctrlState.v = value;
-        if (isFunction(ctrlData.onEnterKey)) {
-            ctrlData.onEnterKey(value, ev);
-        }
-        if (isFunction(ctrlData.onCommit)) {
-            ctrlData.onCommit(value, ev);
-        }
-    }
-};
-const setValueChange = (ctrlData, ctrlElm, value, ev) => {
-    if (ctrlData && ctrlElm) {
-        const ctrlState = ctrlElm[Control];
-        ctrlState.d = true;
-        ctrlData.onValueChange(value, ctrlElm.validity, ev);
-    }
-};
-const sharedOnFocus = (ev) => {
-    const ctrlElm = ev === null || ev === void 0 ? void 0 : ev.currentTarget;
-    const ctrl = ctrls.get(ctrlElm);
-    const ctrlData = ctrlDatas.get(ctrl);
-    if (ctrlData) {
-        const ctrlState = ctrlElm[Control];
-        const value = getValueFromControlElement(ctrlData, ctrlElm);
-        const validity = ctrlElm.validity;
-        ctrlState.v = value;
-        if (ev.type === 'blur') {
-            ctrlState.t = true;
-            if (isFunction(ctrlData.onBlur)) {
-                ctrlData.onBlur(value, validity, ev);
-            }
-            if (isFunction(ctrlData.onCommit)) {
-                ctrlData.onCommit(value, ev);
-            }
-        }
-        else {
-            // focus
-            if (!ctrlState.t && isFunction(ctrlData.onTouch)) {
-                // onTouch should only fire on the first focus
-                ctrlData.onTouch(value, validity, ev);
-            }
-            if (isFunction(ctrlData.onFocus)) {
-                ctrlData.onFocus(value, validity, ev);
-            }
-        }
-    }
-};
-const getValueFromControlElement = (ctrlData, ctrlElm) => {
-    const value = ctrlElm[ctrlData.valuePropName];
-    if (ctrlData.valuePropType === 'boolean') {
-        return String(value) === 'true';
-    }
-    if (ctrlData.valuePropType === 'number') {
-        return parseFloat(value);
-    }
-    return String(value);
-};
 
 const checkValidity = (ctrlData, ctrlElm, ev, cb) => {
     if (ctrlElm && ctrlElm.validity) {
@@ -430,16 +306,16 @@ const checkValidity = (ctrlData, ctrlElm, ev, cb) => {
     }
 };
 const checkValidateResults = (results, ctrlData, ctrlElm, value, ev, callbackId, cb) => {
-    const ctrlState = ctrlElm[Control];
-    const msg = isString(results) ? results.trim() : '';
-    if (ctrlState &&
-        ctrlElm &&
-        (ctrlState.c === callbackId || (!ctrlElm.validity.valid && !ctrlElm.validity.customError))) {
-        ctrlElm.setCustomValidity(msg);
-        ctrlState.e = ctrlElm.validationMessage;
-        ctrlState.m = '';
-        if (!ctrlElm.validity.valid && showNativeReport(ctrlElm)) {
-            ctrlElm.reportValidity();
+    if (ctrlElm) {
+        const ctrlState = ctrlElm[Control];
+        if (ctrlState && (ctrlState.c === callbackId || (!ctrlElm.validity.valid && !ctrlElm.validity.customError))) {
+            const msg = isString(results) ? results.trim() : '';
+            ctrlElm.setCustomValidity(msg);
+            ctrlState.e = ctrlElm.validationMessage;
+            ctrlState.m = '';
+            if (!ctrlElm.validity.valid && showNativeReport(ctrlElm)) {
+                ctrlElm.reportValidity();
+            }
         }
         cb && cb(ctrlData, ctrlElm, value, ev);
     }
@@ -663,6 +539,101 @@ const getGroupChild = (parentCtrl, groupItemValue) => {
     return child;
 };
 
+const sharedEventHandler = (ev) => {
+    const ctrlElm = ev.currentTarget;
+    const ctrl = ctrls.get(ctrlElm);
+    const ctrlData = ctrlDatas.get(ctrl);
+    if (ctrl && ctrlData) {
+        const ctrlState = getControlState(ctrl);
+        const value = getValueFromControlElement(ctrlData, ctrlElm);
+        const validity = ctrlElm.validity;
+        const eventType = ev.type;
+        const key = ev.key;
+        if (eventType === 'blur') {
+            // "blur" event
+            ctrlState.v = value;
+            ctrlState.t = true;
+            if (isFunction(ctrlData.onBlur)) {
+                ctrlData.onBlur(value, validity, ev);
+            }
+            if (isFunction(ctrlData.onCommit)) {
+                // onCommit on blur event and Enter key event
+                ctrlData.onCommit(value, ev);
+            }
+        }
+        else if (eventType === 'focus') {
+            // "focus" event
+            ctrlState.v = value;
+            if (!ctrlState.t && isFunction(ctrlData.onTouch)) {
+                // onTouch should only fire on the first focus
+                ctrlData.onTouch(value, validity, ev);
+            }
+            if (isFunction(ctrlData.onFocus)) {
+                ctrlData.onFocus(value, validity, ev);
+            }
+        }
+        else if (eventType === 'invalid') {
+            // "invalid" event
+            if (!showNativeReport(ctrlElm)) {
+                ev.preventDefault();
+            }
+            // add a space at the end to ensure we trigger a re-render
+            ctrlState.e = ctrlElm.validationMessage + ' ';
+            // a control is automatically "dirty" if it has been invalid at least once.
+            ctrlState.d = true;
+        }
+        else {
+            // "input" or "change" or keyboard events
+            ctrlState.d = true;
+            if (key === 'Escape' && ctrlData.resetOnEscape !== false) {
+                setValueFromControlElement(ctrlData, ctrlElm, ctrlState.v);
+                if (isFunction(ctrlData.onValueChange)) {
+                    ctrlData.onValueChange(ctrlState.v, validity, ev);
+                }
+            }
+            if (key !== 'Enter' && key !== 'Escape' && isNumber(ctrlData.debounce)) {
+                clearTimeout(inputDebounces.get(ctrlElm));
+                inputDebounces.set(ctrlElm, setTimeout(() => checkValidity(ctrlData, ctrlElm, ev, setValueChange), ctrlData.debounce));
+            }
+            else {
+                checkValidity(ctrlData, ctrlElm, ev, setValueChange);
+            }
+        }
+    }
+};
+const setValueChange = (ctrlData, ctrlElm, value, ev) => {
+    if (ctrlData && ctrlElm) {
+        const eventType = ev.type;
+        const key = ev.key;
+        const validity = ctrlElm.validity;
+        const ctrlState = ctrlElm[Control];
+        ctrlState.d = true;
+        if (eventType === 'keydown' && isFunction(ctrlData.onKeyDown)) {
+            ctrlData.onKeyDown(key, value, ev);
+        }
+        else if (eventType === 'keyup') {
+            if (isFunction(ctrlData.onKeyUp)) {
+                ctrlData.onKeyUp(key, value, ev);
+            }
+            if (key === 'Escape' && isFunction(ctrlData.onEscapeKey)) {
+                ctrlData.onEscapeKey(value, ctrlState.v, ev);
+            }
+            else if (key === 'Enter') {
+                ctrlState.v = value;
+                if (isFunction(ctrlData.onEnterKey)) {
+                    ctrlData.onEnterKey(value, ev);
+                }
+                if (isFunction(ctrlData.onCommit)) {
+                    ctrlData.onCommit(value, ev);
+                }
+            }
+        }
+        else if (isFunction(ctrlData.onValueChange)) {
+            ctrlData.onValueChange(value, validity, ev);
+        }
+    }
+};
+
 const inputControl = (value, ctrlData) => {
     // create the control arrow fn that'll be used as a weakmap key
     // and as a function to return the props for the control element
@@ -677,15 +648,15 @@ const inputControl = (value, ctrlData) => {
             // and remember it so we can look up the form control by the element
             ref: (ctrlElm) => ctrlElm && ctrlElmRef(ctrl, ctrlData, ctrlState, ctrlElm, false),
             // add the shared event listeners
-            onInvalid: sharedOnInvalidHandler,
-            [ctrlData.changeEventName]: sharedOnValueChangeHandler,
-            onFocus: sharedOnFocus,
-            onBlur: sharedOnFocus,
+            onInvalid: sharedEventHandler,
+            [ctrlData.changeEventName]: sharedEventHandler,
+            onKeyUp: sharedEventHandler,
+            onFocus: sharedEventHandler,
+            onBlur: sharedEventHandler,
         };
         if (isFunction(ctrlData.onKeyDown)) {
-            props.onKeyDown = sharedOnKeyDownHandler;
+            props.onKeyDown = sharedEventHandler;
         }
-        props.onKeyUp = sharedOnKeyUpHandler;
         return props;
     };
     // add to the weakmap the data for this control
@@ -703,13 +674,15 @@ const getPropValue = (valueTypeCast, value) => {
         // just always compare as a string boolean and return a boolean
         return String(value) === 'true';
     }
-    if (value == null || (valueTypeCast === 'number' && isNaN(value))) {
+    else if (value == null || (valueTypeCast === 'number' && isNaN(value))) {
         // we don't want the word "null" "undefined" or "NaN" to be the value for
         // an <input> element, so check first and return it as an empty string
         return '';
     }
-    // always assign the value as an actual string value, even for number
-    return String(value);
+    else {
+        // always assign the value as an actual string value, even for number
+        return String(value);
+    }
 };
 const inputControlGroup = (selectedValue, ctrlData) => {
     const ctrlState = setControlState(selectedValue, ctrlData);
@@ -746,9 +719,9 @@ const inputControlGroupItem = (selectedGroupValue, parentCtrl, parentCtrlData, c
         // compare as strings so we can normalize any passed in boolean strings or actual booleans
         // however, it's always false if the group's "selectedValue" is null or undefined
         checked: selectedGroupValue != null ? String(selectedGroupValue) === value : false,
-        [parentCtrlData.changeEventName]: sharedOnValueChangeHandler,
-        onFocus: sharedOnFocus,
-        onBlur: sharedOnFocus,
+        [parentCtrlData.changeEventName]: sharedEventHandler,
+        onFocus: sharedEventHandler,
+        onBlur: sharedEventHandler,
         // ref for <input type="radio">
         ref: (childCtrlElm) => childCtrlElm && ctrlGroupItemElmRef(parentCtrl, ctrlState, childCtrlElm, value),
     };

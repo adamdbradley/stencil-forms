@@ -89,7 +89,7 @@ export interface ReactiveFormBindOptions {
 }
 
 export interface ReactiveFormControlOptions extends ReactiveFormBindOptions {
-  onValueChange?: (value: any, validity: ValidityState, ev: UIEvent) => void;
+  onValueChange?: (value: any, validity: ValidityState, ev: Event) => void;
 }
 
 export type ReactiveFormValuePropType = 'string' | 'boolean' | 'number';

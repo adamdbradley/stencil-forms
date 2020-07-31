@@ -26,13 +26,7 @@ import {
   setErrormessageAttributes,
   setLabelledbyAttributes,
 } from './labelling-for';
-import {
-  sharedOnInvalidHandler,
-  sharedOnValueChangeHandler,
-  sharedOnFocus,
-  sharedOnKeyDownHandler,
-  sharedOnKeyUpHandler,
-} from './handlers';
+import { sharedEventHandler } from './handlers';
 import { checkValidity } from './validation';
 
 export const inputControl = (value: any, ctrlData: ControlData) => {
@@ -54,18 +48,16 @@ export const inputControl = (value: any, ctrlData: ControlData) => {
       ref: (ctrlElm) => ctrlElm && ctrlElmRef(ctrl, ctrlData, ctrlState, ctrlElm, false),
 
       // add the shared event listeners
-      onInvalid: sharedOnInvalidHandler,
-      [ctrlData.changeEventName!]: sharedOnValueChangeHandler,
-
-      onFocus: sharedOnFocus,
-      onBlur: sharedOnFocus,
+      onInvalid: sharedEventHandler,
+      [ctrlData.changeEventName!]: sharedEventHandler,
+      onKeyUp: sharedEventHandler,
+      onFocus: sharedEventHandler,
+      onBlur: sharedEventHandler,
     };
 
     if (isFunction(ctrlData.onKeyDown)) {
-      props.onKeyDown = sharedOnKeyDownHandler;
+      props.onKeyDown = sharedEventHandler;
     }
-
-    props.onKeyUp = sharedOnKeyUpHandler;
 
     return props;
   };
@@ -86,14 +78,14 @@ const getPropValue = (valueTypeCast: ReactiveFormValuePropType, value: any) => {
     // may have been give a string "true" or "false", so lets just
     // just always compare as a string boolean and return a boolean
     return String(value) === 'true';
-  }
-  if (value == null || (valueTypeCast === 'number' && isNaN(value))) {
+  } else if (value == null || (valueTypeCast === 'number' && isNaN(value))) {
     // we don't want the word "null" "undefined" or "NaN" to be the value for
     // an <input> element, so check first and return it as an empty string
     return '';
+  } else {
+    // always assign the value as an actual string value, even for number
+    return String(value);
   }
-  // always assign the value as an actual string value, even for number
-  return String(value);
 };
 
 export const inputControlGroup = (selectedValue: any, ctrlData: ControlData): any => {
@@ -146,10 +138,10 @@ const inputControlGroupItem = (
     // however, it's always false if the group's "selectedValue" is null or undefined
     checked: selectedGroupValue != null ? String(selectedGroupValue) === value : false,
 
-    [parentCtrlData.changeEventName!]: sharedOnValueChangeHandler,
+    [parentCtrlData.changeEventName!]: sharedEventHandler,
 
-    onFocus: sharedOnFocus,
-    onBlur: sharedOnFocus,
+    onFocus: sharedEventHandler,
+    onBlur: sharedEventHandler,
 
     // ref for <input type="radio">
     ref: (childCtrlElm: ControlElement) =>

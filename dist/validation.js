@@ -1,5 +1,5 @@
 import { Control, getControlState, ctrlElms } from './state';
-import { getValueFromControlElement } from './handlers';
+import { getValueFromControlElement } from './value';
 import { isFunction, isPromise, isString, setAttribute, showNativeReport } from './helpers';
 export const checkValidity = (ctrlData, ctrlElm, ev, cb) => {
     if (ctrlElm && ctrlElm.validity) {
@@ -36,16 +36,16 @@ export const checkValidity = (ctrlData, ctrlElm, ev, cb) => {
     }
 };
 const checkValidateResults = (results, ctrlData, ctrlElm, value, ev, callbackId, cb) => {
-    const ctrlState = ctrlElm[Control];
-    const msg = isString(results) ? results.trim() : '';
-    if (ctrlState &&
-        ctrlElm &&
-        (ctrlState.c === callbackId || (!ctrlElm.validity.valid && !ctrlElm.validity.customError))) {
-        ctrlElm.setCustomValidity(msg);
-        ctrlState.e = ctrlElm.validationMessage;
-        ctrlState.m = '';
-        if (!ctrlElm.validity.valid && showNativeReport(ctrlElm)) {
-            ctrlElm.reportValidity();
+    if (ctrlElm) {
+        const ctrlState = ctrlElm[Control];
+        if (ctrlState && (ctrlState.c === callbackId || (!ctrlElm.validity.valid && !ctrlElm.validity.customError))) {
+            const msg = isString(results) ? results.trim() : '';
+            ctrlElm.setCustomValidity(msg);
+            ctrlState.e = ctrlElm.validationMessage;
+            ctrlState.m = '';
+            if (!ctrlElm.validity.valid && showNativeReport(ctrlElm)) {
+                ctrlElm.reportValidity();
+            }
         }
         cb && cb(ctrlData, ctrlElm, value, ev);
     }

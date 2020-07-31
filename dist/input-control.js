@@ -1,7 +1,7 @@
 import { Control, ctrlChildren, ctrlDatas, ctrlElms, ctrlElmIds, ctrls, labellingElms, setControlState, state, } from './state';
 import { isString, setAttribute, isFunction } from './helpers';
 import { getGroupChild, setDescribedbyAttributes, setErrormessageAttributes, setLabelledbyAttributes, } from './labelling-for';
-import { sharedOnInvalidHandler, sharedOnValueChangeHandler, sharedOnFocus, sharedOnKeyDownHandler, sharedOnKeyUpHandler, } from './handlers';
+import { sharedEventHandler } from './handlers';
 import { checkValidity } from './validation';
 export const inputControl = (value, ctrlData) => {
     // create the control arrow fn that'll be used as a weakmap key
@@ -17,15 +17,15 @@ export const inputControl = (value, ctrlData) => {
             // and remember it so we can look up the form control by the element
             ref: (ctrlElm) => ctrlElm && ctrlElmRef(ctrl, ctrlData, ctrlState, ctrlElm, false),
             // add the shared event listeners
-            onInvalid: sharedOnInvalidHandler,
-            [ctrlData.changeEventName]: sharedOnValueChangeHandler,
-            onFocus: sharedOnFocus,
-            onBlur: sharedOnFocus,
+            onInvalid: sharedEventHandler,
+            [ctrlData.changeEventName]: sharedEventHandler,
+            onKeyUp: sharedEventHandler,
+            onFocus: sharedEventHandler,
+            onBlur: sharedEventHandler,
         };
         if (isFunction(ctrlData.onKeyDown)) {
-            props.onKeyDown = sharedOnKeyDownHandler;
+            props.onKeyDown = sharedEventHandler;
         }
-        props.onKeyUp = sharedOnKeyUpHandler;
         return props;
     };
     // add to the weakmap the data for this control
@@ -43,13 +43,15 @@ const getPropValue = (valueTypeCast, value) => {
         // just always compare as a string boolean and return a boolean
         return String(value) === 'true';
     }
-    if (value == null || (valueTypeCast === 'number' && isNaN(value))) {
+    else if (value == null || (valueTypeCast === 'number' && isNaN(value))) {
         // we don't want the word "null" "undefined" or "NaN" to be the value for
         // an <input> element, so check first and return it as an empty string
         return '';
     }
-    // always assign the value as an actual string value, even for number
-    return String(value);
+    else {
+        // always assign the value as an actual string value, even for number
+        return String(value);
+    }
 };
 export const inputControlGroup = (selectedValue, ctrlData) => {
     const ctrlState = setControlState(selectedValue, ctrlData);
@@ -86,9 +88,9 @@ const inputControlGroupItem = (selectedGroupValue, parentCtrl, parentCtrlData, c
         // compare as strings so we can normalize any passed in boolean strings or actual booleans
         // however, it's always false if the group's "selectedValue" is null or undefined
         checked: selectedGroupValue != null ? String(selectedGroupValue) === value : false,
-        [parentCtrlData.changeEventName]: sharedOnValueChangeHandler,
-        onFocus: sharedOnFocus,
-        onBlur: sharedOnFocus,
+        [parentCtrlData.changeEventName]: sharedEventHandler,
+        onFocus: sharedEventHandler,
+        onBlur: sharedEventHandler,
         // ref for <input type="radio">
         ref: (childCtrlElm) => childCtrlElm && ctrlGroupItemElmRef(parentCtrl, ctrlState, childCtrlElm, value),
     };
