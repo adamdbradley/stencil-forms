@@ -6,7 +6,7 @@ import { checkValidity } from './validation';
 export const inputControl = (value, ctrlData) => {
     // create the control arrow fn that'll be used as a weakmap key
     // and as a function to return the props for the control element
-    const ctrlState = setControlState(ctrlData);
+    const ctrlState = setControlState(value, ctrlData);
     const ctrl = () => {
         state.r = null;
         // create the object to be used as a property spread in the render()
@@ -25,9 +25,7 @@ export const inputControl = (value, ctrlData) => {
         if (isFunction(ctrlData.onKeyDown)) {
             props.onKeyDown = sharedOnKeyDownHandler;
         }
-        if (isFunction(ctrlData.onKeyUp)) {
-            props.onKeyUp = sharedOnKeyUpHandler;
-        }
+        props.onKeyUp = sharedOnKeyUpHandler;
         return props;
     };
     // add to the weakmap the data for this control
@@ -54,7 +52,7 @@ const getPropValue = (valueTypeCast, value) => {
     return String(value);
 };
 export const inputControlGroup = (selectedValue, ctrlData) => {
-    const ctrlState = setControlState(ctrlData);
+    const ctrlState = setControlState(selectedValue, ctrlData);
     // create the form control that'll be used as a weakmap key
     const ctrl = (groupItemValue) => {
         state.r = null;

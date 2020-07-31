@@ -1,4 +1,4 @@
-import { ControlData, ControlElement, ControlState, ReactiveFormControl, ReactiveFormControlGroup } from './types';
+import type { ControlData, ControlElement, ControlState, ReactiveFormControl, ReactiveFormControlGroup } from './types';
 import { createStore } from '@stencil/store';
 import { getRenderingRef } from '@stencil/core';
 
@@ -44,7 +44,7 @@ export const ctrlDatas = /*@__PURE__*/ new WeakMap<ReactiveFormControl, ControlD
 
 export const inputDebounces = /*@__PURE__*/ new WeakMap<ControlElement, any>();
 
-export const InstanceId = /*@__PURE__*/ Symbol();
+export const instanceIds = /*@__PURE__*/ new WeakMap<any, number>();
 
 const CurrentControlIndex = /*@__PURE__*/ Symbol();
 
@@ -52,7 +52,7 @@ export const Control = /*@__PURE__*/ Symbol();
 
 const ControlStates = /*@__PURE__*/ Symbol();
 
-export const setControlState = (ctrlData: ControlData) => {
+export const setControlState = (initialValue: any, ctrlData: ControlData) => {
   const renderingRef = getRenderingRef();
   if (!renderingRef) {
     return null;
@@ -72,9 +72,10 @@ export const setControlState = (ctrlData: ControlData) => {
         d: false,
         t: false,
         i: true,
-        v: '',
+        m: '',
         e: '',
         c: 0,
+        v: initialValue,
       }).state,
     );
   }

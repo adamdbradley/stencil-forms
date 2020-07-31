@@ -1,6 +1,6 @@
 import { ctrlChildren, ctrlElms, ctrlDatas, labellingElms, LabellingType, state } from './state';
 import { isString, setAttribute } from './helpers';
-import { ReactiveFormControl, ControlElement } from './types';
+import type { ReactiveFormControl, ControlElement } from './types';
 
 const labellingFor = (
   ctrl: ReactiveFormControl,

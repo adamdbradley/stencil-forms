@@ -11,7 +11,7 @@ import {
   state,
 } from './state';
 import { isString, setAttribute, isFunction } from './helpers';
-import {
+import type {
   ControlData,
   ControlElement,
   ControlState,
@@ -39,7 +39,7 @@ export const inputControl = (value: any, ctrlData: ControlData) => {
   // create the control arrow fn that'll be used as a weakmap key
   // and as a function to return the props for the control element
 
-  const ctrlState = setControlState(ctrlData);
+  const ctrlState = setControlState(value, ctrlData);
 
   const ctrl: ReactiveFormControl = () => {
     state.r = null;
@@ -65,9 +65,7 @@ export const inputControl = (value: any, ctrlData: ControlData) => {
       props.onKeyDown = sharedOnKeyDownHandler;
     }
 
-    if (isFunction(ctrlData.onKeyUp)) {
-      props.onKeyUp = sharedOnKeyUpHandler;
-    }
+    props.onKeyUp = sharedOnKeyUpHandler;
 
     return props;
   };
@@ -99,7 +97,7 @@ const getPropValue = (valueTypeCast: ReactiveFormValuePropType, value: any) => {
 };
 
 export const inputControlGroup = (selectedValue: any, ctrlData: ControlData): any => {
-  const ctrlState = setControlState(ctrlData);
+  const ctrlState = setControlState(selectedValue, ctrlData);
 
   // create the form control that'll be used as a weakmap key
   const ctrl: ReactiveFormControlGroup = (groupItemValue?: any) => {

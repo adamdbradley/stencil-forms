@@ -1,4 +1,4 @@
-import { ControlElement, ControlData } from './types';
+import type { ControlElement, ControlData } from './types';
 export declare const sharedOnInvalidHandler: (ev: Event) => void;
 export declare const sharedOnValueChangeHandler: (ev: InputEvent) => void;
 export declare const sharedOnKeyDownHandler: (ev: KeyboardEvent) => void;

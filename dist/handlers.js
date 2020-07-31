@@ -1,5 +1,5 @@
 import { checkValidity } from './validation';
-import { Control, ctrls, ctrlDatas, inputDebounces } from './state';
+import { Control, ctrls, ctrlDatas, inputDebounces, getControlState } from './state';
 import { isFunction, isNumber, showNativeReport } from './helpers';
 export const sharedOnInvalidHandler = (ev) => {
     const ctrlElm = ev.currentTarget;
@@ -51,17 +51,42 @@ export const sharedOnKeyDownHandler = (ev) => {
 };
 export const sharedOnKeyUpHandler = (ev) => {
     const ctrlElm = ev.currentTarget;
+    const key = ev.key;
     const ctrl = ctrls.get(ctrlElm);
     const ctrlData = ctrlDatas.get(ctrl);
+    const ctrlState = getControlState(ctrl);
     const value = getValueFromControlElement(ctrlData, ctrlElm);
     if (isNumber(ctrlData.debounce)) {
         clearTimeout(inputDebounces.get(ctrlElm));
-        inputDebounces.set(ctrlElm, setTimeout(() => {
-            ctrlData.onKeyUp(ev.key, value, ev);
-        }, ctrlData.debounce));
+        inputDebounces.set(ctrlElm, setTimeout(() => sharedOnKeyUp(ctrlElm, ctrlData, ctrlState, value, key, ev), ctrlData.debounce));
     }
     else {
-        ctrlData.onKeyUp(ev.key, value, ev);
+        sharedOnKeyUp(ctrlElm, ctrlData, ctrlState, value, key, ev);
+    }
+};
+const sharedOnKeyUp = (ctrlElm, ctrlData, ctrlState, value, key, ev) => {
+    if (isFunction(ctrlData.onKeyUp)) {
+        ctrlData.onKeyUp(key, value, ev);
+    }
+    if (key === 'Escape') {
+        if (ctrlData.resetOnEscape !== false) {
+            ctrlElm.value = ctrlState.v;
+            if (isFunction(ctrlData.onValueChange)) {
+                ctrlData.onValueChange(ctrlState.v, ctrlElm.validity, ev);
+            }
+        }
+        if (isFunction(ctrlData.onEscapeKey)) {
+            ctrlData.onEscapeKey(value, ctrlState.v, ev);
+        }
+    }
+    if (key === 'Enter') {
+        ctrlState.v = value;
+        if (isFunction(ctrlData.onEnterKey)) {
+            ctrlData.onEnterKey(value, ev);
+        }
+        if (isFunction(ctrlData.onCommit)) {
+            ctrlData.onCommit(value, ev);
+        }
     }
 };
 const setValueChange = (ctrlData, ctrlElm, value, ev) => {
@@ -79,10 +104,14 @@ export const sharedOnFocus = (ev) => {
         const ctrlState = ctrlElm[Control];
         const value = getValueFromControlElement(ctrlData, ctrlElm);
         const validity = ctrlElm.validity;
+        ctrlState.v = value;
         if (ev.type === 'blur') {
             ctrlState.t = true;
             if (isFunction(ctrlData.onBlur)) {
                 ctrlData.onBlur(value, validity, ev);
+            }
+            if (isFunction(ctrlData.onCommit)) {
+                ctrlData.onCommit(value, ev);
             }
         }
         else {

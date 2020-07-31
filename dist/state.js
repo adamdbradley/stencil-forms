@@ -24,11 +24,11 @@ export const ctrlChildren = /*@__PURE__*/ new WeakMap();
 export const ctrls = /*@__PURE__*/ new WeakMap();
 export const ctrlDatas = /*@__PURE__*/ new WeakMap();
 export const inputDebounces = /*@__PURE__*/ new WeakMap();
-export const InstanceId = /*@__PURE__*/ Symbol();
+export const instanceIds = /*@__PURE__*/ new WeakMap();
 const CurrentControlIndex = /*@__PURE__*/ Symbol();
 export const Control = /*@__PURE__*/ Symbol();
 const ControlStates = /*@__PURE__*/ Symbol();
-export const setControlState = (ctrlData) => {
+export const setControlState = (initialValue, ctrlData) => {
     const renderingRef = getRenderingRef();
     if (!renderingRef) {
         return null;
@@ -46,9 +46,10 @@ export const setControlState = (ctrlData) => {
             d: false,
             t: false,
             i: true,
-            v: '',
+            m: '',
             e: '',
             c: 0,
+            v: initialValue,
         }).state);
     }
     return ctrlStates[ctrlData.x];

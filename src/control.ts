@@ -1,5 +1,5 @@
 import { inputControl, inputControlGroup } from './input-control';
-import { ReactiveFormControlOptions, ReactiveFormValuePropType, ControlData } from './types';
+import type { ReactiveFormControlOptions, ReactiveFormValuePropType, ControlData } from './types';
 import { state } from './state';
 
 export const control = (initialValue: any, ctrlOpts: ReactiveFormControlOptions) =>

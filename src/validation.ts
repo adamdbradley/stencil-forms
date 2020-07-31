@@ -24,13 +24,13 @@ export const checkValidity = (
       const results = ctrlData.validate(value, ctrlElm.validity, ev);
       if (isPromise(results)) {
         // results return a promise, let's wait on those
-        ctrlState.v = isString(ctrlData.activelyValidatingMessage)
+        ctrlState.m = isString(ctrlData.activelyValidatingMessage)
           ? ctrlData.activelyValidatingMessage
           : isFunction(ctrlData.activelyValidatingMessage)
           ? ctrlData.activelyValidatingMessage(value, ev)
           : `Validating...`;
 
-        ctrlElm.setCustomValidity(ctrlState.v);
+        ctrlElm.setCustomValidity(ctrlState.m);
         results.then((promiseResults) =>
           checkValidateResults(promiseResults, ctrlData, ctrlElm, value, ev, callbackId, cb),
         );
@@ -64,7 +64,7 @@ const checkValidateResults = (
   ) {
     ctrlElm.setCustomValidity(msg);
     ctrlState.e = ctrlElm.validationMessage;
-    ctrlState.v = '';
+    ctrlState.m = '';
 
     if (!ctrlElm.validity.valid && showNativeReport(ctrlElm)) {
       ctrlElm.reportValidity();
@@ -91,7 +91,7 @@ export const validationMessage = (ctrl: ReactiveFormControl) => {
 
   setAttribute(ctrlElm, 'formnovalidate');
 
-  if (ctrlState && (ctrlState.d || ctrlState.t) && ctrlState.v === '') {
+  if (ctrlState && (ctrlState.d || ctrlState.t) && ctrlState.m === '') {
     return ctrlState.e;
   }
   return '';
@@ -105,7 +105,7 @@ export const validationMessage = (ctrl: ReactiveFormControl) => {
 export const activelyValidatingMessage = (ctrl: ReactiveFormControl) => {
   const ctrlState = getControlState(ctrl);
   if (ctrlState) {
-    return ctrlState.v;
+    return ctrlState.m;
   }
   return '';
 };
@@ -132,7 +132,7 @@ export const isActivelyValidating = (ctrl: ReactiveFormControl) => activelyValid
  */
 export const isValid = (ctrl: ReactiveFormControl) => {
   const ctrlState = getControlState(ctrl);
-  if ((ctrlState.d || ctrlState.t) && ctrlState.v === '') {
+  if ((ctrlState.d || ctrlState.t) && ctrlState.m === '') {
     return ctrlState.e === '';
   }
   return null;
@@ -153,7 +153,7 @@ export const isValid = (ctrl: ReactiveFormControl) => {
  */
 export const isInvalid = (ctrl: ReactiveFormControl) => {
   const ctrlState = getControlState(ctrl);
-  if ((ctrlState.d || ctrlState.t) && ctrlState.v === '') {
+  if ((ctrlState.d || ctrlState.t) && ctrlState.m === '') {
     return ctrlState.e !== '';
   }
   return null;
@@ -178,6 +178,6 @@ export const submitValidity = (message: string | undefined) => {
   return {
     ref(btn: HTMLInputElement) {
       btn.setCustomValidity(message ?? '');
-    }
-  }
-}
+    },
+  };
+};

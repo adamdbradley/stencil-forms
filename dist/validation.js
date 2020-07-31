@@ -16,12 +16,12 @@ export const checkValidity = (ctrlData, ctrlElm, ev, cb) => {
             const results = ctrlData.validate(value, ctrlElm.validity, ev);
             if (isPromise(results)) {
                 // results return a promise, let's wait on those
-                ctrlState.v = isString(ctrlData.activelyValidatingMessage)
+                ctrlState.m = isString(ctrlData.activelyValidatingMessage)
                     ? ctrlData.activelyValidatingMessage
                     : isFunction(ctrlData.activelyValidatingMessage)
                         ? ctrlData.activelyValidatingMessage(value, ev)
                         : `Validating...`;
-                ctrlElm.setCustomValidity(ctrlState.v);
+                ctrlElm.setCustomValidity(ctrlState.m);
                 results.then((promiseResults) => checkValidateResults(promiseResults, ctrlData, ctrlElm, value, ev, callbackId, cb));
             }
             else {
@@ -43,7 +43,7 @@ const checkValidateResults = (results, ctrlData, ctrlElm, value, ev, callbackId,
         (ctrlState.c === callbackId || (!ctrlElm.validity.valid && !ctrlElm.validity.customError))) {
         ctrlElm.setCustomValidity(msg);
         ctrlState.e = ctrlElm.validationMessage;
-        ctrlState.v = '';
+        ctrlState.m = '';
         if (!ctrlElm.validity.valid && showNativeReport(ctrlElm)) {
             ctrlElm.reportValidity();
         }
@@ -65,7 +65,7 @@ export const validationMessage = (ctrl) => {
     const ctrlElm = ctrlElms.get(ctrl);
     const ctrlState = getControlState(ctrl);
     setAttribute(ctrlElm, 'formnovalidate');
-    if (ctrlState && (ctrlState.d || ctrlState.t) && ctrlState.v === '') {
+    if (ctrlState && (ctrlState.d || ctrlState.t) && ctrlState.m === '') {
         return ctrlState.e;
     }
     return '';
@@ -78,7 +78,7 @@ export const validationMessage = (ctrl) => {
 export const activelyValidatingMessage = (ctrl) => {
     const ctrlState = getControlState(ctrl);
     if (ctrlState) {
-        return ctrlState.v;
+        return ctrlState.m;
     }
     return '';
 };
@@ -103,7 +103,7 @@ export const isActivelyValidating = (ctrl) => activelyValidatingMessage(ctrl) !=
  */
 export const isValid = (ctrl) => {
     const ctrlState = getControlState(ctrl);
-    if ((ctrlState.d || ctrlState.t) && ctrlState.v === '') {
+    if ((ctrlState.d || ctrlState.t) && ctrlState.m === '') {
         return ctrlState.e === '';
     }
     return null;
@@ -123,7 +123,7 @@ export const isValid = (ctrl) => {
  */
 export const isInvalid = (ctrl) => {
     const ctrlState = getControlState(ctrl);
-    if ((ctrlState.d || ctrlState.t) && ctrlState.v === '') {
+    if ((ctrlState.d || ctrlState.t) && ctrlState.m === '') {
         return ctrlState.e !== '';
     }
     return null;
@@ -145,6 +145,6 @@ export const submitValidity = (message) => {
     return {
         ref(btn) {
             btn.setCustomValidity(message !== null && message !== void 0 ? message : '');
-        }
+        },
     };
 };

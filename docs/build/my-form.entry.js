@@ -195,11 +195,11 @@ const ctrlChildren = /*@__PURE__*/ new WeakMap();
 const ctrls = /*@__PURE__*/ new WeakMap();
 const ctrlDatas = /*@__PURE__*/ new WeakMap();
 const inputDebounces = /*@__PURE__*/ new WeakMap();
-const InstanceId = /*@__PURE__*/ Symbol();
+const instanceIds = /*@__PURE__*/ new WeakMap();
 const CurrentControlIndex = /*@__PURE__*/ Symbol();
 const Control = /*@__PURE__*/ Symbol();
 const ControlStates = /*@__PURE__*/ Symbol();
-const setControlState = (ctrlData) => {
+const setControlState = (initialValue, ctrlData) => {
     const renderingRef = getRenderingRef();
     if (!renderingRef) {
         return null;
@@ -217,9 +217,10 @@ const setControlState = (ctrlData) => {
             d: false,
             t: false,
             i: true,
-            v: '',
+            m: '',
             e: '',
             c: 0,
+            v: initialValue,
         }).state);
     }
     return ctrlStates[ctrlData.x];
@@ -308,17 +309,42 @@ const sharedOnKeyDownHandler = (ev) => {
 };
 const sharedOnKeyUpHandler = (ev) => {
     const ctrlElm = ev.currentTarget;
+    const key = ev.key;
     const ctrl = ctrls.get(ctrlElm);
     const ctrlData = ctrlDatas.get(ctrl);
+    const ctrlState = getControlState(ctrl);
     const value = getValueFromControlElement(ctrlData, ctrlElm);
     if (isNumber(ctrlData.debounce)) {
         clearTimeout(inputDebounces.get(ctrlElm));
-        inputDebounces.set(ctrlElm, setTimeout(() => {
-            ctrlData.onKeyUp(ev.key, value, ev);
-        }, ctrlData.debounce));
+        inputDebounces.set(ctrlElm, setTimeout(() => sharedOnKeyUp(ctrlElm, ctrlData, ctrlState, value, key, ev), ctrlData.debounce));
     }
     else {
-        ctrlData.onKeyUp(ev.key, value, ev);
+        sharedOnKeyUp(ctrlElm, ctrlData, ctrlState, value, key, ev);
+    }
+};
+const sharedOnKeyUp = (ctrlElm, ctrlData, ctrlState, value, key, ev) => {
+    if (isFunction(ctrlData.onKeyUp)) {
+        ctrlData.onKeyUp(key, value, ev);
+    }
+    if (key === 'Escape') {
+        if (ctrlData.resetOnEscape !== false) {
+            ctrlElm.value = ctrlState.v;
+            if (isFunction(ctrlData.onValueChange)) {
+                ctrlData.onValueChange(ctrlState.v, ctrlElm.validity, ev);
+            }
+        }
+        if (isFunction(ctrlData.onEscapeKey)) {
+            ctrlData.onEscapeKey(value, ctrlState.v, ev);
+        }
+    }
+    if (key === 'Enter') {
+        ctrlState.v = value;
+        if (isFunction(ctrlData.onEnterKey)) {
+            ctrlData.onEnterKey(value, ev);
+        }
+        if (isFunction(ctrlData.onCommit)) {
+            ctrlData.onCommit(value, ev);
+        }
     }
 };
 const setValueChange = (ctrlData, ctrlElm, value, ev) => {
@@ -336,10 +362,14 @@ const sharedOnFocus = (ev) => {
         const ctrlState = ctrlElm[Control];
         const value = getValueFromControlElement(ctrlData, ctrlElm);
         const validity = ctrlElm.validity;
+        ctrlState.v = value;
         if (ev.type === 'blur') {
             ctrlState.t = true;
             if (isFunction(ctrlData.onBlur)) {
                 ctrlData.onBlur(value, validity, ev);
+            }
+            if (isFunction(ctrlData.onCommit)) {
+                ctrlData.onCommit(value, ev);
             }
         }
         else {
@@ -380,12 +410,12 @@ const checkValidity = (ctrlData, ctrlElm, ev, cb) => {
             const results = ctrlData.validate(value, ctrlElm.validity, ev);
             if (isPromise(results)) {
                 // results return a promise, let's wait on those
-                ctrlState.v = isString(ctrlData.activelyValidatingMessage)
+                ctrlState.m = isString(ctrlData.activelyValidatingMessage)
                     ? ctrlData.activelyValidatingMessage
                     : isFunction(ctrlData.activelyValidatingMessage)
                         ? ctrlData.activelyValidatingMessage(value, ev)
                         : `Validating...`;
-                ctrlElm.setCustomValidity(ctrlState.v);
+                ctrlElm.setCustomValidity(ctrlState.m);
                 results.then((promiseResults) => checkValidateResults(promiseResults, ctrlData, ctrlElm, value, ev, callbackId, cb));
             }
             else {
@@ -407,7 +437,7 @@ const checkValidateResults = (results, ctrlData, ctrlElm, value, ev, callbackId,
         (ctrlState.c === callbackId || (!ctrlElm.validity.valid && !ctrlElm.validity.customError))) {
         ctrlElm.setCustomValidity(msg);
         ctrlState.e = ctrlElm.validationMessage;
-        ctrlState.v = '';
+        ctrlState.m = '';
         if (!ctrlElm.validity.valid && showNativeReport(ctrlElm)) {
             ctrlElm.reportValidity();
         }
@@ -429,7 +459,7 @@ const validationMessage = (ctrl) => {
     const ctrlElm = ctrlElms.get(ctrl);
     const ctrlState = getControlState(ctrl);
     setAttribute(ctrlElm, 'formnovalidate');
-    if (ctrlState && (ctrlState.d || ctrlState.t) && ctrlState.v === '') {
+    if (ctrlState && (ctrlState.d || ctrlState.t) && ctrlState.m === '') {
         return ctrlState.e;
     }
     return '';
@@ -442,7 +472,7 @@ const validationMessage = (ctrl) => {
 const activelyValidatingMessage = (ctrl) => {
     const ctrlState = getControlState(ctrl);
     if (ctrlState) {
-        return ctrlState.v;
+        return ctrlState.m;
     }
     return '';
 };
@@ -467,7 +497,7 @@ const isActivelyValidating = (ctrl) => activelyValidatingMessage(ctrl) !== '';
  */
 const isValid = (ctrl) => {
     const ctrlState = getControlState(ctrl);
-    if ((ctrlState.d || ctrlState.t) && ctrlState.v === '') {
+    if ((ctrlState.d || ctrlState.t) && ctrlState.m === '') {
         return ctrlState.e === '';
     }
     return null;
@@ -487,7 +517,7 @@ const isValid = (ctrl) => {
  */
 const isInvalid = (ctrl) => {
     const ctrlState = getControlState(ctrl);
-    if ((ctrlState.d || ctrlState.t) && ctrlState.v === '') {
+    if ((ctrlState.d || ctrlState.t) && ctrlState.m === '') {
         return ctrlState.e !== '';
     }
     return null;
@@ -509,7 +539,7 @@ const submitValidity = (message) => {
     return {
         ref(btn) {
             btn.setCustomValidity(message !== null && message !== void 0 ? message : '');
-        }
+        },
     };
 };
 
@@ -636,7 +666,7 @@ const getGroupChild = (parentCtrl, groupItemValue) => {
 const inputControl = (value, ctrlData) => {
     // create the control arrow fn that'll be used as a weakmap key
     // and as a function to return the props for the control element
-    const ctrlState = setControlState(ctrlData);
+    const ctrlState = setControlState(value, ctrlData);
     const ctrl = () => {
         state.r = null;
         // create the object to be used as a property spread in the render()
@@ -655,9 +685,7 @@ const inputControl = (value, ctrlData) => {
         if (isFunction(ctrlData.onKeyDown)) {
             props.onKeyDown = sharedOnKeyDownHandler;
         }
-        if (isFunction(ctrlData.onKeyUp)) {
-            props.onKeyUp = sharedOnKeyUpHandler;
-        }
+        props.onKeyUp = sharedOnKeyUpHandler;
         return props;
     };
     // add to the weakmap the data for this control
@@ -684,7 +712,7 @@ const getPropValue = (valueTypeCast, value) => {
     return String(value);
 };
 const inputControlGroup = (selectedValue, ctrlData) => {
-    const ctrlState = setControlState(ctrlData);
+    const ctrlState = setControlState(selectedValue, ctrlData);
     // create the form control that'll be used as a weakmap key
     const ctrl = (groupItemValue) => {
         state.r = null;
@@ -790,9 +818,9 @@ const bindBoolean = (instance, propName, bindOpts) => inputControl(instance[prop
 const bindNumber = (instance, propName, bindOpts) => inputControl(instance[propName], normalizeBindOpts(bindOpts, instance, propName, 'onInput', 'value', 'number'));
 const bindGroup = (instance, propName, bindOpts) => inputControlGroup(instance[propName], normalizeBindOpts(bindOpts, instance, propName, 'onChange', 'value', 'string'));
 const normalizeBindOpts = (bindOpts, instance, propName, changeEventName, valuePropName, valuePropType) => {
-    let instanceId = instance[InstanceId];
+    let instanceId = instanceIds.get(instance);
     if (instanceId == null) {
-        instanceId = instance[InstanceId] = state.i++;
+        instanceIds.set(instance, (instanceId = state.i++));
     }
     return Object.assign(Object.assign({ i: toDashCase(propName) + instanceId, n: propName, changeEventName,
         valuePropName,
