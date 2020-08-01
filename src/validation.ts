@@ -73,7 +73,7 @@ const checkValidateResults = (
 };
 
 export const catchError = (ctrlElm: ControlElement, ctrlState: ControlState, err: any) => {
-  ctrlElm.setCustomValidity((ctrlState.e = String(err)));
+  ctrlElm.setCustomValidity((ctrlState.e = String(err.message || err)));
   ctrlState.m = '';
 };
 

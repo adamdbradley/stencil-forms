@@ -55,7 +55,7 @@ const checkValidateResults = (results, ctrlData, ctrlElm, value, ev, callbackId,
     }
 };
 export const catchError = (ctrlElm, ctrlState, err) => {
-    ctrlElm.setCustomValidity((ctrlState.e = String(err)));
+    ctrlElm.setCustomValidity((ctrlState.e = String(err.message || err)));
     ctrlState.m = '';
 };
 /**
