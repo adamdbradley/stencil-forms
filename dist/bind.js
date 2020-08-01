@@ -10,7 +10,13 @@ const normalizeBindOpts = (bindOpts, instance, propName, changeEventName, valueP
     if (instanceId == null) {
         instanceIds.set(instance, (instanceId = state.i++));
     }
-    return Object.assign(Object.assign({ i: toDashCase(propName) + instanceId, n: propName, changeEventName,
+    return {
+        i: toDashCase(propName) + instanceId,
+        n: propName,
+        changeEventName,
         valuePropName,
-        valuePropType }, bindOpts), { onValueChange: (value) => (instance[propName] = value) });
+        valuePropType,
+        ...bindOpts,
+        onValueChange: ({ value }) => (instance[propName] = value),
+    };
 };

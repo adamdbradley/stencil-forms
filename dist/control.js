@@ -6,7 +6,12 @@ export const controlNumber = (initialValue, ctrlOpts) => inputControl(initialVal
 export const controlGroup = (initialSelectedValue, ctrlOpts) => inputControlGroup(initialSelectedValue, normalizeControlOpts(ctrlOpts, 'onChange', 'value', 'string'));
 const normalizeControlOpts = (ctrlOpts, changeEventName, valuePropName, valuePropType) => {
     const propName = 'ctrl' + state.i++;
-    return Object.assign({ i: propName, n: propName, changeEventName,
+    return {
+        i: propName,
+        n: propName,
+        changeEventName,
         valuePropName,
-        valuePropType }, ctrlOpts);
+        valuePropType,
+        ...ctrlOpts,
+    };
 };
