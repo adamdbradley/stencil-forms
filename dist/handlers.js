@@ -12,17 +12,18 @@ export const sharedEventHandler = (ev) => {
         const validity = elm.validity;
         const eventType = ev.type;
         const key = ev.key;
+        const rtns = [];
         try {
             if (eventType === 'blur') {
                 // "blur" event
                 ctrlState.v = value;
                 ctrlState.t = true;
                 if (isFunction(ctrlData.onBlur)) {
-                    ctrlData.onBlur({ value, validity, ev: ev, elm });
+                    rtns.push(ctrlData.onBlur({ value, validity, ev: ev, elm }));
                 }
                 if (isFunction(ctrlData.onCommit)) {
                     // onCommit on blur event and Enter key event
-                    ctrlData.onCommit({ value, validity, ev: ev, elm });
+                    rtns.push(ctrlData.onCommit({ value, validity, ev: ev, elm }));
                 }
             }
             else if (eventType === 'focus') {
@@ -30,10 +31,10 @@ export const sharedEventHandler = (ev) => {
                 ctrlState.v = value;
                 if (!ctrlState.t && isFunction(ctrlData.onTouch)) {
                     // onTouch should only fire on the first focus
-                    ctrlData.onTouch({ value, validity, ev: ev, elm });
+                    rtns.push(ctrlData.onTouch({ value, validity, ev: ev, elm }));
                 }
                 if (isFunction(ctrlData.onFocus)) {
-                    ctrlData.onFocus({ value, validity, ev: ev, elm });
+                    rtns.push(ctrlData.onFocus({ value, validity, ev: ev, elm }));
                 }
             }
             else if (eventType === 'invalid') {
@@ -52,7 +53,7 @@ export const sharedEventHandler = (ev) => {
                 if (key === 'Escape' && ctrlData.resetOnEscape !== false) {
                     setValueFromControlElement(ctrlData, elm, ctrlState.v);
                     if (isFunction(ctrlData.onValueChange)) {
-                        ctrlData.onValueChange({ value: ctrlState.v, validity, ev, elm });
+                        rtns.push(ctrlData.onValueChange({ value: ctrlState.v, validity, ev, elm }));
                     }
                 }
                 if (key !== 'Enter' && key !== 'Escape' && isNumber(ctrlData.debounce)) {
@@ -63,6 +64,7 @@ export const sharedEventHandler = (ev) => {
                     checkValidity(ctrlData, elm, ev, setValueChange);
                 }
             }
+            Promise.all(rtns).catch((err) => catchError(elm, ctrlState, err));
         }
         catch (e) {
             catchError(elm, ctrlState, e);
