@@ -299,7 +299,7 @@ gives developers full control on styling and your form's custom UI.
 ```tsx
 render() {
   const age = bindNumber(this, 'age', {
-    validate: (value) => {
+    validate: ({ value }) => {
       if (value < 18) {
         return `Must be 18 or older, but you entered ${value}`;
       }
@@ -379,8 +379,8 @@ throughout the app.
 
 ```tsx
 // validation.ts
-const validateAge = (data: { value: number }) => {
-  if (data.value < 18) {
+const validateAge = (event: { value: number }) => {
+  if (event.value < 18) {
     return `Must be 18 or older, but you entered ${data.value}`;
   }
 };

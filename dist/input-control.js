@@ -145,7 +145,7 @@ const ctrlElmRef = (ctrl, ctrlData, ctrlState, ctrlElm, isParentGroup) => {
     ctrlElms.set(ctrl, ctrlElm);
     ctrlElm[Control] = ctrlState;
     if (ctrlState === null || ctrlState === void 0 ? void 0 : ctrlState.i) {
-        checkValidity(ctrlData, ctrlElm, null, null);
+        checkValidity(ctrlData, ctrlState, ctrlElm, { ctrl: ctrlElm }, null);
         ctrlState.i = false;
     }
 };

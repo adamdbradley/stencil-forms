@@ -69,9 +69,9 @@ export class MyForm {
       },
     });
 
-    const validateAge = (data: { value: number }) => {
-      if (data.value < 18) {
-        return `Must be 18 or older, but you entered ${data.value}`;
+    const validateAge = (event: { value: number }) => {
+      if (event.value < 18) {
+        return `Must be 18 or older, but you entered ${event.value}`;
       }
     };
 

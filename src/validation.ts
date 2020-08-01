@@ -1,46 +1,51 @@
-import { ControlData, ControlElement, ReactiveFormControl, ReactiveValidateResult, ControlState } from './types';
-import { Control, getControlState, ctrlElms } from './state';
-import { getValueFromControlElement } from './value';
+import type {
+  ControlData,
+  ControlElement,
+  ControlState,
+  ReactiveFormControl,
+  ReactiveFormEvent,
+  ReactiveValidateResult,
+} from './types';
+import { Control, ctrlElms, getControlState } from './state';
 import { isFunction, isPromise, isString, setAttribute, showNativeReport } from './helpers';
 
 export const checkValidity = (
   ctrlData: ControlData,
-  elm: ControlElement,
-  ev: any,
-  cb: ((ctrlData: ControlData, ctrlElm: ControlElement, value: any, ev: any) => void) | null,
+  ctrlState: ControlState,
+  ctrlElm: ControlElement,
+  event: ReactiveFormEvent,
+  cb: ((ctrlData: ControlData, event: ReactiveFormEvent) => void) | null,
 ): any => {
-  if (elm && elm.validity) {
-    const ctrlState: ControlState = (elm as any)[Control];
-    const value = getValueFromControlElement(ctrlData, elm);
+  if (ctrlElm && ctrlElm.validity) {
     const callbackId = ++ctrlState.c;
 
-    elm.setCustomValidity((ctrlState.e = ''));
+    ctrlElm.setCustomValidity((ctrlState.e = ''));
 
-    if (!elm.validity.valid) {
+    if (!ctrlElm.validity.valid) {
       // native browser constraint
-      ctrlState.e = elm.validationMessage;
+      ctrlState.e = ctrlElm.validationMessage;
     } else if (isFunction(ctrlData.validate)) {
       // has custom validate fn and the native browser constraints are valid
-      const results = ctrlData.validate({ value, validity: elm.validity, ev, elm });
+      const results = ctrlData.validate(event);
       if (isPromise(results)) {
         // results return a promise, let's wait on those
         ctrlState.m = isString(ctrlData.activelyValidatingMessage)
           ? ctrlData.activelyValidatingMessage
           : isFunction(ctrlData.activelyValidatingMessage)
-          ? ctrlData.activelyValidatingMessage(value, ev)
+          ? ctrlData.activelyValidatingMessage(event)
           : `Validating...`;
 
-        elm.setCustomValidity(ctrlState.m);
+        ctrlElm.setCustomValidity(ctrlState.m);
         results
-          .then((promiseResults) => checkValidateResults(promiseResults, ctrlData, elm, value, ev, callbackId, cb))
-          .catch((err) => checkValidateResults(err, ctrlData, elm, value, ev, callbackId, cb));
+          .then((promiseResults) => checkValidateResults(promiseResults, ctrlData, ctrlElm, event, callbackId, cb))
+          .catch((err) => checkValidateResults(err, ctrlData, ctrlElm, event, callbackId, cb));
       } else {
         // results were not a promise
-        checkValidateResults(results, ctrlData, elm, value, ev, callbackId, cb);
+        checkValidateResults(results, ctrlData, ctrlElm, event, callbackId, cb);
       }
     } else {
       // no validate fn
-      checkValidateResults('', ctrlData, elm, value, ev, callbackId, cb);
+      checkValidateResults('', ctrlData, ctrlElm, event, callbackId, cb);
     }
   }
 };
@@ -49,10 +54,9 @@ const checkValidateResults = (
   results: ReactiveValidateResult,
   ctrlData: ControlData,
   ctrlElm: ControlElement,
-  value: any,
-  ev: Event,
+  event: ReactiveFormEvent,
   callbackId: number,
-  cb: ((ctrlData: ControlData, ctrlElm: ControlElement, value: any, ev: Event) => void | Promise<void>) | null,
+  cb: ((ctrlData: ControlData, event: ReactiveFormEvent) => void | Promise<void>) | null,
 ) => {
   if (ctrlElm) {
     const ctrlState: ControlState = (ctrlElm as any)[Control];
@@ -67,13 +71,13 @@ const checkValidateResults = (
       }
     }
     if (isFunction(cb)) {
-      cb(ctrlData, ctrlElm, value, ev);
+      cb(ctrlData, event);
     }
   }
 };
 
-export const catchError = (ctrlElm: ControlElement, ctrlState: ControlState, err: any) => {
-  ctrlElm.setCustomValidity((ctrlState.e = String(err.message || err)));
+export const catchError = (ctrlState: ControlState, event: ReactiveFormEvent, err: any) => {
+  event.ctrl!.setCustomValidity((ctrlState.e = String(err.message || err)));
   ctrlState.m = '';
 };
 

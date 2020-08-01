@@ -247,18 +247,6 @@ const getControlState = (ctrl) => {
     return ctrlElm ? ctrlElm[Control] : {};
 };
 
-const getValueFromControlElement = (ctrlData, ctrlElm) => {
-    const value = ctrlElm[ctrlData.valuePropName];
-    if (ctrlData.valuePropType === 'boolean') {
-        return String(value) === 'true';
-    }
-    if (ctrlData.valuePropType === 'number') {
-        return parseFloat(value);
-    }
-    return String(value);
-};
-const setValueFromControlElement = (ctrlData, ctrlElm, value) => (ctrlElm[ctrlData.valuePropName] = ctrlData.valuePropType === 'boolean' ? !!value : String(value));
-
 const isFunction = (v) => typeof v === 'function';
 const isNumber = (v) => typeof v === 'number';
 const isString = (v) => typeof v === 'string';
@@ -271,43 +259,41 @@ const toDashCase = (str) => str
 const setAttribute = (elm, attrName, attrValue = '') => (elm === null || elm === void 0 ? void 0 : elm.setAttribute(attrName, attrValue), attrValue);
 const showNativeReport = (elm) => { var _a, _b; return !(elm === null || elm === void 0 ? void 0 : elm.hasAttribute('formnovalidate')) && !((_b = (_a = elm) === null || _a === void 0 ? void 0 : _a.form) === null || _b === void 0 ? void 0 : _b.hasAttribute('novalidate')); };
 
-const checkValidity = (ctrlData, elm, ev, cb) => {
-    if (elm && elm.validity) {
-        const ctrlState = elm[Control];
-        const value = getValueFromControlElement(ctrlData, elm);
+const checkValidity = (ctrlData, ctrlState, ctrlElm, event, cb) => {
+    if (ctrlElm && ctrlElm.validity) {
         const callbackId = ++ctrlState.c;
-        elm.setCustomValidity((ctrlState.e = ''));
-        if (!elm.validity.valid) {
+        ctrlElm.setCustomValidity((ctrlState.e = ''));
+        if (!ctrlElm.validity.valid) {
             // native browser constraint
-            ctrlState.e = elm.validationMessage;
+            ctrlState.e = ctrlElm.validationMessage;
         }
         else if (isFunction(ctrlData.validate)) {
             // has custom validate fn and the native browser constraints are valid
-            const results = ctrlData.validate({ value, validity: elm.validity, ev, elm });
+            const results = ctrlData.validate(event);
             if (isPromise(results)) {
                 // results return a promise, let's wait on those
                 ctrlState.m = isString(ctrlData.activelyValidatingMessage)
                     ? ctrlData.activelyValidatingMessage
                     : isFunction(ctrlData.activelyValidatingMessage)
-                        ? ctrlData.activelyValidatingMessage(value, ev)
+                        ? ctrlData.activelyValidatingMessage(event)
                         : `Validating...`;
-                elm.setCustomValidity(ctrlState.m);
+                ctrlElm.setCustomValidity(ctrlState.m);
                 results
-                    .then((promiseResults) => checkValidateResults(promiseResults, ctrlData, elm, value, ev, callbackId, cb))
-                    .catch((err) => checkValidateResults(err, ctrlData, elm, value, ev, callbackId, cb));
+                    .then((promiseResults) => checkValidateResults(promiseResults, ctrlData, ctrlElm, event, callbackId, cb))
+                    .catch((err) => checkValidateResults(err, ctrlData, ctrlElm, event, callbackId, cb));
             }
             else {
                 // results were not a promise
-                checkValidateResults(results, ctrlData, elm, value, ev, callbackId, cb);
+                checkValidateResults(results, ctrlData, ctrlElm, event, callbackId, cb);
             }
         }
         else {
             // no validate fn
-            checkValidateResults('', ctrlData, elm, value, ev, callbackId, cb);
+            checkValidateResults('', ctrlData, ctrlElm, event, callbackId, cb);
         }
     }
 };
-const checkValidateResults = async (results, ctrlData, ctrlElm, value, ev, callbackId, cb) => {
+const checkValidateResults = (results, ctrlData, ctrlElm, event, callbackId, cb) => {
     if (ctrlElm) {
         const ctrlState = ctrlElm[Control];
         if (ctrlState && (ctrlState.c === callbackId || (!ctrlElm.validity.valid && !ctrlElm.validity.customError))) {
@@ -320,15 +306,13 @@ const checkValidateResults = async (results, ctrlData, ctrlElm, value, ev, callb
             }
         }
         if (isFunction(cb)) {
-            try {
-                await cb(ctrlData, ctrlElm, value, ev);
-            }
-            catch (e) {
-                ctrlElm.setCustomValidity((ctrlState.e = String(e)));
-                ctrlState.m = '';
-            }
+            cb(ctrlData, event);
         }
     }
+};
+const catchError = (ctrlState, event, err) => {
+    event.ctrl.setCustomValidity((ctrlState.e = String(err.message || err)));
+    ctrlState.m = '';
 };
 /**
  * If the value has changed, or control has been "touched",
@@ -549,47 +533,65 @@ const getGroupChild = (parentCtrl, groupItemValue) => {
     return child;
 };
 
+const getValueFromControlElement = (ctrlData, ctrlElm) => {
+    const value = ctrlElm[ctrlData.valuePropName];
+    if (ctrlData.valuePropType === 'boolean') {
+        return String(value) === 'true';
+    }
+    if (ctrlData.valuePropType === 'number') {
+        return parseFloat(value);
+    }
+    return String(value);
+};
+const setValueFromControlElement = (ctrlData, ctrlElm, value) => (ctrlElm[ctrlData.valuePropName] = ctrlData.valuePropType === 'boolean' ? !!value : String(value));
+
 const sharedEventHandler = (ev) => {
-    const elm = ev.currentTarget;
-    const ctrl = ctrls.get(elm);
+    const ctrlElm = ev.currentTarget;
+    const ctrl = ctrls.get(ctrlElm);
     const ctrlData = ctrlDatas.get(ctrl);
     if (ctrl && ctrlData) {
         const ctrlState = getControlState(ctrl);
-        const value = getValueFromControlElement(ctrlData, elm);
-        const validity = elm.validity;
-        const eventType = ev.type;
+        const type = ev.type;
         const key = ev.key;
+        const rtns = [];
+        const event = {
+            value: getValueFromControlElement(ctrlData, ctrlElm),
+            validity: ctrlElm.validity,
+            key,
+            type,
+            ev: ev,
+            ctrl: ctrlElm,
+        };
         try {
-            if (eventType === 'blur') {
+            if (type === 'blur') {
                 // "blur" event
-                ctrlState.v = value;
                 ctrlState.t = true;
                 if (isFunction(ctrlData.onBlur)) {
-                    ctrlData.onBlur({ value, validity, ev: ev, elm });
+                    rtns.push(ctrlData.onBlur(event));
                 }
                 if (isFunction(ctrlData.onCommit)) {
                     // onCommit on blur event and Enter key event
-                    ctrlData.onCommit({ value, validity, ev: ev, elm });
+                    rtns.push(ctrlData.onCommit(event));
                 }
             }
-            else if (eventType === 'focus') {
+            else if (type === 'focus') {
                 // "focus" event
-                ctrlState.v = value;
+                ctrlState.v = event.value;
                 if (!ctrlState.t && isFunction(ctrlData.onTouch)) {
                     // onTouch should only fire on the first focus
-                    ctrlData.onTouch({ value, validity, ev: ev, elm });
+                    rtns.push(ctrlData.onTouch(event));
                 }
                 if (isFunction(ctrlData.onFocus)) {
-                    ctrlData.onFocus({ value, validity, ev: ev, elm });
+                    rtns.push(ctrlData.onFocus(event));
                 }
             }
-            else if (eventType === 'invalid') {
+            else if (type === 'invalid') {
                 // "invalid" event
-                if (!showNativeReport(elm)) {
+                if (!showNativeReport(ctrlElm)) {
                     ev.preventDefault();
                 }
                 // add a space at the end to ensure we trigger a re-render
-                ctrlState.e = elm.validationMessage + ' ';
+                ctrlState.e = ctrlElm.validationMessage + ' ';
                 // a control is automatically "dirty" if it has been invalid at least once.
                 ctrlState.d = true;
             }
@@ -597,54 +599,63 @@ const sharedEventHandler = (ev) => {
                 // "input" or "change" or keyboard events
                 ctrlState.d = true;
                 if (key === 'Escape' && ctrlData.resetOnEscape !== false) {
-                    setValueFromControlElement(ctrlData, elm, ctrlState.v);
+                    setValueFromControlElement(ctrlData, ctrlElm, ctrlState.v);
                     if (isFunction(ctrlData.onValueChange)) {
-                        ctrlData.onValueChange({ value: ctrlState.v, validity, ev, elm });
+                        event.value = ctrlState.v;
+                        rtns.push(ctrlData.onValueChange(event));
                     }
                 }
                 if (key !== 'Enter' && key !== 'Escape' && isNumber(ctrlData.debounce)) {
-                    clearTimeout(inputDebounces.get(elm));
-                    inputDebounces.set(elm, setTimeout(() => checkValidity(ctrlData, elm, ev, setValueChange), ctrlData.debounce));
+                    clearTimeout(inputDebounces.get(ctrlElm));
+                    inputDebounces.set(ctrlElm, setTimeout(() => checkValidity(ctrlData, ctrlState, ctrlElm, event, setValueChange), ctrlData.debounce));
                 }
                 else {
-                    checkValidity(ctrlData, elm, ev, setValueChange);
+                    checkValidity(ctrlData, ctrlState, ctrlElm, event, setValueChange);
                 }
             }
+            Promise.all(rtns).catch((err) => catchError(ctrlState, event, err));
         }
         catch (e) {
-            elm.setCustomValidity((ctrlState.e = String(e)));
+            catchError(ctrlState, event, e);
         }
     }
 };
-const setValueChange = (ctrlData, elm, value, ev) => {
-    if (ctrlData && elm) {
-        const eventType = ev.type;
-        const key = ev.key;
-        const validity = elm.validity;
-        const ctrlState = elm[Control];
-        ctrlState.d = true;
-        if (eventType === 'keydown' && isFunction(ctrlData.onKeyDown)) {
-            ctrlData.onKeyDown({ key, value, ev: ev, elm });
-        }
-        else if (eventType === 'keyup') {
-            if (isFunction(ctrlData.onKeyUp)) {
-                ctrlData.onKeyUp({ key, value, ev: ev, elm });
+const setValueChange = (ctrlData, event) => {
+    if (ctrlData && event && event.ctrl && event.ctrl.parentNode) {
+        // const eventType = ev.type;
+        // const key = (ev as KeyboardEvent).key;
+        // const validity = ctrlElm.validity;
+        const ctrlState = event.ctrl[Control];
+        const rtns = [];
+        try {
+            ctrlState.d = true;
+            if (event.type === 'keydown' && isFunction(ctrlData.onKeyDown)) {
+                rtns.push(ctrlData.onKeyDown(event));
             }
-            if (key === 'Escape' && isFunction(ctrlData.onEscapeKey)) {
-                ctrlData.onEscapeKey({ value, initialValue: ctrlState.v, validity, ev: ev, elm });
-            }
-            else if (key === 'Enter') {
-                ctrlState.v = value;
-                if (isFunction(ctrlData.onEnterKey)) {
-                    ctrlData.onEnterKey({ value, validity, ev: ev, elm });
+            else if (event.type === 'keyup') {
+                if (isFunction(ctrlData.onKeyUp)) {
+                    rtns.push(ctrlData.onKeyUp(event));
                 }
-                if (isFunction(ctrlData.onCommit)) {
-                    ctrlData.onCommit({ value, validity, ev: ev, elm });
+                if (event.key === 'Escape' && isFunction(ctrlData.onEscapeKey)) {
+                    rtns.push(ctrlData.onEscapeKey(event));
+                }
+                else if (event.key === 'Enter') {
+                    ctrlState.v = event.value;
+                    if (isFunction(ctrlData.onEnterKey)) {
+                        rtns.push(ctrlData.onEnterKey(event));
+                    }
+                    if (isFunction(ctrlData.onCommit)) {
+                        rtns.push(ctrlData.onCommit(event));
+                    }
                 }
             }
+            else if (isFunction(ctrlData.onValueChange)) {
+                rtns.push(ctrlData.onValueChange(event));
+            }
+            Promise.all(rtns).catch((err) => catchError(ctrlState, event, err));
         }
-        else if (isFunction(ctrlData.onValueChange)) {
-            ctrlData.onValueChange({ value, validity, ev, elm });
+        catch (e) {
+            catchError(ctrlState, event, e);
         }
     }
 };
@@ -791,7 +802,7 @@ const ctrlElmRef = (ctrl, ctrlData, ctrlState, ctrlElm, isParentGroup) => {
     ctrlElms.set(ctrl, ctrlElm);
     ctrlElm[Control] = ctrlState;
     if (ctrlState === null || ctrlState === void 0 ? void 0 : ctrlState.i) {
-        checkValidity(ctrlData, ctrlElm, null, null);
+        checkValidity(ctrlData, ctrlState, ctrlElm, { ctrl: ctrlElm }, null);
         ctrlState.i = false;
     }
 };
@@ -872,9 +883,9 @@ const MyForm = class {
                 });
             },
         });
-        const validateAge = (data) => {
-            if (data.value < 18) {
-                return `Must be 18 or older, but you entered ${data.value}`;
+        const validateAge = (event) => {
+            if (event.value < 18) {
+                return `Must be 18 or older, but you entered ${event.value}`;
             }
         };
         const age = bindNumber(this, 'age', {
