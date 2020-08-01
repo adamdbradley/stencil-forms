@@ -1,5 +1,5 @@
 const NAMESPACE = 'stencil-forms';
-const BUILD = /* stencil-forms */ { allRenderFn: true, appendChildSlotFix: false, asyncLoading: true, asyncQueue: false, cloneNodeFix: false, cmpDidLoad: false, cmpDidRender: false, cmpDidUnload: false, cmpDidUpdate: false, cmpShouldUpdate: false, cmpWillLoad: true, cmpWillRender: false, cmpWillUpdate: false, connectedCallback: false, constructableCSS: false, cssAnnotations: true, cssVarShim: true, devTools: true, disconnectedCallback: false, dynamicImportShim: true, element: false, event: false, hasRenderFn: true, hostListener: false, hostListenerTarget: false, hostListenerTargetBody: false, hostListenerTargetDocument: false, hostListenerTargetParent: false, hostListenerTargetWindow: false, hotModuleReplacement: true, hydrateClientSide: false, hydrateServerSide: false, hydratedAttribute: false, hydratedClass: true, initializeNextTick: true, isDebug: false, isDev: true, isTesting: false, lazyLoad: true, lifecycle: true, lifecycleDOMEvents: false, member: true, method: false, mode: false, observeAttribute: true, profile: true, prop: true, propBoolean: true, propMutable: false, propNumber: true, propString: true, reflect: false, safari10: true, scoped: false, scriptDataOpts: true, shadowDelegatesFocus: false, shadowDom: false, shadowDomShim: true, slot: false, slotChildNodesFix: false, slotRelocation: false, state: true, style: true, svg: false, taskQueue: true, transformTagName: false, updatable: true, vdomAttribute: true, vdomClass: true, vdomFunctional: false, vdomKey: true, vdomListener: true, vdomPropOrAttr: true, vdomRef: true, vdomRender: true, vdomStyle: true, vdomText: true, vdomXlink: true, watchCallback: false };
+const BUILD = /* stencil-forms */ { allRenderFn: true, appendChildSlotFix: false, asyncLoading: true, asyncQueue: false, attachStyles: true, cloneNodeFix: false, cmpDidLoad: false, cmpDidRender: false, cmpDidUnload: false, cmpDidUpdate: false, cmpShouldUpdate: false, cmpWillLoad: true, cmpWillRender: false, cmpWillUpdate: false, connectedCallback: false, constructableCSS: false, cssAnnotations: true, cssVarShim: true, devTools: true, disconnectedCallback: false, dynamicImportShim: true, element: false, event: false, hasRenderFn: true, hostListener: false, hostListenerTarget: false, hostListenerTargetBody: false, hostListenerTargetDocument: false, hostListenerTargetParent: false, hostListenerTargetWindow: false, hotModuleReplacement: true, hydrateClientSide: false, hydrateServerSide: false, hydratedAttribute: false, hydratedClass: true, initializeNextTick: true, isDebug: false, isDev: true, isTesting: false, lazyLoad: true, lifecycle: true, lifecycleDOMEvents: false, member: true, method: false, mode: false, observeAttribute: true, profile: true, prop: true, propBoolean: true, propMutable: false, propNumber: true, propString: true, reflect: false, safari10: true, scoped: false, scriptDataOpts: true, shadowDelegatesFocus: false, shadowDom: false, shadowDomShim: true, slot: false, slotChildNodesFix: false, slotRelocation: false, state: true, style: true, svg: false, taskQueue: true, transformTagName: false, updatable: true, vdomAttribute: true, vdomClass: true, vdomFunctional: false, vdomKey: true, vdomListener: true, vdomPropOrAttr: true, vdomRef: true, vdomRender: true, vdomStyle: true, vdomText: true, vdomXlink: true, watchCallback: false };
 
 let scopeId;
 let contentRef;
@@ -24,6 +24,7 @@ const plt = {
     raf: h => requestAnimationFrame(h),
     ael: (el, eventName, listener, opts) => el.addEventListener(eventName, listener, opts),
     rel: (el, eventName, listener, opts) => el.removeEventListener(eventName, listener, opts),
+    ce: (eventName, opts) => new CustomEvent(eventName, opts),
 };
 const supportsShadow = BUILD.shadowDomShim && BUILD.shadowDom ? /*@__PURE__*/ (() => (doc.head.attachShadow + '').indexOf('[native') > -1)() : true;
 const supportsListenerOptions = /*@__PURE__*/ (() => {
@@ -222,6 +223,9 @@ const registerStyle = (scopeId, cssText, allowCS) => {
 const addStyle = (styleContainerNode, cmpMeta, mode, hostElm) => {
     let scopeId = getScopeId(cmpMeta, mode);
     let style = styles.get(scopeId);
+    if (!BUILD.attachStyles) {
+        return scopeId;
+    }
     // if an element is NOT connected then getRootNode() will return the wrong root node
     // so the fallback is to always use the document for the root node in those cases
     styleContainerNode = styleContainerNode.nodeType === 11 /* DocumentFragment */ ? styleContainerNode : doc;
@@ -312,20 +316,25 @@ const EMPTY_OBJ = {};
  */
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const HTML_NS = 'http://www.w3.org/1999/xhtml';
-const IS_NODE_ENV = typeof global !== 'undefined' &&
-    typeof require === 'function' &&
-    !!global.process &&
-    Array.isArray(global.process.argv) &&
-    typeof __filename === 'string' &&
-    (!global.origin || typeof global.origin !== 'string');
-const IS_NODE_WINDOWS_ENV = IS_NODE_ENV && global.process.platform === 'win32';
 const isDef = (v) => v != null;
+const noop = () => {
+    /* noop*/
+};
 const isComplexType = (o) => {
     // https://jsperf.com/typeof-fn-object/5
     o = typeof o;
     return o === 'object' || o === 'function';
 };
-const getDynamicImportFunction = (namespace) => `__sc_import_${namespace.replace(/\s|-/g, '_')}`;
+const IS_DENO_ENV = typeof Deno !== 'undefined';
+const IS_NODE_ENV = !IS_DENO_ENV &&
+    typeof global !== 'undefined' &&
+    typeof require === 'function' &&
+    !!global.process &&
+    typeof __filename === 'string' &&
+    (!global.origin || typeof global.origin !== 'string');
+const IS_DENO_WINDOWS_ENV = IS_DENO_ENV && Deno.build.os === 'windows';
+const getCurrentDirectory = IS_NODE_ENV ? process.cwd : IS_DENO_ENV ? Deno.cwd : () => '/';
+const exit = IS_NODE_ENV ? process.exit : IS_DENO_ENV ? Deno.exit : noop;
 /**
  * Production h() function based on Preact by
  * Jason Miller (@developit)
@@ -454,6 +463,16 @@ const convertToPublic = (node) => ({
     vtext: node.$text$,
 });
 const convertToPrivate = (node) => {
+    if (typeof node.vtag === 'function') {
+        const vnodeData = Object.assign({}, node.vattrs);
+        if (node.vkey) {
+            vnodeData.key = node.vkey;
+        }
+        if (node.vname) {
+            vnodeData.name = node.vname;
+        }
+        return h(node.vtag, vnodeData, ...node.vchildren || []);
+    }
     const vnode = newVNode(node.vtag, node.vtext);
     vnode.$attrs$ = node.vattrs;
     vnode.$children$ = node.vchildren;
@@ -601,11 +620,13 @@ const setAccessor = (elm, memberName, oldValue, newValue, isSvg, flags) => {
                 }
             }
             if (newValue == null || newValue === false) {
-                if (BUILD.vdomXlink && xlink) {
-                    elm.removeAttributeNS(XLINK_NS, memberName);
-                }
-                else {
-                    elm.removeAttribute(memberName);
+                if (newValue !== false || elm.getAttribute(memberName) === '') {
+                    if (BUILD.vdomXlink && xlink) {
+                        elm.removeAttributeNS(XLINK_NS, memberName);
+                    }
+                    else {
+                        elm.removeAttribute(memberName);
+                    }
                 }
             }
             else if ((!isProp || flags & 4 /* isHost */ || isSvg) && !isComplex) {
@@ -1256,7 +1277,7 @@ const createEvent = (ref, name, flags) => {
     };
 };
 const emitEvent = (elm, name, opts) => {
-    const ev = new (BUILD.hydrateServerSide ? win.CustomEvent : CustomEvent)(name, opts);
+    const ev = plt.ce(name, opts);
     elm.dispatchEvent(ev);
     return ev;
 };
@@ -1386,13 +1407,20 @@ const updateComponent = (hostRef, instance, isInitialLoad) => {
     }
 };
 const callRender = (hostRef, instance) => {
+    // in order for bundlers to correctly treeshake the BUILD object
+    // we need to ensure BUILD is not deoptimized within a try/catch
+    // https://rollupjs.org/guide/en/#treeshake tryCatchDeoptimization
+    const allRenderFn = BUILD.allRenderFn ? true : false;
+    const lazyLoad = BUILD.lazyLoad ? true : false;
+    const taskQueue = BUILD.taskQueue ? true : false;
+    const updatable = BUILD.updatable ? true : false;
     try {
         renderingRef = instance;
-        instance = BUILD.allRenderFn ? instance.render() : instance.render && instance.render();
-        if (BUILD.updatable && BUILD.taskQueue) {
+        instance = allRenderFn ? instance.render() : instance.render && instance.render();
+        if (updatable && taskQueue) {
             hostRef.$flags$ &= ~16 /* isQueuedForUpdate */;
         }
-        if (BUILD.updatable || BUILD.lazyLoad) {
+        if (updatable || lazyLoad) {
             hostRef.$flags$ |= 2 /* hasRendered */;
         }
     }
@@ -1898,19 +1926,9 @@ const proxyComponent = (Cstr, cmpMeta, flags) => {
 const initializeComponent = async (elm, hostRef, cmpMeta, hmrVersionId, Cstr) => {
     // initializeComponent
     if ((BUILD.lazyLoad || BUILD.hydrateServerSide || BUILD.style) && (hostRef.$flags$ & 32 /* hasInitializedComponent */) === 0) {
-        // we haven't initialized this element yet
-        hostRef.$flags$ |= 32 /* hasInitializedComponent */;
-        if (BUILD.mode && hostRef.$modeName$ == null) {
-            // initializeComponent
-            // looks like mode wasn't set as a property directly yet
-            // first check if there's an attribute
-            // next check the app's global
-            hostRef.$modeName$ = typeof cmpMeta.$lazyBundleIds$ !== 'string' ? computeMode(elm) : '';
-        }
-        if (BUILD.hydrateServerSide && hostRef.$modeName$) {
-            elm.setAttribute('s-mode', hostRef.$modeName$);
-        }
         if (BUILD.lazyLoad || BUILD.hydrateClientSide) {
+            // we haven't initialized this element yet
+            hostRef.$flags$ |= 32 /* hasInitializedComponent */;
             // lazy loaded components
             // request the component's implementation to be
             // wired up with the host element
@@ -1961,21 +1979,28 @@ const initializeComponent = async (elm, hostRef, cmpMeta, hmrVersionId, Cstr) =>
             fireConnectedCallback(hostRef.$lazyInstance$);
         }
         else {
+            // sync constructor component
             Cstr = elm.constructor;
+            hostRef.$flags$ |= 128 /* isWatchReady */ | 32 /* hasInitializedComponent */;
         }
-        const scopeId = getScopeId(cmpMeta, hostRef.$modeName$);
-        if (BUILD.style && !styles.has(scopeId) && Cstr.style) {
-            const endRegisterStyles = createTime('registerStyles', cmpMeta.$tagName$);
+        if (BUILD.style && Cstr.style) {
             // this component has styles but we haven't registered them yet
             let style = Cstr.style;
             if (BUILD.mode && typeof style !== 'string') {
-                style = style[hostRef.$modeName$];
+                style = style[(hostRef.$modeName$ = computeMode(elm))];
+                if (BUILD.hydrateServerSide && hostRef.$modeName$) {
+                    elm.setAttribute('s-mode', hostRef.$modeName$);
+                }
             }
-            if (!BUILD.hydrateServerSide && BUILD.shadowDom && BUILD.shadowDomShim && cmpMeta.$flags$ & 8 /* needsShadowDomShim */) {
-                style = await __sc_import_stencil_forms('./shadow-css-5e35ab35.js').then(m => m.scopeCss(style, scopeId, false));
+            const scopeId = getScopeId(cmpMeta, hostRef.$modeName$);
+            if (!styles.has(scopeId)) {
+                const endRegisterStyles = createTime('registerStyles', cmpMeta.$tagName$);
+                if (!BUILD.hydrateServerSide && BUILD.shadowDom && BUILD.shadowDomShim && cmpMeta.$flags$ & 8 /* needsShadowDomShim */) {
+                    style = await __sc_import_stencil_forms('./shadow-css-056e63cd.js').then(m => m.scopeCss(style, scopeId, false));
+                }
+                registerStyle(scopeId, style, !!(cmpMeta.$flags$ & 1 /* shadowDomEncapsulation */));
+                endRegisterStyles();
             }
-            registerStyle(scopeId, style, !!(cmpMeta.$flags$ & 1 /* shadowDomEncapsulation */));
-            endRegisterStyles();
         }
     }
     // we've successfully created a lazy instance
@@ -2431,7 +2456,7 @@ const bootstrapLazy = (lazyBundles, options = {}) => {
                 hmrStart(this, cmpMeta, hmrVersionId);
             };
         }
-        cmpMeta.$lazyBundleIds$ = lazyBundle[0];
+        cmpMeta.$lazyBundleId$ = lazyBundle[0];
         if (!exclude.includes(tagName) && !customElements.get(tagName)) {
             cmpTags.push(tagName);
             customElements.define(tagName, proxyComponent(HostElement, cmpMeta, 1 /* isElementConstructor */));
@@ -2462,6 +2487,7 @@ const getAssetPath = (path) => {
     const assetUrl = new URL(path, plt.$resourcesUrl$);
     return assetUrl.origin !== win.location.origin ? assetUrl.href : assetUrl.pathname;
 };
+const setAssetPath = (path) => (plt.$resourcesUrl$ = path);
 const getConnect = (_ref, tagName) => {
     const componentOnReady = () => {
         let elm = doc.querySelector(tagName);
@@ -2602,6 +2628,17 @@ const insertVNodeAnnotations = (doc, hostElm, vnode, docData, cmpData) => {
                 insertChildVNodeAnnotations(doc, vnodeChild, cmpData, hostId, depth, index);
             });
         }
+        if (hostElm && vnode && vnode.$elm$ && !hostElm.hasAttribute('c-id')) {
+            const parent = hostElm.parentElement;
+            if (parent && parent.childNodes) {
+                const parentChildNodes = Array.from(parent.childNodes);
+                const comment = parentChildNodes.find(node => node.nodeType === 8 /* CommentNode */ && node['s-sr']);
+                if (comment) {
+                    const index = parentChildNodes.indexOf(hostElm) - 1;
+                    vnode.$elm$.setAttribute(HYDRATE_CHILD_ID, `${comment['s-host-id']}.${comment['s-node-id']}.0.${index}`);
+                }
+            }
+        }
     }
 };
 const insertChildVNodeAnnotations = (doc, vnodeChild, cmpData, hostId, depth, index) => {
@@ -2674,7 +2711,7 @@ const cmpModules = /*@__PURE__*/ new Map();
 const loadModule = (cmpMeta, hostRef, hmrVersionId) => {
     // loadModuleImport
     const exportName = cmpMeta.$tagName$.replace(/-/g, '_');
-    const bundleId = (BUILD.mode && typeof cmpMeta.$lazyBundleIds$ !== 'string' ? cmpMeta.$lazyBundleIds$[hostRef.$modeName$] : cmpMeta.$lazyBundleIds$);
+    const bundleId = cmpMeta.$lazyBundleId$;
     if (BUILD.isDev && typeof bundleId !== 'string') {
         consoleDevError(`Trying to lazily load component <${cmpMeta.$tagName$}> with style mode "${hostRef.$modeName$}", but it does not exist.`);
         return undefined;
@@ -2784,131 +2821,5 @@ const Build = {
     isServer: false,
     isTesting: BUILD.isTesting ? true : false,
 };
-const patchEsm = () => {
-    // @ts-ignore
-    if (BUILD.cssVarShim && !(CSS && CSS.supports && CSS.supports('color', 'var(--c)'))) {
-        // @ts-ignore
-        return __sc_import_stencil_forms(/* webpackChunkName: "polyfills-css-shim" */ './css-shim-0738eac1.js').then(() => {
-            if ((plt.$cssShim$ = win.__cssshim)) {
-                return plt.$cssShim$.i();
-            }
-            else {
-                // for better minification
-                return 0;
-            }
-        });
-    }
-    return promiseResolve();
-};
-const patchBrowser = () => {
-    // NOTE!! This fn cannot use async/await!
-    if (BUILD.isDev && !BUILD.isTesting) {
-        consoleDevInfo('Running in development mode.');
-    }
-    if (BUILD.cssVarShim) {
-        // shim css vars
-        plt.$cssShim$ = win.__cssshim;
-    }
-    if (BUILD.cloneNodeFix) {
-        // opted-in to polyfill cloneNode() for slot polyfilled components
-        patchCloneNodeFix(H.prototype);
-    }
-    if (BUILD.profile && !performance.mark) {
-        // not all browsers support performance.mark/measure (Safari 10)
-        performance.mark = performance.measure = () => {
-            /*noop*/
-        };
-        performance.getEntriesByName = () => [];
-    }
-    // @ts-ignore
-    const scriptElm = BUILD.scriptDataOpts || BUILD.safari10 || BUILD.dynamicImportShim
-        ? Array.from(doc.querySelectorAll('script')).find(s => new RegExp(`\/${NAMESPACE}(\\.esm)?\\.js($|\\?|#)`).test(s.src) || s.getAttribute('data-stencil-namespace') === NAMESPACE)
-        : null;
-    const importMeta = "";
-    const opts = BUILD.scriptDataOpts ? scriptElm['data-opts'] || {} : {};
-    if (BUILD.safari10 && 'onbeforeload' in scriptElm && !history.scrollRestoration /* IS_ESM_BUILD */) {
-        // Safari < v11 support: This IF is true if it's Safari below v11.
-        // This fn cannot use async/await since Safari didn't support it until v11,
-        // however, Safari 10 did support modules. Safari 10 also didn't support "nomodule",
-        // so both the ESM file and nomodule file would get downloaded. Only Safari
-        // has 'onbeforeload' in the script, and "history.scrollRestoration" was added
-        // to Safari in v11. Return a noop then() so the async/await ESM code doesn't continue.
-        // IS_ESM_BUILD is replaced at build time so this check doesn't happen in systemjs builds.
-        return {
-            then() {
-                /* promise noop */
-            },
-        };
-    }
-    if (!BUILD.safari10 && importMeta !== '') {
-        opts.resourcesUrl = new URL('.', importMeta).href;
-    }
-    else if (BUILD.dynamicImportShim || BUILD.safari10) {
-        opts.resourcesUrl = new URL('.', new URL(scriptElm.getAttribute('data-resources-url') || scriptElm.src, win.location.href)).href;
-        if (BUILD.dynamicImportShim) {
-            patchDynamicImport(opts.resourcesUrl, scriptElm);
-        }
-        if (BUILD.dynamicImportShim && !win.customElements) {
-            // module support, but no custom elements support (Old Edge)
-            // @ts-ignore
-            return __sc_import_stencil_forms(/* webpackChunkName: "polyfills-dom" */ './dom-91049fd0.js').then(() => opts);
-        }
-    }
-    return promiseResolve(opts);
-};
-const patchDynamicImport = (base, orgScriptElm) => {
-    const importFunctionName = getDynamicImportFunction(NAMESPACE);
-    try {
-        // test if this browser supports dynamic imports
-        // There is a caching issue in V8, that breaks using import() in Function
-        // By generating a random string, we can workaround it
-        // Check https://bugs.chromium.org/p/chromium/issues/detail?id=990810 for more info
-        win[importFunctionName] = new Function('w', `return import(w);//${Math.random()}`);
-    }
-    catch (e) {
-        // this shim is specifically for browsers that do support "esm" imports
-        // however, they do NOT support "dynamic" imports
-        // basically this code is for old Edge, v18 and below
-        const moduleMap = new Map();
-        win[importFunctionName] = (src) => {
-            const url = new URL(src, base).href;
-            let mod = moduleMap.get(url);
-            if (!mod) {
-                const script = doc.createElement('script');
-                script.type = 'module';
-                script.crossOrigin = orgScriptElm.crossOrigin;
-                script.src = URL.createObjectURL(new Blob([`import * as m from '${url}'; window.${importFunctionName}.m = m;`], { type: 'application/javascript' }));
-                mod = new Promise(resolve => {
-                    script.onload = () => {
-                        resolve(win[importFunctionName].m);
-                        script.remove();
-                    };
-                });
-                moduleMap.set(url, mod);
-                doc.head.appendChild(script);
-            }
-            return mod;
-        };
-    }
-};
-const patchCloneNodeFix = (HTMLElementPrototype) => {
-    const nativeCloneNodeFn = HTMLElementPrototype.cloneNode;
-    HTMLElementPrototype.cloneNode = function (deep) {
-        if (this.nodeName === 'TEMPLATE') {
-            return nativeCloneNodeFn.call(this, deep);
-        }
-        const clonedNode = nativeCloneNodeFn.call(this, false);
-        const srcChildNodes = this.childNodes;
-        if (deep) {
-            for (let i = 0; i < srcChildNodes.length; i++) {
-                // Node.ATTRIBUTE_NODE === 2, and checking because IE11
-                if (srcChildNodes[i].nodeType !== 2) {
-                    clonedNode.appendChild(srcChildNodes[i].cloneNode(true));
-                }
-            }
-        }
-        return clonedNode;
-    };
-};
 
-export { Host as H, patchEsm as a, bootstrapLazy as b, forceUpdate as f, getRenderingRef as g, h, patchBrowser as p, registerInstance as r };
+export { BUILD as B, CSS as C, H, NAMESPACE as N, promiseResolve as a, bootstrapLazy as b, consoleDevInfo as c, doc as d, Host as e, forceUpdate as f, getRenderingRef as g, h, plt as p, registerInstance as r, win as w };

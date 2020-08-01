@@ -69,16 +69,14 @@ export class MyForm {
       },
     });
 
-    const validateAge = (age: number) => {
-      if (age < 18) {
-        return `Must be 18 or older, but you entered ${age}`;
+    const validateAge = (data: { value: number }) => {
+      if (data.value < 18) {
+        return `Must be 18 or older, but you entered ${data.value}`;
       }
     };
 
     const age = bindNumber(this, 'age', {
-      validate: ({ value }) => {
-        return validateAge(value);
-      },
+      validate: validateAge,
     });
 
     const volume = controlNumber(this.volume, {

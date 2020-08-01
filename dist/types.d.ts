@@ -15,12 +15,7 @@ export interface ReactiveFormBindOptions {
      * The `onBlur()` hook is trigged when the control actively had focus,
      * but was just lost focus. Trigged from the native `blur` event.
      */
-    onBlur?: (data: {
-        value: any;
-        validity: ValidityState;
-        ev: FocusEvent;
-        elm: ControlElement;
-    }) => void;
+    onBlur?: (data: ReactiveFormHookFocusEvent) => void;
     /**
      * The `onCommit()` hook is trigged when either an "Enter" `keyup` event,
      * or a `blur` event has occurred. It's a combination of `onEnterKey()`
@@ -39,12 +34,7 @@ export interface ReactiveFormBindOptions {
      * to run logic when the control receives either an "Enter" `keyup`
      * event or `blur` event.
      */
-    onEnterKey?: (data: {
-        value: any;
-        validity: ValidityState;
-        ev: KeyboardEvent;
-        elm: ControlElement;
-    }) => void;
+    onEnterKey?: (data: ReactiveFormHookKeyboardEvent) => void;
     /**
      * The `onEscapeKey()` hook is trigged on a native `keyup` event with the
      * "Escape" key. By default, when the Escape key `keyup` event is fired,
@@ -52,74 +42,38 @@ export interface ReactiveFormBindOptions {
      * the control first received focus. Set the `resetOnEscape` option to
      * `false` to disable resetting the value back to the initial value.
      */
-    onEscapeKey?: (data: {
-        value: any;
-        validity: ValidityState;
-        initialValue: any;
-        ev: KeyboardEvent;
-        elm: ControlElement;
-    }) => void;
+    onEscapeKey?: (data: ReactiveFormHookKeyboardEvent) => void;
     /**
      * The `onFocus()` hook is trigged when the control received focus.
      * Trigged from the native `focus` event.
      */
-    onFocus?: (data: {
-        value: any;
-        validity: ValidityState;
-        ev: FocusEvent;
-        elm: ControlElement;
-    }) => void;
-    onInvalid?: (data: {
-        value: any;
-        validity: ValidityState;
-        ev: Event;
-        elm: ControlElement;
-    }) => void;
+    onFocus?: (data: ReactiveFormHookFocusEvent) => void;
+    onInvalid?: (data: ReactiveFormHookKeyboardEvent | ReactiveFormHookFocusEvent) => void;
     /**
      * The `onKeyDown()` hook is trigged from the native `keydown` event.
      * The first argument is the key that was pressed.
      */
-    onKeyDown?: (data: {
-        key: string;
-        value: any;
-        ev: KeyboardEvent;
-        elm: ControlElement;
-    }) => void;
+    onKeyDown?: (data: ReactiveFormHookKeyboardEvent) => void;
     /**
      * The `onKeyUp()` hook is trigged from the native `keyup` event.
      * The first argument is the key that was pressed. If listening for
      * the "Enter" or "Escape" key, the `onEnterKey()` and `onEscapeKey()`
      * hooks are also available for convenience.
      */
-    onKeyUp?: (data: {
-        key: string;
-        value: any;
-        ev: KeyboardEvent;
-        elm: ControlElement;
-    }) => void;
+    onKeyUp?: (data: ReactiveFormHookKeyboardEvent) => void;
     /**
      * The `onTouch()` hook is only called the first time the form
      * control received the native `focus` event. This hook is not trigged
      * against on subsequent focus events
      */
-    onTouch?: (data: {
-        value: any;
-        validity: ValidityState;
-        ev: FocusEvent;
-        elm: ControlElement;
-    }) => void;
+    onTouch?: (data: ReactiveFormHookFocusEvent) => void;
     /**
      * By default, if the "Escape" key is pressed, then the value will be reset back
      * to the initial value at the time when the control was focused. Set this option
      * to `false` to disable resetting the value back to the initial value.
      */
     resetOnEscape?: boolean;
-    validate?: (data: {
-        value: any;
-        validity: ValidityState;
-        ev: Event | null;
-        elm: ControlElement;
-    }) => ReactiveValidateResult | Promise<ReactiveValidateResult>;
+    validate?: (data: ReactiveFormEvent) => ReactiveValidateResult | Promise<ReactiveValidateResult>;
     activelyValidatingMessage?: string | ((value: any, ev: Event | null) => string);
     /**
      * The property name to use when assign the value to the input. The default
@@ -135,12 +89,20 @@ export interface ReactiveFormBindOptions {
     valuePropType?: ReactiveFormValuePropType;
 }
 export interface ReactiveFormControlOptions extends ReactiveFormBindOptions {
-    onValueChange?: (data: {
-        value: any;
-        validity: ValidityState;
-        ev: Event;
-        elm: ControlElement;
-    }) => void;
+    onValueChange?: (data: ReactiveFormEvent) => void;
+}
+export interface ReactiveFormHookKeyboardEvent extends ReactiveFormEvent {
+    key: string;
+    ev: KeyboardEvent;
+}
+export interface ReactiveFormHookFocusEvent extends ReactiveFormEvent {
+    ev: FocusEvent;
+}
+export interface ReactiveFormEvent {
+    value: any;
+    validity: ValidityState;
+    ev: Event;
+    elm: ControlElement;
 }
 export declare type ReactiveFormValuePropType = 'string' | 'boolean' | 'number';
 export declare type ReactiveValidateResult = string | undefined | null | void;

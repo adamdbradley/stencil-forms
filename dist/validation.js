@@ -22,7 +22,9 @@ export const checkValidity = (ctrlData, elm, ev, cb) => {
                         ? ctrlData.activelyValidatingMessage(value, ev)
                         : `Validating...`;
                 elm.setCustomValidity(ctrlState.m);
-                results.then((promiseResults) => checkValidateResults(promiseResults, ctrlData, elm, value, ev, callbackId, cb));
+                results
+                    .then((promiseResults) => checkValidateResults(promiseResults, ctrlData, elm, value, ev, callbackId, cb))
+                    .catch((err) => checkValidateResults(err, ctrlData, elm, value, ev, callbackId, cb));
             }
             else {
                 // results were not a promise
@@ -47,7 +49,15 @@ const checkValidateResults = (results, ctrlData, ctrlElm, value, ev, callbackId,
                 ctrlElm.reportValidity();
             }
         }
-        cb && cb(ctrlData, ctrlElm, value, ev);
+        if (isFunction(cb)) {
+            try {
+                cb(ctrlData, ctrlElm, value, ev);
+            }
+            catch (e) {
+                ctrlElm.setCustomValidity((ctrlState.e = String(e)));
+                ctrlState.m = '';
+            }
+        }
     }
 };
 /**

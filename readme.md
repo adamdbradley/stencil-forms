@@ -376,11 +376,11 @@ throughout the app.
 
 ```tsx
 // validation.ts
-export const validateAge = (age: number) => {
-  if (age < 18) {
-    return 'Must be 18 years or older';
+const validateAge = (data: { value: number }) => {
+  if (data.value < 18) {
+    return `Must be 18 or older, but you entered ${data.value}`;
   }
-}
+};
 ```
 
 ```tsx
@@ -391,7 +391,7 @@ import { validateAge } from './validation';
 
 render() {
   const age = bindNumber(this, 'age', {
-    validate: ({ value }) => validateAge(value),
+    validate: validateAge,
   });
 
   return (

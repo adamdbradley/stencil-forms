@@ -31,9 +31,9 @@ export const checkValidity = (
           : `Validating...`;
 
         elm.setCustomValidity(ctrlState.m);
-        results.then((promiseResults) =>
-          checkValidateResults(promiseResults, ctrlData, elm, value, ev, callbackId, cb),
-        );
+        results
+          .then((promiseResults) => checkValidateResults(promiseResults, ctrlData, elm, value, ev, callbackId, cb))
+          .catch((err) => checkValidateResults(err, ctrlData, elm, value, ev, callbackId, cb));
       } else {
         // results were not a promise
         checkValidateResults(results, ctrlData, elm, value, ev, callbackId, cb);
@@ -52,7 +52,7 @@ const checkValidateResults = (
   value: any,
   ev: Event,
   callbackId: number,
-  cb: ((ctrlData: ControlData, ctrlElm: ControlElement, value: any, ev: Event) => void) | null,
+  cb: ((ctrlData: ControlData, ctrlElm: ControlElement, value: any, ev: Event) => void | Promise<void>) | null,
 ) => {
   if (ctrlElm) {
     const ctrlState: ControlState = (ctrlElm as any)[Control];
@@ -66,7 +66,14 @@ const checkValidateResults = (
         ctrlElm.reportValidity();
       }
     }
-    cb && cb(ctrlData, ctrlElm, value, ev);
+    if (isFunction(cb)) {
+      try {
+        cb(ctrlData, ctrlElm, value, ev);
+      } catch (e) {
+        ctrlElm.setCustomValidity((ctrlState.e = String(e)));
+        ctrlState.m = '';
+      }
+    }
   }
 };
 

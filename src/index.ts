@@ -17,4 +17,7 @@ export type {
   ReactiveFormControl,
   ReactiveFormControlGroup,
   ReactiveFormControlOptions,
+  ReactiveFormEvent,
+  ReactiveFormHookFocusEvent,
+  ReactiveFormHookKeyboardEvent,
 } from './types';
