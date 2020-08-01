@@ -23,7 +23,6 @@ import {
   styleUrl: 'my-form.css',
 })
 export class MyForm {
-
   @Prop() login = false;
   @Prop() fullName = 'Marty McFly';
   @Prop() email = '';
@@ -38,7 +37,7 @@ export class MyForm {
 
   componentWillLoad() {
     const search = new URLSearchParams(document.location.search);
-    if (search.get("token") === "test") {
+    if (search.get('token') === 'test') {
       this.login = true;
     }
   }
@@ -70,33 +69,39 @@ export class MyForm {
       },
     });
 
+    const validateAge = (age: number) => {
+      if (age < 18) {
+        return `Must be 18 or older, but you entered ${age}`;
+      }
+    };
+
     const age = bindNumber(this, 'age', {
-      validate: (value) => {
-        if (value < 18) {
-          return `Must be 18 or older, but you entered ${value}`;
-        }
+      validate: ({ value }) => {
+        return validateAge(value);
       },
     });
 
     const volume = controlNumber(this.volume, {
-      onValueChange: (value) => (this.volume = value),
+      onValueChange: ({ value }) => {
+        this.volume = value;
+      },
     });
 
     const vegetarian = controlBoolean(this.vegetarian, {
-      onValueChange: (value) => (this.vegetarian = value),
+      onValueChange: ({ value }) => (this.vegetarian = value),
     });
 
     const specialInstructions = bind(this, 'specialInstructions', {
-      onKeyDown: (key, value) => {
+      onKeyDown: ({ key, value }) => {
         console.log('onKeyDown, key', key, 'value', value);
       },
-      onKeyUp: (key, value) => {
+      onKeyUp: ({ key, value }) => {
         console.log('onKeyUp, key', key, 'value', value);
       },
     });
 
     const favoriteCar = controlGroup(this.favoriteCar, {
-      onValueChange: (value) => (this.favoriteCar = value),
+      onValueChange: ({ value }) => (this.favoriteCar = value),
     });
 
     return (
@@ -224,7 +229,9 @@ export class MyForm {
           </section>
 
           <section>
-            <button type="submit" {...submitValidity(!this.login ? "Bad auth. Add ?token=test" : undefined)}>Submit</button>
+            <button type="submit" {...submitValidity(!this.login ? 'Bad auth. Add ?token=test' : undefined)}>
+              Submit
+            </button>
           </section>
         </form>
 

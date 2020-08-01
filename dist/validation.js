@@ -1,19 +1,19 @@
 import { Control, getControlState, ctrlElms } from './state';
 import { getValueFromControlElement } from './value';
 import { isFunction, isPromise, isString, setAttribute, showNativeReport } from './helpers';
-export const checkValidity = (ctrlData, ctrlElm, ev, cb) => {
-    if (ctrlElm && ctrlElm.validity) {
-        const ctrlState = ctrlElm[Control];
-        const value = getValueFromControlElement(ctrlData, ctrlElm);
+export const checkValidity = (ctrlData, elm, ev, cb) => {
+    if (elm && elm.validity) {
+        const ctrlState = elm[Control];
+        const value = getValueFromControlElement(ctrlData, elm);
         const callbackId = ++ctrlState.c;
-        ctrlElm.setCustomValidity((ctrlState.e = ''));
-        if (!ctrlElm.validity.valid) {
+        elm.setCustomValidity((ctrlState.e = ''));
+        if (!elm.validity.valid) {
             // native browser constraint
-            ctrlState.e = ctrlElm.validationMessage;
+            ctrlState.e = elm.validationMessage;
         }
         else if (isFunction(ctrlData.validate)) {
             // has custom validate fn and the native browser constraints are valid
-            const results = ctrlData.validate(value, ctrlElm.validity, ev);
+            const results = ctrlData.validate({ value, validity: elm.validity, ev, elm });
             if (isPromise(results)) {
                 // results return a promise, let's wait on those
                 ctrlState.m = isString(ctrlData.activelyValidatingMessage)
@@ -21,17 +21,17 @@ export const checkValidity = (ctrlData, ctrlElm, ev, cb) => {
                     : isFunction(ctrlData.activelyValidatingMessage)
                         ? ctrlData.activelyValidatingMessage(value, ev)
                         : `Validating...`;
-                ctrlElm.setCustomValidity(ctrlState.m);
-                results.then((promiseResults) => checkValidateResults(promiseResults, ctrlData, ctrlElm, value, ev, callbackId, cb));
+                elm.setCustomValidity(ctrlState.m);
+                results.then((promiseResults) => checkValidateResults(promiseResults, ctrlData, elm, value, ev, callbackId, cb));
             }
             else {
                 // results were not a promise
-                checkValidateResults(results, ctrlData, ctrlElm, value, ev, callbackId, cb);
+                checkValidateResults(results, ctrlData, elm, value, ev, callbackId, cb);
             }
         }
         else {
             // no validate fn
-            checkValidateResults('', ctrlData, ctrlElm, value, ev, callbackId, cb);
+            checkValidateResults('', ctrlData, elm, value, ev, callbackId, cb);
         }
     }
 };

@@ -1,5 +1,5 @@
 import { ControlData, ControlElement, ReactiveFormControl } from './types';
-export declare const checkValidity: (ctrlData: ControlData, ctrlElm: ControlElement, ev: any, cb: ((ctrlData: ControlData, ctrlElm: ControlElement, value: any, ev: any) => void) | null) => any;
+export declare const checkValidity: (ctrlData: ControlData, elm: ControlElement, ev: any, cb: ((ctrlData: ControlData, ctrlElm: ControlElement, value: any, ev: any) => void) | null) => any;
 /**
  * If the value has changed, or control has been "touched",
  * and if the value does not pass the browser's

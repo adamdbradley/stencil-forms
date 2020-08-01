@@ -271,19 +271,19 @@ const toDashCase = (str) => str
 const setAttribute = (elm, attrName, attrValue = '') => (elm === null || elm === void 0 ? void 0 : elm.setAttribute(attrName, attrValue), attrValue);
 const showNativeReport = (elm) => { var _a, _b; return !(elm === null || elm === void 0 ? void 0 : elm.hasAttribute('formnovalidate')) && !((_b = (_a = elm) === null || _a === void 0 ? void 0 : _a.form) === null || _b === void 0 ? void 0 : _b.hasAttribute('novalidate')); };
 
-const checkValidity = (ctrlData, ctrlElm, ev, cb) => {
-    if (ctrlElm && ctrlElm.validity) {
-        const ctrlState = ctrlElm[Control];
-        const value = getValueFromControlElement(ctrlData, ctrlElm);
+const checkValidity = (ctrlData, elm, ev, cb) => {
+    if (elm && elm.validity) {
+        const ctrlState = elm[Control];
+        const value = getValueFromControlElement(ctrlData, elm);
         const callbackId = ++ctrlState.c;
-        ctrlElm.setCustomValidity((ctrlState.e = ''));
-        if (!ctrlElm.validity.valid) {
+        elm.setCustomValidity((ctrlState.e = ''));
+        if (!elm.validity.valid) {
             // native browser constraint
-            ctrlState.e = ctrlElm.validationMessage;
+            ctrlState.e = elm.validationMessage;
         }
         else if (isFunction(ctrlData.validate)) {
             // has custom validate fn and the native browser constraints are valid
-            const results = ctrlData.validate(value, ctrlElm.validity, ev);
+            const results = ctrlData.validate({ value, validity: elm.validity, ev, elm });
             if (isPromise(results)) {
                 // results return a promise, let's wait on those
                 ctrlState.m = isString(ctrlData.activelyValidatingMessage)
@@ -291,17 +291,17 @@ const checkValidity = (ctrlData, ctrlElm, ev, cb) => {
                     : isFunction(ctrlData.activelyValidatingMessage)
                         ? ctrlData.activelyValidatingMessage(value, ev)
                         : `Validating...`;
-                ctrlElm.setCustomValidity(ctrlState.m);
-                results.then((promiseResults) => checkValidateResults(promiseResults, ctrlData, ctrlElm, value, ev, callbackId, cb));
+                elm.setCustomValidity(ctrlState.m);
+                results.then((promiseResults) => checkValidateResults(promiseResults, ctrlData, elm, value, ev, callbackId, cb));
             }
             else {
                 // results were not a promise
-                checkValidateResults(results, ctrlData, ctrlElm, value, ev, callbackId, cb);
+                checkValidateResults(results, ctrlData, elm, value, ev, callbackId, cb);
             }
         }
         else {
             // no validate fn
-            checkValidateResults('', ctrlData, ctrlElm, value, ev, callbackId, cb);
+            checkValidateResults('', ctrlData, elm, value, ev, callbackId, cb);
         }
     }
 };
@@ -540,13 +540,13 @@ const getGroupChild = (parentCtrl, groupItemValue) => {
 };
 
 const sharedEventHandler = (ev) => {
-    const ctrlElm = ev.currentTarget;
-    const ctrl = ctrls.get(ctrlElm);
+    const elm = ev.currentTarget;
+    const ctrl = ctrls.get(elm);
     const ctrlData = ctrlDatas.get(ctrl);
     if (ctrl && ctrlData) {
         const ctrlState = getControlState(ctrl);
-        const value = getValueFromControlElement(ctrlData, ctrlElm);
-        const validity = ctrlElm.validity;
+        const value = getValueFromControlElement(ctrlData, elm);
+        const validity = elm.validity;
         const eventType = ev.type;
         const key = ev.key;
         if (eventType === 'blur') {
@@ -554,11 +554,11 @@ const sharedEventHandler = (ev) => {
             ctrlState.v = value;
             ctrlState.t = true;
             if (isFunction(ctrlData.onBlur)) {
-                ctrlData.onBlur(value, validity, ev);
+                ctrlData.onBlur({ value, validity, ev: ev, elm });
             }
             if (isFunction(ctrlData.onCommit)) {
                 // onCommit on blur event and Enter key event
-                ctrlData.onCommit(value, ev);
+                ctrlData.onCommit({ value, validity, ev: ev, elm });
             }
         }
         else if (eventType === 'focus') {
@@ -566,19 +566,19 @@ const sharedEventHandler = (ev) => {
             ctrlState.v = value;
             if (!ctrlState.t && isFunction(ctrlData.onTouch)) {
                 // onTouch should only fire on the first focus
-                ctrlData.onTouch(value, validity, ev);
+                ctrlData.onTouch({ value, validity, ev: ev, elm });
             }
             if (isFunction(ctrlData.onFocus)) {
-                ctrlData.onFocus(value, validity, ev);
+                ctrlData.onFocus({ value, validity, ev: ev, elm });
             }
         }
         else if (eventType === 'invalid') {
             // "invalid" event
-            if (!showNativeReport(ctrlElm)) {
+            if (!showNativeReport(elm)) {
                 ev.preventDefault();
             }
             // add a space at the end to ensure we trigger a re-render
-            ctrlState.e = ctrlElm.validationMessage + ' ';
+            ctrlState.e = elm.validationMessage + ' ';
             // a control is automatically "dirty" if it has been invalid at least once.
             ctrlState.d = true;
         }
@@ -586,50 +586,50 @@ const sharedEventHandler = (ev) => {
             // "input" or "change" or keyboard events
             ctrlState.d = true;
             if (key === 'Escape' && ctrlData.resetOnEscape !== false) {
-                setValueFromControlElement(ctrlData, ctrlElm, ctrlState.v);
+                setValueFromControlElement(ctrlData, elm, ctrlState.v);
                 if (isFunction(ctrlData.onValueChange)) {
-                    ctrlData.onValueChange(ctrlState.v, validity, ev);
+                    ctrlData.onValueChange({ value: ctrlState.v, validity, ev, elm });
                 }
             }
             if (key !== 'Enter' && key !== 'Escape' && isNumber(ctrlData.debounce)) {
-                clearTimeout(inputDebounces.get(ctrlElm));
-                inputDebounces.set(ctrlElm, setTimeout(() => checkValidity(ctrlData, ctrlElm, ev, setValueChange), ctrlData.debounce));
+                clearTimeout(inputDebounces.get(elm));
+                inputDebounces.set(elm, setTimeout(() => checkValidity(ctrlData, elm, ev, setValueChange), ctrlData.debounce));
             }
             else {
-                checkValidity(ctrlData, ctrlElm, ev, setValueChange);
+                checkValidity(ctrlData, elm, ev, setValueChange);
             }
         }
     }
 };
-const setValueChange = (ctrlData, ctrlElm, value, ev) => {
-    if (ctrlData && ctrlElm) {
+const setValueChange = (ctrlData, elm, value, ev) => {
+    if (ctrlData && elm) {
         const eventType = ev.type;
         const key = ev.key;
-        const validity = ctrlElm.validity;
-        const ctrlState = ctrlElm[Control];
+        const validity = elm.validity;
+        const ctrlState = elm[Control];
         ctrlState.d = true;
         if (eventType === 'keydown' && isFunction(ctrlData.onKeyDown)) {
-            ctrlData.onKeyDown(key, value, ev);
+            ctrlData.onKeyDown({ key, value, ev: ev, elm });
         }
         else if (eventType === 'keyup') {
             if (isFunction(ctrlData.onKeyUp)) {
-                ctrlData.onKeyUp(key, value, ev);
+                ctrlData.onKeyUp({ key, value, ev: ev, elm });
             }
             if (key === 'Escape' && isFunction(ctrlData.onEscapeKey)) {
-                ctrlData.onEscapeKey(value, ctrlState.v, ev);
+                ctrlData.onEscapeKey({ value, initialValue: ctrlState.v, validity, ev: ev, elm });
             }
             else if (key === 'Enter') {
                 ctrlState.v = value;
                 if (isFunction(ctrlData.onEnterKey)) {
-                    ctrlData.onEnterKey(value, ev);
+                    ctrlData.onEnterKey({ value, validity, ev: ev, elm });
                 }
                 if (isFunction(ctrlData.onCommit)) {
-                    ctrlData.onCommit(value, ev);
+                    ctrlData.onCommit({ value, validity, ev: ev, elm });
                 }
             }
         }
         else if (isFunction(ctrlData.onValueChange)) {
-            ctrlData.onValueChange(value, validity, ev);
+            ctrlData.onValueChange({ value, validity, ev, elm });
         }
     }
 };
@@ -837,7 +837,7 @@ class MyForm {
     }
     componentWillLoad() {
         const search = new URLSearchParams(document.location.search);
-        if (search.get("token") === "test") {
+        if (search.get('token') === 'test') {
             this.login = true;
         }
     }
@@ -857,29 +857,34 @@ class MyForm {
                 });
             },
         });
+        const validateAge = (age) => {
+            if (age < 18) {
+                return `Must be 18 or older, but you entered ${age}`;
+            }
+        };
         const age = bindNumber(this, 'age', {
-            validate: (value) => {
-                if (value < 18) {
-                    return `Must be 18 or older, but you entered ${value}`;
-                }
+            validate: ({ value }) => {
+                return validateAge(value);
             },
         });
         const volume = controlNumber(this.volume, {
-            onValueChange: (value) => (this.volume = value),
+            onValueChange: ({ value }) => {
+                this.volume = value;
+            },
         });
         const vegetarian = controlBoolean(this.vegetarian, {
-            onValueChange: (value) => (this.vegetarian = value),
+            onValueChange: ({ value }) => (this.vegetarian = value),
         });
         const specialInstructions = bind(this, 'specialInstructions', {
-            onKeyDown: (key, value) => {
+            onKeyDown: ({ key, value }) => {
                 console.log('onKeyDown, key', key, 'value', value);
             },
-            onKeyUp: (key, value) => {
+            onKeyUp: ({ key, value }) => {
                 console.log('onKeyUp, key', key, 'value', value);
             },
         });
         const favoriteCar = controlGroup(this.favoriteCar, {
-            onValueChange: (value) => (this.favoriteCar = value),
+            onValueChange: ({ value }) => (this.favoriteCar = value),
         });
         return (h(Host, null, h("form", { onSubmit: this.onSubmit }, h("section", null, h("div", null, h("label", Object.assign({}, labelFor(fullName)), "Name")), h("div", Object.assign({}, descriptionFor(fullName)), "What's your full name? ", this.fullName), h("div", null, h("input", Object.assign({ required: true }, fullName()))), h("span", Object.assign({}, validationFor(fullName)), validationMessage(fullName))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(email)), "Email")), h("div", Object.assign({ class: {
                 'is-dirty': isDirty(email),
@@ -889,7 +894,7 @@ class MyForm {
                 'is-validating': isActivelyValidating(userName),
                 'is-valid': isValid(userName),
                 'is-invalid': isInvalid(userName),
-            } }, h("div", null, h("label", Object.assign({}, labelFor(userName)), "User Name")), h("div", Object.assign({}, descriptionFor(userName)), "(500ms debounce, 3s async validation)"), h("div", null, h("input", Object.assign({ required: true }, userName()))), h("div", { class: "actively-validating", hidden: !isActivelyValidating(userName) }, activelyValidatingMessage(userName)), h("div", Object.assign({}, validationFor(userName)), validationMessage(userName))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(volume)), "Volume")), h("div", Object.assign({}, descriptionFor(age)), "These go to eleven: ", this.volume), h("div", null, h("input", Object.assign({ type: "range", min: "0", max: "11" }, volume()))), h("div", Object.assign({}, validationFor(volume)), validationMessage(volume))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(vegetarian)), "Vegetarian")), h("div", Object.assign({}, descriptionFor(vegetarian)), "Are you a vegetarian? ", String(this.vegetarian)), h("div", null, h("input", Object.assign({ type: "checkbox" }, vegetarian()))), h("div", Object.assign({}, validationFor(vegetarian)), validationMessage(vegetarian))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(specialInstructions)), "Special Instructions")), h("div", Object.assign({}, descriptionFor(specialInstructions)), "(Uses the browser's default error popup message, rather than using a custom validationFor() method.)"), h("div", null, h("textarea", Object.assign({ required: true }, specialInstructions())))), h("section", Object.assign({}, favoriteCar()), h("div", Object.assign({ class: "group-label" }, labelFor(favoriteCar)), "Favorite Car"), h("div", Object.assign({}, descriptionFor(favoriteCar)), "What's your favorite car? ", this.favoriteCar), h("div", null, h("label", Object.assign({}, labelFor(favoriteCar, 'mustang')), "Mustang"), h("input", Object.assign({ type: "radio" }, favoriteCar('mustang')))), h("div", null, h("label", Object.assign({}, labelFor(favoriteCar, 'camaro')), "Camaro"), h("input", Object.assign({ type: "radio" }, favoriteCar('camaro')))), h("div", null, h("label", Object.assign({}, labelFor(favoriteCar, 'challenger')), "Challenger"), h("input", Object.assign({ type: "radio" }, favoriteCar('challenger')))), h("div", Object.assign({}, validationFor(favoriteCar)), validationMessage(favoriteCar))), h("section", null, h("button", Object.assign({ type: "submit" }, submitValidity(!this.login ? "Bad auth. Add ?token=test" : undefined)), "Submit"))), this.json !== '' ? h("pre", null, "Form Submit ", this.json) : null, h("section", { class: "counter" }, "Counter (just to test re-rendering scenarios):", h("button", { onClick: () => this.counter-- }, "-"), " ", this.counter, ' ', h("button", { onClick: () => this.counter++ }, "+"))));
+            } }, h("div", null, h("label", Object.assign({}, labelFor(userName)), "User Name")), h("div", Object.assign({}, descriptionFor(userName)), "(500ms debounce, 3s async validation)"), h("div", null, h("input", Object.assign({ required: true }, userName()))), h("div", { class: "actively-validating", hidden: !isActivelyValidating(userName) }, activelyValidatingMessage(userName)), h("div", Object.assign({}, validationFor(userName)), validationMessage(userName))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(volume)), "Volume")), h("div", Object.assign({}, descriptionFor(age)), "These go to eleven: ", this.volume), h("div", null, h("input", Object.assign({ type: "range", min: "0", max: "11" }, volume()))), h("div", Object.assign({}, validationFor(volume)), validationMessage(volume))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(vegetarian)), "Vegetarian")), h("div", Object.assign({}, descriptionFor(vegetarian)), "Are you a vegetarian? ", String(this.vegetarian)), h("div", null, h("input", Object.assign({ type: "checkbox" }, vegetarian()))), h("div", Object.assign({}, validationFor(vegetarian)), validationMessage(vegetarian))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(specialInstructions)), "Special Instructions")), h("div", Object.assign({}, descriptionFor(specialInstructions)), "(Uses the browser's default error popup message, rather than using a custom validationFor() method.)"), h("div", null, h("textarea", Object.assign({ required: true }, specialInstructions())))), h("section", Object.assign({}, favoriteCar()), h("div", Object.assign({ class: "group-label" }, labelFor(favoriteCar)), "Favorite Car"), h("div", Object.assign({}, descriptionFor(favoriteCar)), "What's your favorite car? ", this.favoriteCar), h("div", null, h("label", Object.assign({}, labelFor(favoriteCar, 'mustang')), "Mustang"), h("input", Object.assign({ type: "radio" }, favoriteCar('mustang')))), h("div", null, h("label", Object.assign({}, labelFor(favoriteCar, 'camaro')), "Camaro"), h("input", Object.assign({ type: "radio" }, favoriteCar('camaro')))), h("div", null, h("label", Object.assign({}, labelFor(favoriteCar, 'challenger')), "Challenger"), h("input", Object.assign({ type: "radio" }, favoriteCar('challenger')))), h("div", Object.assign({}, validationFor(favoriteCar)), validationMessage(favoriteCar))), h("section", null, h("button", Object.assign({ type: "submit" }, submitValidity(!this.login ? 'Bad auth. Add ?token=test' : undefined)), "Submit"))), this.json !== '' ? h("pre", null, "Form Submit ", this.json) : null, h("section", { class: "counter" }, "Counter (just to test re-rendering scenarios):", h("button", { onClick: () => this.counter-- }, "-"), " ", this.counter, ' ', h("button", { onClick: () => this.counter++ }, "+"))));
     }
 }
 MyForm.style = myFormCss;

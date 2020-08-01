@@ -328,7 +328,7 @@ can be provided and can be shown until the validation is done.
 render() {
   const userName = bind(this, 'userName', {
     debounce: 500,
-    validate: (value) => {
+    validate: ({ value }) => {
       console.log(`checking "${value}" username, this will take 2 seconds...`);
       return new Promise((resolve) => {
         setTimeout(() => {
@@ -337,7 +337,7 @@ render() {
         }, 2000);
       });
     },
-    activelyValidatingMessage: (value) => {
+    activelyValidatingMessage: ({ value} ) => {
       return `Checking if "${value}" is already taken...`;
     },
   });
@@ -391,7 +391,7 @@ import { validateAge } from './validation';
 
 render() {
   const age = bindNumber(this, 'age', {
-    validate: validateAge,
+    validate: ({ value }) => validateAge(value),
   });
 
   return (
@@ -421,7 +421,7 @@ In the example below, the `controlNumber()` method is passed the initial value o
 ```tsx
 render() {
   const mph = controlNumber(88, {
-    onValueChange: (value) => {
+    onValueChange: ({ value }) => {
       console.log('MPH', value);
     },
   });

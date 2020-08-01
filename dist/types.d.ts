@@ -15,21 +15,36 @@ export interface ReactiveFormBindOptions {
      * The `onBlur()` hook is trigged when the control actively had focus,
      * but was just lost focus. Trigged from the native `blur` event.
      */
-    onBlur?: (value: any, validity: ValidityState, ev: FocusEvent) => void;
+    onBlur?: (data: {
+        value: any;
+        validity: ValidityState;
+        ev: FocusEvent;
+        elm: ControlElement;
+    }) => void;
     /**
      * The `onCommit()` hook is trigged when either an "Enter" `keyup` event,
      * or a `blur` event has occurred. It's a combination of `onEnterKey()`
      * and `onBlur()`, and could be used to run the same logic for both
      * hooks.
      */
-    onCommit?: (value: any, ev: FocusEvent | KeyboardEvent) => void;
+    onCommit?: (data: {
+        value: any;
+        validity: ValidityState;
+        ev: FocusEvent | KeyboardEvent;
+        elm: ControlElement;
+    }) => void;
     /**
      * The `onEnterKey()` hook is trigged on a native `keyup` event with the
      * "Enter" key. However, the `onCommit()` hook may also be useful
      * to run logic when the control receives either an "Enter" `keyup`
      * event or `blur` event.
      */
-    onEnterKey?: (value: any, ev: KeyboardEvent) => void;
+    onEnterKey?: (data: {
+        value: any;
+        validity: ValidityState;
+        ev: KeyboardEvent;
+        elm: ControlElement;
+    }) => void;
     /**
      * The `onEscapeKey()` hook is trigged on a native `keyup` event with the
      * "Escape" key. By default, when the Escape key `keyup` event is fired,
@@ -37,38 +52,74 @@ export interface ReactiveFormBindOptions {
      * the control first received focus. Set the `resetOnEscape` option to
      * `false` to disable resetting the value back to the initial value.
      */
-    onEscapeKey?: (value: any, initialValue: any, ev: KeyboardEvent) => void;
+    onEscapeKey?: (data: {
+        value: any;
+        validity: ValidityState;
+        initialValue: any;
+        ev: KeyboardEvent;
+        elm: ControlElement;
+    }) => void;
     /**
      * The `onFocus()` hook is trigged when the control received focus.
      * Trigged from the native `focus` event.
      */
-    onFocus?: (value: any, validity: ValidityState, ev: FocusEvent) => void;
-    onInvalid?: (value: any, validity: ValidityState, ev: UIEvent) => void;
+    onFocus?: (data: {
+        value: any;
+        validity: ValidityState;
+        ev: FocusEvent;
+        elm: ControlElement;
+    }) => void;
+    onInvalid?: (data: {
+        value: any;
+        validity: ValidityState;
+        ev: Event;
+        elm: ControlElement;
+    }) => void;
     /**
      * The `onKeyDown()` hook is trigged from the native `keydown` event.
      * The first argument is the key that was pressed.
      */
-    onKeyDown?: (key: string, value: any, ev: KeyboardEvent) => void;
+    onKeyDown?: (data: {
+        key: string;
+        value: any;
+        ev: KeyboardEvent;
+        elm: ControlElement;
+    }) => void;
     /**
      * The `onKeyUp()` hook is trigged from the native `keyup` event.
      * The first argument is the key that was pressed. If listening for
      * the "Enter" or "Escape" key, the `onEnterKey()` and `onEscapeKey()`
      * hooks are also available for convenience.
      */
-    onKeyUp?: (key: string, value: any, ev: KeyboardEvent) => void;
+    onKeyUp?: (data: {
+        key: string;
+        value: any;
+        ev: KeyboardEvent;
+        elm: ControlElement;
+    }) => void;
     /**
      * The `onTouch()` hook is only called the first time the form
      * control received the native `focus` event. This hook is not trigged
      * against on subsequent focus events
      */
-    onTouch?: (value: any, validity: ValidityState, ev: FocusEvent) => void;
+    onTouch?: (data: {
+        value: any;
+        validity: ValidityState;
+        ev: FocusEvent;
+        elm: ControlElement;
+    }) => void;
     /**
      * By default, if the "Escape" key is pressed, then the value will be reset back
      * to the initial value at the time when the control was focused. Set this option
      * to `false` to disable resetting the value back to the initial value.
      */
     resetOnEscape?: boolean;
-    validate?: (value: any, validity: ValidityState, ev: Event | null) => ReactiveValidateResult | Promise<ReactiveValidateResult>;
+    validate?: (data: {
+        value: any;
+        validity: ValidityState;
+        ev: Event | null;
+        elm: ControlElement;
+    }) => ReactiveValidateResult | Promise<ReactiveValidateResult>;
     activelyValidatingMessage?: string | ((value: any, ev: Event | null) => string);
     /**
      * The property name to use when assign the value to the input. The default
@@ -84,10 +135,15 @@ export interface ReactiveFormBindOptions {
     valuePropType?: ReactiveFormValuePropType;
 }
 export interface ReactiveFormControlOptions extends ReactiveFormBindOptions {
-    onValueChange?: (value: any, validity: ValidityState, ev: Event) => void;
+    onValueChange?: (data: {
+        value: any;
+        validity: ValidityState;
+        ev: Event;
+        elm: ControlElement;
+    }) => void;
 }
 export declare type ReactiveFormValuePropType = 'string' | 'boolean' | 'number';
-export declare type ReactiveValidateResult = string | undefined | null;
+export declare type ReactiveValidateResult = string | undefined | null | void;
 export declare type ReactiveFormControl = () => ReactiveControlProperties;
 export declare type ReactiveFormControlGroup = (groupItemId?: string, groupItemValue?: string) => ReactiveControlProperties;
 /** @internal */

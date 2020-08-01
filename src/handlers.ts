@@ -5,14 +5,14 @@ import { getValueFromControlElement, setValueFromControlElement } from './value'
 import { isFunction, isNumber, showNativeReport } from './helpers';
 
 export const sharedEventHandler = (ev: Event) => {
-  const ctrlElm = ev.currentTarget as ControlElement;
-  const ctrl = ctrls.get(ctrlElm)!;
+  const elm = ev.currentTarget as ControlElement;
+  const ctrl = ctrls.get(elm)!;
   const ctrlData = ctrlDatas.get(ctrl)!;
 
   if (ctrl && ctrlData) {
     const ctrlState = getControlState(ctrl);
-    const value = getValueFromControlElement(ctrlData, ctrlElm);
-    const validity = ctrlElm.validity;
+    const value = getValueFromControlElement(ctrlData, elm);
+    const validity = elm.validity;
     const eventType = ev.type;
     const key = (ev as KeyboardEvent).key;
 
@@ -22,11 +22,11 @@ export const sharedEventHandler = (ev: Event) => {
       ctrlState.t = true;
 
       if (isFunction(ctrlData.onBlur)) {
-        ctrlData.onBlur(value, validity, ev as FocusEvent);
+        ctrlData.onBlur({ value, validity, ev: ev as FocusEvent, elm });
       }
       if (isFunction(ctrlData.onCommit)) {
         // onCommit on blur event and Enter key event
-        ctrlData.onCommit!(value, ev as FocusEvent);
+        ctrlData.onCommit!({ value, validity, ev: ev as FocusEvent, elm });
       }
     } else if (eventType === 'focus') {
       // "focus" event
@@ -34,19 +34,19 @@ export const sharedEventHandler = (ev: Event) => {
 
       if (!ctrlState.t && isFunction(ctrlData.onTouch)) {
         // onTouch should only fire on the first focus
-        ctrlData.onTouch(value, validity, ev as FocusEvent);
+        ctrlData.onTouch({ value, validity, ev: ev as FocusEvent, elm });
       }
       if (isFunction(ctrlData.onFocus)) {
-        ctrlData.onFocus(value, validity, ev as FocusEvent);
+        ctrlData.onFocus({ value, validity, ev: ev as FocusEvent, elm });
       }
     } else if (eventType === 'invalid') {
       // "invalid" event
-      if (!showNativeReport(ctrlElm)) {
+      if (!showNativeReport(elm)) {
         ev.preventDefault();
       }
 
       // add a space at the end to ensure we trigger a re-render
-      ctrlState.e = ctrlElm.validationMessage + ' ';
+      ctrlState.e = elm.validationMessage + ' ';
 
       // a control is automatically "dirty" if it has been invalid at least once.
       ctrlState.d = true;
@@ -55,53 +55,53 @@ export const sharedEventHandler = (ev: Event) => {
       ctrlState.d = true;
 
       if (key === 'Escape' && ctrlData.resetOnEscape !== false) {
-        setValueFromControlElement(ctrlData, ctrlElm, ctrlState.v);
+        setValueFromControlElement(ctrlData, elm, ctrlState.v);
         if (isFunction(ctrlData.onValueChange)) {
-          ctrlData.onValueChange(ctrlState.v, validity, ev);
+          ctrlData.onValueChange({ value: ctrlState.v, validity, ev, elm });
         }
       }
 
       if (key !== 'Enter' && key !== 'Escape' && isNumber(ctrlData.debounce)) {
-        clearTimeout(inputDebounces.get(ctrlElm));
+        clearTimeout(inputDebounces.get(elm));
         inputDebounces.set(
-          ctrlElm,
-          setTimeout(() => checkValidity(ctrlData, ctrlElm, ev, setValueChange), ctrlData.debounce),
+          elm,
+          setTimeout(() => checkValidity(ctrlData, elm, ev, setValueChange), ctrlData.debounce),
         );
       } else {
-        checkValidity(ctrlData, ctrlElm, ev, setValueChange);
+        checkValidity(ctrlData, elm, ev, setValueChange);
       }
     }
   }
 };
 
-const setValueChange = (ctrlData: ControlData, ctrlElm: ControlElement, value: any, ev: Event) => {
-  if (ctrlData && ctrlElm) {
+const setValueChange = (ctrlData: ControlData, elm: ControlElement, value: any, ev: Event) => {
+  if (ctrlData && elm) {
     const eventType = ev.type;
     const key = (ev as KeyboardEvent).key;
-    const validity = ctrlElm.validity;
-    const ctrlState: ControlState = (ctrlElm as any)[Control];
+    const validity = elm.validity;
+    const ctrlState: ControlState = (elm as any)[Control];
     ctrlState.d = true;
 
     if (eventType === 'keydown' && isFunction(ctrlData.onKeyDown)) {
-      ctrlData.onKeyDown(key, value, ev as KeyboardEvent);
+      ctrlData.onKeyDown({ key, value, ev: ev as KeyboardEvent, elm });
     } else if (eventType === 'keyup') {
       if (isFunction(ctrlData.onKeyUp)) {
-        ctrlData.onKeyUp!(key, value, ev as KeyboardEvent);
+        ctrlData.onKeyUp!({ key, value, ev: ev as KeyboardEvent, elm });
       }
 
       if (key === 'Escape' && isFunction(ctrlData.onEscapeKey)) {
-        ctrlData.onEscapeKey!(value, ctrlState.v, ev as KeyboardEvent);
+        ctrlData.onEscapeKey!({ value, initialValue: ctrlState.v, validity, ev: ev as KeyboardEvent, elm });
       } else if (key === 'Enter') {
         ctrlState.v = value;
         if (isFunction(ctrlData.onEnterKey)) {
-          ctrlData.onEnterKey!(value, ev as KeyboardEvent);
+          ctrlData.onEnterKey!({ value, validity, ev: ev as KeyboardEvent, elm });
         }
         if (isFunction(ctrlData.onCommit)) {
-          ctrlData.onCommit!(value, ev as KeyboardEvent);
+          ctrlData.onCommit!({ value, validity, ev: ev as KeyboardEvent, elm });
         }
       }
     } else if (isFunction(ctrlData.onValueChange)) {
-      ctrlData.onValueChange!(value, validity, ev);
+      ctrlData.onValueChange!({ value, validity, ev, elm });
     }
   }
 };

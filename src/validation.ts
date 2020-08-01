@@ -5,23 +5,23 @@ import { isFunction, isPromise, isString, setAttribute, showNativeReport } from 
 
 export const checkValidity = (
   ctrlData: ControlData,
-  ctrlElm: ControlElement,
+  elm: ControlElement,
   ev: any,
   cb: ((ctrlData: ControlData, ctrlElm: ControlElement, value: any, ev: any) => void) | null,
 ): any => {
-  if (ctrlElm && ctrlElm.validity) {
-    const ctrlState: ControlState = (ctrlElm as any)[Control];
-    const value = getValueFromControlElement(ctrlData, ctrlElm);
+  if (elm && elm.validity) {
+    const ctrlState: ControlState = (elm as any)[Control];
+    const value = getValueFromControlElement(ctrlData, elm);
     const callbackId = ++ctrlState.c;
 
-    ctrlElm.setCustomValidity((ctrlState.e = ''));
+    elm.setCustomValidity((ctrlState.e = ''));
 
-    if (!ctrlElm.validity.valid) {
+    if (!elm.validity.valid) {
       // native browser constraint
-      ctrlState.e = ctrlElm.validationMessage;
+      ctrlState.e = elm.validationMessage;
     } else if (isFunction(ctrlData.validate)) {
       // has custom validate fn and the native browser constraints are valid
-      const results = ctrlData.validate(value, ctrlElm.validity, ev);
+      const results = ctrlData.validate({ value, validity: elm.validity, ev, elm });
       if (isPromise(results)) {
         // results return a promise, let's wait on those
         ctrlState.m = isString(ctrlData.activelyValidatingMessage)
@@ -30,17 +30,17 @@ export const checkValidity = (
           ? ctrlData.activelyValidatingMessage(value, ev)
           : `Validating...`;
 
-        ctrlElm.setCustomValidity(ctrlState.m);
+        elm.setCustomValidity(ctrlState.m);
         results.then((promiseResults) =>
-          checkValidateResults(promiseResults, ctrlData, ctrlElm, value, ev, callbackId, cb),
+          checkValidateResults(promiseResults, ctrlData, elm, value, ev, callbackId, cb),
         );
       } else {
         // results were not a promise
-        checkValidateResults(results, ctrlData, ctrlElm, value, ev, callbackId, cb);
+        checkValidateResults(results, ctrlData, elm, value, ev, callbackId, cb);
       }
     } else {
       // no validate fn
-      checkValidateResults('', ctrlData, ctrlElm, value, ev, callbackId, cb);
+      checkValidateResults('', ctrlData, elm, value, ev, callbackId, cb);
     }
   }
 };
