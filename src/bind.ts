@@ -48,6 +48,6 @@ const normalizeBindOpts = (
     valuePropName,
     valuePropType,
     ...bindOpts,
-    onValueChange: (value) => (instance[propName] = value),
+    onValueChange: ({ value }) => (instance[propName] = value),
   };
 };
