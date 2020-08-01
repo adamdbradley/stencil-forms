@@ -50,15 +50,13 @@ const checkValidateResults = (results, ctrlData, ctrlElm, value, ev, callbackId,
             }
         }
         if (isFunction(cb)) {
-            try {
-                cb(ctrlData, ctrlElm, value, ev);
-            }
-            catch (e) {
-                ctrlElm.setCustomValidity((ctrlState.e = String(e)));
-                ctrlState.m = '';
-            }
+            cb(ctrlData, ctrlElm, value, ev);
         }
     }
+};
+export const catchError = (ctrlElm, ctrlState, err) => {
+    ctrlElm.setCustomValidity((ctrlState.e = String(err)));
+    ctrlState.m = '';
 };
 /**
  * If the value has changed, or control has been "touched",

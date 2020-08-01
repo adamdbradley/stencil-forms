@@ -67,14 +67,14 @@ const checkValidateResults = (
       }
     }
     if (isFunction(cb)) {
-      try {
-        cb(ctrlData, ctrlElm, value, ev);
-      } catch (e) {
-        ctrlElm.setCustomValidity((ctrlState.e = String(e)));
-        ctrlState.m = '';
-      }
+      cb(ctrlData, ctrlElm, value, ev);
     }
   }
+};
+
+export const catchError = (ctrlElm: ControlElement, ctrlState: ControlState, err: any) => {
+  ctrlElm.setCustomValidity((ctrlState.e = String(err)));
+  ctrlState.m = '';
 };
 
 /**
