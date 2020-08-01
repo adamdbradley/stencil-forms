@@ -265,6 +265,9 @@ if it's invalid.
 If a `validate()` function is not provided, or it returns `null`, `undefined` or an empty string,
 and the input passes the constraint validation, then the input is considered valid.
 
+Additionally, if any of the provided methods within the options throw an error, the error message
+will set the validation message.
+
 
 ### Arguments
 
