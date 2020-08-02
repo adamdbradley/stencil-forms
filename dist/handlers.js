@@ -13,6 +13,7 @@ export const sharedEventHandler = (ev) => {
         const rtns = [];
         const event = {
             value: getValueFromControlElement(ctrlData, ctrlElm),
+            initialValue: ctrlState.i,
             validity: ctrlElm.validity,
             key,
             type,
@@ -33,7 +34,8 @@ export const sharedEventHandler = (ev) => {
             }
             else if (type === 'focus') {
                 // "focus" event
-                ctrlState.v = event.value;
+                // reset "initialValue" state
+                ctrlState.i = event.initialValue = event.value;
                 if (!ctrlState.t && isFunction(ctrlData.onTouch)) {
                     // onTouch should only fire on the first focus
                     rtns.push(ctrlData.onTouch(event));
@@ -56,9 +58,9 @@ export const sharedEventHandler = (ev) => {
                 // "input" or "change" or keyboard events
                 ctrlState.d = true;
                 if (key === 'Escape' && ctrlData.resetOnEscape !== false) {
-                    setValueFromControlElement(ctrlData, ctrlElm, ctrlState.v);
+                    setValueFromControlElement(ctrlData, ctrlElm, ctrlState.i);
                     if (isFunction(ctrlData.onValueChange)) {
-                        event.value = ctrlState.v;
+                        event.value = ctrlState.i;
                         rtns.push(ctrlData.onValueChange(event));
                     }
                 }
@@ -97,7 +99,7 @@ const setValueChange = (ctrlData, event) => {
                     rtns.push(ctrlData.onEscapeKey(event));
                 }
                 else if (event.key === 'Enter') {
-                    ctrlState.v = event.value;
+                    ctrlState.i = event.value;
                     if (isFunction(ctrlData.onEnterKey)) {
                         rtns.push(ctrlData.onEnterKey(event));
                     }

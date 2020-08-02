@@ -87,11 +87,43 @@ export interface ReactiveFormControlOptions extends ReactiveFormBindOptions {
     onValueChange?: (event: ReactiveFormEvent) => void;
 }
 export interface ReactiveFormEvent {
+    /**
+     * The current value of the control.
+     */
     value?: any;
+    /**
+     * The initial value when the control was first focused. If a control
+     * looses focus, then gains focus again, the "initialValue" will be
+     * reset again from what its current value is.
+     */
+    initialValue?: any;
+    /**
+     * The "validity" states that a control can be in, with respect
+     * to constraint validation. Together, they help explain why an
+     * element's value fails to validate, if it's not valid.
+     * https://developer.mozilla.org/en-US/docs/Web/API/ValidityState
+     */
     validity?: ValidityState;
+    /**
+     * The event type, such as "keyup", "focus", "blur", "input", etc.
+     */
     type?: string;
+    /**
+     * The key that was press if it was a "keydown" or "keyup" event. The
+     * enter and escape keys use "Enter" and "Escape" respectively. If the
+     * event type was not a KeyboardEvent then this value will be undefined.
+     * https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key
+     */
     key?: string;
+    /**
+     * The native event that was dispatched. Depending on the event, it could
+     * be KeyboardEvent, FocusEvent or InputEvent.
+     */
     ev?: Event;
+    /**
+     * The control element, such as the `<input>`, `<textarea>` or `<select>`,
+     * from where the event was dispatched from.
+     */
     ctrl?: ControlElement;
 }
 export declare type ReactiveFormValuePropType = 'string' | 'boolean' | 'number';
@@ -125,7 +157,7 @@ export interface ControlState {
     /**
      * Is first load
      */
-    i: boolean;
+    f: boolean;
     /**
      * Is Dirty
      */
@@ -150,7 +182,7 @@ export interface ControlState {
     /**
      * Initial value when the control received focus.
      */
-    v: any;
+    i: any;
 }
 export declare type ReactiveControlProperties = {
     checked?: boolean;

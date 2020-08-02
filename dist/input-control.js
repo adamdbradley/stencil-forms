@@ -144,9 +144,9 @@ const ctrlElmRef = (ctrl, ctrlData, ctrlState, ctrlElm, isParentGroup) => {
     ctrls.set(ctrlElm, ctrl);
     ctrlElms.set(ctrl, ctrlElm);
     ctrlElm[Control] = ctrlState;
-    if (ctrlState === null || ctrlState === void 0 ? void 0 : ctrlState.i) {
+    if (ctrlState === null || ctrlState === void 0 ? void 0 : ctrlState.f) {
         checkValidity(ctrlData, ctrlState, ctrlElm, { ctrl: ctrlElm }, null);
-        ctrlState.i = false;
+        ctrlState.f = false;
     }
 };
 const ctrlGroupItemElmRef = (parentCtrl, ctrlState, childCtrlElm, childValue) => {

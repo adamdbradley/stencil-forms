@@ -45,11 +45,11 @@ export const setControlState = (initialValue, ctrlData) => {
         ctrlStates.push(createStore({
             d: false,
             t: false,
-            i: true,
+            f: true,
             m: '',
             e: '',
             c: 0,
-            v: initialValue,
+            i: initialValue,
         }).state);
     }
     return ctrlStates[ctrlData.x];
