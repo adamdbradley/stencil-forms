@@ -68,7 +68,7 @@ export const sharedEventHandler = (ev) => {
                     clearTimeout(inputDebounces.get(ctrlElm));
                     inputDebounces.set(ctrlElm, setTimeout(() => checkValidity(ctrlData, ctrlState, ctrlElm, event, setValueChange), ctrlData.debounce));
                 }
-                else {
+                else if (!(key === 'Enter' && ctrlElm.nodeName === 'TEXTAREA')) {
                     checkValidity(ctrlData, ctrlState, ctrlElm, event, setValueChange);
                 }
             }

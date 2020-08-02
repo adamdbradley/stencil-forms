@@ -77,7 +77,7 @@ export const sharedEventHandler = (ev: Event) => {
             ctrlElm,
             setTimeout(() => checkValidity(ctrlData, ctrlState, ctrlElm, event, setValueChange), ctrlData.debounce),
           );
-        } else {
+        } else if (!(key === 'Enter' && ctrlElm.nodeName === 'TEXTAREA')) {
           checkValidity(ctrlData, ctrlState, ctrlElm, event, setValueChange);
         }
       }

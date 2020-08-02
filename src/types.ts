@@ -17,17 +17,18 @@ export interface ReactiveFormBindOptions {
    */
   onBlur?: (event: ReactiveFormEvent) => void;
   /**
-   * The `onCommit()` hook is trigged when either an "Enter" `keyup` event,
-   * or a `blur` event has occurred. It's a combination of `onEnterKey()`
+   * The `onCommit()` hook is trigged when either an "Enter" `keyup`
+   * event and the control element is not a `<textarea>`, or a
+   * `blur` event has occurred. It's a combination of `onEnterKey()`
    * and `onBlur()`, and could be used to run the same logic for both
    * hooks.
    */
   onCommit?: (event: ReactiveFormEvent) => void;
   /**
    * The `onEnterKey()` hook is trigged on a native `keyup` event with the
-   * "Enter" key. However, the `onCommit()` hook may also be useful
-   * to run logic when the control receives either an "Enter" `keyup`
-   * event or `blur` event.
+   * "Enter" key, and the control element is not a `<textarea>`.
+   * However, the `onCommit()` hook may also be useful to run logic when the
+   * control receives either an "Enter" `keyup` event or `blur` event.
    */
   onEnterKey?: (event: ReactiveFormEvent) => void;
   /**
