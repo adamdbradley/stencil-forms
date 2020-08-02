@@ -71,11 +71,11 @@ export const setControlState = (initialValue: any, ctrlData: ControlData) => {
       createStore<ControlState>({
         d: false,
         t: false,
-        i: true,
+        f: true,
         m: '',
         e: '',
         c: 0,
-        v: initialValue,
+        i: initialValue,
       }).state,
     );
   }

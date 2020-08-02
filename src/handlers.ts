@@ -16,6 +16,7 @@ export const sharedEventHandler = (ev: Event) => {
     const rtns: any[] = [];
     const event: ReactiveFormEvent = {
       value: getValueFromControlElement(ctrlData, ctrlElm),
+      initialValue: ctrlState.i,
       validity: ctrlElm.validity,
       key,
       type,
@@ -37,7 +38,8 @@ export const sharedEventHandler = (ev: Event) => {
         }
       } else if (type === 'focus') {
         // "focus" event
-        ctrlState.v = event.value;
+        // reset "initialValue" state
+        ctrlState.i = event.initialValue = event.value;
 
         if (!ctrlState.t && isFunction(ctrlData.onTouch)) {
           // onTouch should only fire on the first focus
@@ -62,9 +64,9 @@ export const sharedEventHandler = (ev: Event) => {
         ctrlState.d = true;
 
         if (key === 'Escape' && ctrlData.resetOnEscape !== false) {
-          setValueFromControlElement(ctrlData, ctrlElm, ctrlState.v);
+          setValueFromControlElement(ctrlData, ctrlElm, ctrlState.i);
           if (isFunction(ctrlData.onValueChange)) {
-            event.value = ctrlState.v;
+            event.value = ctrlState.i;
             rtns.push(ctrlData.onValueChange(event));
           }
         }
@@ -108,7 +110,7 @@ const setValueChange = (ctrlData: ControlData, event: ReactiveFormEvent) => {
         if (event.key === 'Escape' && isFunction(ctrlData.onEscapeKey)) {
           rtns.push(ctrlData.onEscapeKey!(event));
         } else if (event.key === 'Enter') {
-          ctrlState.v = event.value;
+          ctrlState.i = event.value;
           if (isFunction(ctrlData.onEnterKey)) {
             rtns.push(ctrlData.onEnterKey!(event));
           }

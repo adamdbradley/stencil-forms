@@ -212,9 +212,9 @@ const ctrlElmRef = (
   ctrlElms.set(ctrl, ctrlElm);
   (ctrlElm as any)[Control] = ctrlState;
 
-  if (ctrlState?.i) {
+  if (ctrlState?.f) {
     checkValidity(ctrlData, ctrlState, ctrlElm, { ctrl: ctrlElm }, null);
-    ctrlState.i = false;
+    ctrlState.f = false;
   }
 };
 
