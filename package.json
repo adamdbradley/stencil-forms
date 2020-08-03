@@ -15,6 +15,7 @@
   "license": "MIT",
   "devDependencies": {
     "@stencil/core": "^1.17.2",
+    "rimraf": "^3.0.2",
     "typescript": "^3.9.7"
   },
   "dependencies": {

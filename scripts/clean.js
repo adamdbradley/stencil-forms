@@ -1,4 +1,4 @@
 const path = require('path');
-const fs = require('fs');
+const rimraf = require('rimraf');
 
-fs.rmdirSync(path.join(__dirname, '..', 'dist'), { recursive: true });
+rimraf(path.join(__dirname, '..', 'dist'), () => console.log('deleted'));
