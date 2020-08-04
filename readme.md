@@ -41,7 +41,7 @@ Absolutely!! 🚀
 - Ability for validation logic to be reused in multiple forms and let developers build up their own library of validation, but not tied directly to any one component, template or structure.
 - Library should not require a specific HTML structure in order for it to work.
 - Library should not provide it's own custom JSX or CSS output, but rather ensure developers can continue to build custom forms for their UI without interference from the library.
-- Default to standard event listeners, such as `onInput` and `onChange`, but allow for custom event names that trigger value change events, such as Ionic's `ionOnChange`.
+- Default to standard event listeners, such as `onInput` and `onChange`, but allow for custom event names that trigger value change events, such as Ionic's `onIonChange`.
 
 
 ## Example
