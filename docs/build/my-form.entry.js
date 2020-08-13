@@ -216,11 +216,11 @@ const setControlState = (initialValue, ctrlData) => {
         ctrlStates.push(createStore({
             d: false,
             t: false,
-            i: true,
+            f: true,
             m: '',
             e: '',
             c: 0,
-            v: initialValue,
+            i: initialValue,
         }).state);
     }
     return ctrlStates[ctrlData.x];
@@ -556,6 +556,7 @@ const sharedEventHandler = (ev) => {
         const rtns = [];
         const event = {
             value: getValueFromControlElement(ctrlData, ctrlElm),
+            initialValue: ctrlState.i,
             validity: ctrlElm.validity,
             key,
             type,
@@ -576,7 +577,8 @@ const sharedEventHandler = (ev) => {
             }
             else if (type === 'focus') {
                 // "focus" event
-                ctrlState.v = event.value;
+                // reset "initialValue" state
+                ctrlState.i = event.initialValue = event.value;
                 if (!ctrlState.t && isFunction(ctrlData.onTouch)) {
                     // onTouch should only fire on the first focus
                     rtns.push(ctrlData.onTouch(event));
@@ -599,9 +601,9 @@ const sharedEventHandler = (ev) => {
                 // "input" or "change" or keyboard events
                 ctrlState.d = true;
                 if (key === 'Escape' && ctrlData.resetOnEscape !== false) {
-                    setValueFromControlElement(ctrlData, ctrlElm, ctrlState.v);
+                    setValueFromControlElement(ctrlData, ctrlElm, ctrlState.i);
                     if (isFunction(ctrlData.onValueChange)) {
-                        event.value = ctrlState.v;
+                        event.value = ctrlState.i;
                         rtns.push(ctrlData.onValueChange(event));
                     }
                 }
@@ -609,7 +611,7 @@ const sharedEventHandler = (ev) => {
                     clearTimeout(inputDebounces.get(ctrlElm));
                     inputDebounces.set(ctrlElm, setTimeout(() => checkValidity(ctrlData, ctrlState, ctrlElm, event, setValueChange), ctrlData.debounce));
                 }
-                else {
+                else if (!(key === 'Enter' && ctrlElm.nodeName === 'TEXTAREA')) {
                     checkValidity(ctrlData, ctrlState, ctrlElm, event, setValueChange);
                 }
             }
@@ -640,7 +642,7 @@ const setValueChange = (ctrlData, event) => {
                     rtns.push(ctrlData.onEscapeKey(event));
                 }
                 else if (event.key === 'Enter') {
-                    ctrlState.v = event.value;
+                    ctrlState.i = event.value;
                     if (isFunction(ctrlData.onEnterKey)) {
                         rtns.push(ctrlData.onEnterKey(event));
                     }
@@ -801,9 +803,9 @@ const ctrlElmRef = (ctrl, ctrlData, ctrlState, ctrlElm, isParentGroup) => {
     ctrls.set(ctrlElm, ctrl);
     ctrlElms.set(ctrl, ctrlElm);
     ctrlElm[Control] = ctrlState;
-    if (ctrlState === null || ctrlState === void 0 ? void 0 : ctrlState.i) {
+    if (ctrlState === null || ctrlState === void 0 ? void 0 : ctrlState.f) {
         checkValidity(ctrlData, ctrlState, ctrlElm, { ctrl: ctrlElm }, null);
-        ctrlState.i = false;
+        ctrlState.f = false;
     }
 };
 const ctrlGroupItemElmRef = (parentCtrl, ctrlState, childCtrlElm, childValue) => {
@@ -851,6 +853,7 @@ const MyForm = class {
         this.vegetarian = false;
         this.specialInstructions = '';
         this.favoriteCar = '';
+        this.carBodyStyle = '';
         this.counter = 0;
         this.json = '';
         this.onSubmit = (ev) => {
@@ -872,8 +875,8 @@ const MyForm = class {
         const email = bind(this, 'email');
         const userName = bind(this, 'userName', {
             debounce: 500,
-            activelyValidatingMessage: (value) => `Checking if "${value}" is already taken...`,
-            validate: (value) => {
+            activelyValidatingMessage: ({ value }) => `Checking if "${value}" is already taken...`,
+            validate: ({ value }) => {
                 console.log(`async checking "${value}" username, this will take 3 seconds...`);
                 return new Promise((resolve) => {
                     setTimeout(() => {
@@ -910,6 +913,13 @@ const MyForm = class {
         const favoriteCar = controlGroup(this.favoriteCar, {
             onValueChange: ({ value }) => (this.favoriteCar = value),
         });
+        const carBodyStyle = bind(this, 'carBodyStyle', {
+            validate({ value }) {
+                if (!value) {
+                    return 'Select a body style';
+                }
+            },
+        });
         return (h(Host, null, h("form", { onSubmit: this.onSubmit }, h("section", null, h("div", null, h("label", Object.assign({}, labelFor(fullName)), "Name")), h("div", Object.assign({}, descriptionFor(fullName)), "What's your full name? ", this.fullName), h("div", null, h("input", Object.assign({ required: true }, fullName()))), h("span", Object.assign({}, validationFor(fullName)), validationMessage(fullName))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(email)), "Email")), h("div", Object.assign({ class: {
                 'is-dirty': isDirty(email),
             } }, descriptionFor(email)), "(Purple means the input is \"dirty\" because the value has changed)"), h("div", null, h("input", Object.assign({ id: "my-email-id", name: "my-email-name", type: "email", required: true }, email()))), h("div", Object.assign({}, validationFor(email)), validationMessage(email))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(age)), "Age")), h("div", Object.assign({ class: {
@@ -918,7 +928,7 @@ const MyForm = class {
                 'is-validating': isActivelyValidating(userName),
                 'is-valid': isValid(userName),
                 'is-invalid': isInvalid(userName),
-            } }, h("div", null, h("label", Object.assign({}, labelFor(userName)), "User Name")), h("div", Object.assign({}, descriptionFor(userName)), "(500ms debounce, 3s async validation)"), h("div", null, h("input", Object.assign({ required: true }, userName()))), h("div", { class: "actively-validating", hidden: !isActivelyValidating(userName) }, activelyValidatingMessage(userName)), h("div", Object.assign({}, validationFor(userName)), validationMessage(userName))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(volume)), "Volume")), h("div", Object.assign({}, descriptionFor(age)), "These go to eleven: ", this.volume), h("div", null, h("input", Object.assign({ type: "range", min: "0", max: "11" }, volume()))), h("div", Object.assign({}, validationFor(volume)), validationMessage(volume))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(vegetarian)), "Vegetarian")), h("div", Object.assign({}, descriptionFor(vegetarian)), "Are you a vegetarian? ", String(this.vegetarian)), h("div", null, h("input", Object.assign({ type: "checkbox" }, vegetarian()))), h("div", Object.assign({}, validationFor(vegetarian)), validationMessage(vegetarian))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(specialInstructions)), "Special Instructions")), h("div", Object.assign({}, descriptionFor(specialInstructions)), "(Uses the browser's default error popup message, rather than using a custom validationFor() method.)"), h("div", null, h("textarea", Object.assign({ required: true }, specialInstructions())))), h("section", Object.assign({}, favoriteCar()), h("div", Object.assign({ class: "group-label" }, labelFor(favoriteCar)), "Favorite Car"), h("div", Object.assign({}, descriptionFor(favoriteCar)), "What's your favorite car? ", this.favoriteCar), h("div", null, h("label", Object.assign({}, labelFor(favoriteCar, 'mustang')), "Mustang"), h("input", Object.assign({ type: "radio" }, favoriteCar('mustang')))), h("div", null, h("label", Object.assign({}, labelFor(favoriteCar, 'camaro')), "Camaro"), h("input", Object.assign({ type: "radio" }, favoriteCar('camaro')))), h("div", null, h("label", Object.assign({}, labelFor(favoriteCar, 'challenger')), "Challenger"), h("input", Object.assign({ type: "radio" }, favoriteCar('challenger')))), h("div", Object.assign({}, validationFor(favoriteCar)), validationMessage(favoriteCar))), h("section", null, h("button", Object.assign({ type: "submit" }, submitValidity(!this.login ? 'Bad auth. Add ?token=test' : undefined)), "Submit"))), this.json !== '' ? h("pre", null, "Form Submit ", this.json) : null, h("section", { class: "counter" }, "Counter (just to test re-rendering scenarios):", h("button", { onClick: () => this.counter-- }, "-"), " ", this.counter, ' ', h("button", { onClick: () => this.counter++ }, "+"))));
+            } }, h("div", null, h("label", Object.assign({}, labelFor(userName)), "User Name")), h("div", Object.assign({}, descriptionFor(userName)), "(500ms debounce, 3s async validation)"), h("div", null, h("input", Object.assign({ required: true }, userName()))), h("div", { class: "actively-validating", hidden: !isActivelyValidating(userName) }, activelyValidatingMessage(userName)), h("div", Object.assign({}, validationFor(userName)), validationMessage(userName))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(volume)), "Volume")), h("div", Object.assign({}, descriptionFor(age)), "These go to eleven: ", this.volume), h("div", null, h("input", Object.assign({ type: "range", min: "0", max: "11" }, volume()))), h("div", Object.assign({}, validationFor(volume)), validationMessage(volume))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(vegetarian)), "Vegetarian")), h("div", Object.assign({}, descriptionFor(vegetarian)), "Are you a vegetarian? ", String(this.vegetarian)), h("div", null, h("input", Object.assign({ type: "checkbox" }, vegetarian()))), h("div", Object.assign({}, validationFor(vegetarian)), validationMessage(vegetarian))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(specialInstructions)), "Special Instructions")), h("div", Object.assign({}, descriptionFor(specialInstructions)), "(Uses the browser's default error popup message, rather than using a custom validationFor() method.)"), h("div", null, h("textarea", Object.assign({ required: true }, specialInstructions())))), h("section", Object.assign({}, favoriteCar()), h("div", Object.assign({ class: "group-label" }, labelFor(favoriteCar)), "Favorite Car"), h("div", Object.assign({}, descriptionFor(favoriteCar)), "What's your favorite car? ", this.favoriteCar), h("div", null, h("label", Object.assign({}, labelFor(favoriteCar, 'mustang')), "Mustang"), h("input", Object.assign({ type: "radio" }, favoriteCar('mustang')))), h("div", null, h("label", Object.assign({}, labelFor(favoriteCar, 'camaro')), "Camaro"), h("input", Object.assign({ type: "radio" }, favoriteCar('camaro')))), h("div", null, h("label", Object.assign({}, labelFor(favoriteCar, 'challenger')), "Challenger"), h("input", Object.assign({ type: "radio" }, favoriteCar('challenger')))), h("div", Object.assign({}, validationFor(favoriteCar)), validationMessage(favoriteCar))), h("section", null, h("label", Object.assign({}, labelFor(carBodyStyle)), "Car Body Style: ", this.carBodyStyle), h("div", null, h("select", Object.assign({}, carBodyStyle()), h("option", null), h("option", { value: "fastback" }, "Fastback"), h("option", { value: "coupe" }, "Coupe"), h("option", { value: "convertible" }, "Convertible")), h("div", Object.assign({}, validationFor(carBodyStyle)), validationMessage(carBodyStyle)))), h("section", null, h("button", Object.assign({ type: "submit" }, submitValidity(!this.login ? 'Bad auth. Add ?token=test' : undefined)), "Submit"))), this.json !== '' ? h("pre", null, "Form Submit ", this.json) : null, h("section", { class: "counter" }, "Counter (just to test re-rendering scenarios):", h("button", { onClick: () => this.counter-- }, "-"), " ", this.counter, ' ', h("button", { onClick: () => this.counter++ }, "+"))));
     }
 };
 MyForm.style = myFormCss;

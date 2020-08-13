@@ -32,6 +32,7 @@ export class MyForm {
   @Prop() vegetarian = false;
   @Prop() specialInstructions = '';
   @Prop() favoriteCar = '';
+  @Prop() carBodyStyle = '';
   @Prop() counter = 0;
   @State() json = '';
 
@@ -57,8 +58,8 @@ export class MyForm {
 
     const userName = bind(this, 'userName', {
       debounce: 500,
-      activelyValidatingMessage: (value) => `Checking if "${value}" is already taken...`,
-      validate: (value) => {
+      activelyValidatingMessage: ({ value }) => `Checking if "${value}" is already taken...`,
+      validate: ({ value }) => {
         console.log(`async checking "${value}" username, this will take 3 seconds...`);
         return new Promise((resolve) => {
           setTimeout(() => {
@@ -102,6 +103,14 @@ export class MyForm {
       onValueChange: ({ value }) => (this.favoriteCar = value),
     });
 
+    const carBodyStyle = bind(this, 'carBodyStyle', {
+      validate({ value }) {
+        if (!value) {
+          return 'Select a body style';
+        }
+      },
+    });
+
     return (
       <Host>
         <form onSubmit={this.onSubmit}>
@@ -115,7 +124,6 @@ export class MyForm {
             </div>
             <span {...validationFor(fullName)}>{validationMessage(fullName)}</span>
           </section>
-
           <section>
             <div>
               <label {...labelFor(email)}>Email</label>
@@ -133,7 +141,6 @@ export class MyForm {
             </div>
             <div {...validationFor(email)}>{validationMessage(email)}</div>
           </section>
-
           <section>
             <div>
               <label {...labelFor(age)}>Age</label>
@@ -171,7 +178,6 @@ export class MyForm {
             </div>
             <div {...validationFor(userName)}>{validationMessage(userName)}</div>
           </section>
-
           <section>
             <div>
               <label {...labelFor(volume)}>Volume</label>
@@ -182,7 +188,6 @@ export class MyForm {
             </div>
             <div {...validationFor(volume)}>{validationMessage(volume)}</div>
           </section>
-
           <section>
             <div>
               <label {...labelFor(vegetarian)}>Vegetarian</label>
@@ -193,7 +198,6 @@ export class MyForm {
             </div>
             <div {...validationFor(vegetarian)}>{validationMessage(vegetarian)}</div>
           </section>
-
           <section>
             <div>
               <label {...labelFor(specialInstructions)}>Special Instructions</label>
@@ -205,7 +209,6 @@ export class MyForm {
               <textarea required {...specialInstructions()} />
             </div>
           </section>
-
           <section {...favoriteCar()}>
             <div class="group-label" {...labelFor(favoriteCar)}>
               Favorite Car
@@ -225,7 +228,18 @@ export class MyForm {
             </div>
             <div {...validationFor(favoriteCar)}>{validationMessage(favoriteCar)}</div>
           </section>
-
+          <section>
+            <label {...labelFor(carBodyStyle)}>Car Body Style: {this.carBodyStyle}</label>
+            <div>
+              <select {...carBodyStyle()}>
+                <option></option>
+                <option value="fastback">Fastback</option>
+                <option value="coupe">Coupe</option>
+                <option value="convertible">Convertible</option>
+              </select>
+              <div {...validationFor(carBodyStyle)}>{validationMessage(carBodyStyle)}</div>
+            </div>
+          </section>
           <section>
             <button type="submit" {...submitValidity(!this.login ? 'Bad auth. Add ?token=test' : undefined)}>
               Submit

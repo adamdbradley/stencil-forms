@@ -88,7 +88,7 @@ const getPropValue = (valueTypeCast: ReactiveFormValuePropType, value: any) => {
   }
 };
 
-export const inputControlGroup = (selectedValue: any, ctrlData: ControlData): any => {
+export const inputControlGroup = (selectedValue: any, ctrlData: ControlData) => {
   const ctrlState = setControlState(selectedValue, ctrlData);
 
   // create the form control that'll be used as a weakmap key
