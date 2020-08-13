@@ -53,6 +53,7 @@ export const inputControl = (value: any, ctrlData: ControlData) => {
       onKeyUp: sharedEventHandler,
       onFocus: sharedEventHandler,
       onBlur: sharedEventHandler,
+      onChange: sharedEventHandler,
     };
 
     if (isFunction(ctrlData.onKeyDown)) {

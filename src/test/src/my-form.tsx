@@ -68,6 +68,9 @@ export class MyForm {
           }, 3000);
         });
       },
+      onCommit({ value }) {
+        console.log(`userName commit: ${value}`);
+      },
     });
 
     const validateAge = (event: { value: number }) => {
@@ -78,16 +81,25 @@ export class MyForm {
 
     const age = bindNumber(this, 'age', {
       validate: validateAge,
+      onCommit({ value }) {
+        console.log(`age commit: ${value}`);
+      },
     });
 
     const volume = controlNumber(this.volume, {
       onValueChange: ({ value }) => {
         this.volume = value;
       },
+      onCommit({ value }) {
+        console.log(`volume commit: ${value}`);
+      },
     });
 
     const vegetarian = controlBoolean(this.vegetarian, {
       onValueChange: ({ value }) => (this.vegetarian = value),
+      onCommit({ value }) {
+        console.log(`vegetarian commit: ${value}`);
+      },
     });
 
     const specialInstructions = bind(this, 'specialInstructions', {
@@ -97,10 +109,16 @@ export class MyForm {
       onKeyUp: ({ key, value }) => {
         console.log('onKeyUp, key', key, 'value', value);
       },
+      onCommit({ value }) {
+        console.log(`special instructions commit: ${value}`);
+      },
     });
 
     const favoriteCar = controlGroup(this.favoriteCar, {
       onValueChange: ({ value }) => (this.favoriteCar = value),
+      onCommit({ value }) {
+        console.log(`favorite car commit: ${value}`);
+      },
     });
 
     const carBodyStyle = bind(this, 'carBodyStyle', {
@@ -108,6 +126,9 @@ export class MyForm {
         if (!value) {
           return 'Select a body style';
         }
+      },
+      onCommit({ value }) {
+        console.log(`car body style commit: ${value}`);
       },
     });
 

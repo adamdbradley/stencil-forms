@@ -22,6 +22,7 @@ export const inputControl = (value, ctrlData) => {
             onKeyUp: sharedEventHandler,
             onFocus: sharedEventHandler,
             onBlur: sharedEventHandler,
+            onChange: sharedEventHandler,
         };
         if (isFunction(ctrlData.onKeyDown)) {
             props.onKeyDown = sharedEventHandler;

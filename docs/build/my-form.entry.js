@@ -570,10 +570,6 @@ const sharedEventHandler = (ev) => {
                 if (isFunction(ctrlData.onBlur)) {
                     rtns.push(ctrlData.onBlur(event));
                 }
-                if (isFunction(ctrlData.onCommit)) {
-                    // onCommit on blur event and Enter key event
-                    rtns.push(ctrlData.onCommit(event));
-                }
             }
             else if (type === 'focus') {
                 // "focus" event
@@ -624,17 +620,15 @@ const sharedEventHandler = (ev) => {
 };
 const setValueChange = (ctrlData, event) => {
     if (ctrlData && event && event.ctrl && event.ctrl.parentNode) {
-        // const eventType = ev.type;
-        // const key = (ev as KeyboardEvent).key;
-        // const validity = ctrlElm.validity;
         const ctrlState = event.ctrl[Control];
         const rtns = [];
+        const eventType = event.type;
         try {
             ctrlState.d = true;
-            if (event.type === 'keydown' && isFunction(ctrlData.onKeyDown)) {
+            if (eventType === 'keydown' && isFunction(ctrlData.onKeyDown)) {
                 rtns.push(ctrlData.onKeyDown(event));
             }
-            else if (event.type === 'keyup') {
+            else if (eventType === 'keyup') {
                 if (isFunction(ctrlData.onKeyUp)) {
                     rtns.push(ctrlData.onKeyUp(event));
                 }
@@ -642,7 +636,7 @@ const setValueChange = (ctrlData, event) => {
                     rtns.push(ctrlData.onEscapeKey(event));
                 }
                 else if (event.key === 'Enter') {
-                    ctrlState.i = event.value;
+                    ctrlState.i = eventType;
                     if (isFunction(ctrlData.onEnterKey)) {
                         rtns.push(ctrlData.onEnterKey(event));
                     }
@@ -653,6 +647,10 @@ const setValueChange = (ctrlData, event) => {
             }
             else if (isFunction(ctrlData.onValueChange)) {
                 rtns.push(ctrlData.onValueChange(event));
+            }
+            if (eventType === 'change' && isFunction(ctrlData.onCommit)) {
+                // onCommit on blur event and Enter key event
+                rtns.push(ctrlData.onCommit(event));
             }
             Promise.all(rtns).catch((err) => catchError(ctrlState, event, err));
         }
@@ -681,6 +679,7 @@ const inputControl = (value, ctrlData) => {
             onKeyUp: sharedEventHandler,
             onFocus: sharedEventHandler,
             onBlur: sharedEventHandler,
+            onChange: sharedEventHandler,
         };
         if (isFunction(ctrlData.onKeyDown)) {
             props.onKeyDown = sharedEventHandler;
@@ -885,6 +884,9 @@ const MyForm = class {
                     }, 3000);
                 });
             },
+            onCommit({ value }) {
+                console.log(`userName commit: ${value}`);
+            },
         });
         const validateAge = (event) => {
             if (event.value < 18) {
@@ -893,14 +895,23 @@ const MyForm = class {
         };
         const age = bindNumber(this, 'age', {
             validate: validateAge,
+            onCommit({ value }) {
+                console.log(`age commit: ${value}`);
+            },
         });
         const volume = controlNumber(this.volume, {
             onValueChange: ({ value }) => {
                 this.volume = value;
             },
+            onCommit({ value }) {
+                console.log(`volume commit: ${value}`);
+            },
         });
         const vegetarian = controlBoolean(this.vegetarian, {
             onValueChange: ({ value }) => (this.vegetarian = value),
+            onCommit({ value }) {
+                console.log(`vegetarian commit: ${value}`);
+            },
         });
         const specialInstructions = bind(this, 'specialInstructions', {
             onKeyDown: ({ key, value }) => {
@@ -909,15 +920,24 @@ const MyForm = class {
             onKeyUp: ({ key, value }) => {
                 console.log('onKeyUp, key', key, 'value', value);
             },
+            onCommit({ value }) {
+                console.log(`special instructions commit: ${value}`);
+            },
         });
         const favoriteCar = controlGroup(this.favoriteCar, {
             onValueChange: ({ value }) => (this.favoriteCar = value),
+            onCommit({ value }) {
+                console.log(`favorite car commit: ${value}`);
+            },
         });
         const carBodyStyle = bind(this, 'carBodyStyle', {
             validate({ value }) {
                 if (!value) {
                     return 'Select a body style';
                 }
+            },
+            onCommit({ value }) {
+                console.log(`car body style commit: ${value}`);
             },
         });
         return (h(Host, null, h("form", { onSubmit: this.onSubmit }, h("section", null, h("div", null, h("label", Object.assign({}, labelFor(fullName)), "Name")), h("div", Object.assign({}, descriptionFor(fullName)), "What's your full name? ", this.fullName), h("div", null, h("input", Object.assign({ required: true }, fullName()))), h("span", Object.assign({}, validationFor(fullName)), validationMessage(fullName))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(email)), "Email")), h("div", Object.assign({ class: {

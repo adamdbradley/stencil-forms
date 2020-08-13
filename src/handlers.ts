@@ -32,10 +32,6 @@ export const sharedEventHandler = (ev: Event) => {
         if (isFunction(ctrlData.onBlur)) {
           rtns.push(ctrlData.onBlur(event as any));
         }
-        if (isFunction(ctrlData.onCommit)) {
-          // onCommit on blur event and Enter key event
-          rtns.push(ctrlData.onCommit!(event as any));
-        }
       } else if (type === 'focus') {
         // "focus" event
         // reset "initialValue" state
@@ -91,18 +87,16 @@ export const sharedEventHandler = (ev: Event) => {
 
 const setValueChange = (ctrlData: ControlData, event: ReactiveFormEvent) => {
   if (ctrlData && event && event.ctrl && event.ctrl.parentNode) {
-    // const eventType = ev.type;
-    // const key = (ev as KeyboardEvent).key;
-    // const validity = ctrlElm.validity;
     const ctrlState: ControlState = (event.ctrl as any)[Control];
     const rtns: (any | Promise<any>)[] = [];
+    const eventType = event.type;
 
     try {
       ctrlState.d = true;
 
-      if (event.type === 'keydown' && isFunction(ctrlData.onKeyDown)) {
+      if (eventType === 'keydown' && isFunction(ctrlData.onKeyDown)) {
         rtns.push(ctrlData.onKeyDown(event));
-      } else if (event.type === 'keyup') {
+      } else if (eventType === 'keyup') {
         if (isFunction(ctrlData.onKeyUp)) {
           rtns.push(ctrlData.onKeyUp!(event));
         }
@@ -110,7 +104,7 @@ const setValueChange = (ctrlData: ControlData, event: ReactiveFormEvent) => {
         if (event.key === 'Escape' && isFunction(ctrlData.onEscapeKey)) {
           rtns.push(ctrlData.onEscapeKey!(event));
         } else if (event.key === 'Enter') {
-          ctrlState.i = event.value;
+          ctrlState.i = eventType;
           if (isFunction(ctrlData.onEnterKey)) {
             rtns.push(ctrlData.onEnterKey!(event));
           }
@@ -120,6 +114,11 @@ const setValueChange = (ctrlData: ControlData, event: ReactiveFormEvent) => {
         }
       } else if (isFunction(ctrlData.onValueChange)) {
         rtns.push(ctrlData.onValueChange!(event));
+      }
+
+      if (eventType === 'change' && isFunction(ctrlData.onCommit)) {
+        // onCommit on blur event and Enter key event
+        rtns.push(ctrlData.onCommit!(event as any));
       }
 
       Promise.all(rtns).catch((err) => catchError(ctrlState, event, err));
