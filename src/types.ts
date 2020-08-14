@@ -173,11 +173,11 @@ export interface ControlState {
   /**
    * Is Dirty
    */
-  d?: boolean;
+  d: boolean;
   /**
    * Is Touched
    */
-  t?: boolean;
+  t: boolean;
   /**
    * The message while actively validating
    */
@@ -198,7 +198,15 @@ export interface ControlState {
   /**
    * Last value used to check validity.
    */
-  l?: any;
+  l: any;
+  /**
+   * Last value used to call onValueChange
+   */
+  g: any;
+  /**
+   * Last value used to call onCommit
+   */
+  n: any;
 }
 
 export type ReactiveControlProperties = {

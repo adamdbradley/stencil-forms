@@ -70,10 +70,15 @@ export const setControlState = (initialValue: any, ctrlData: ControlData) => {
     ctrlStates.push(
       createStore<ControlState>({
         f: true,
+        d: false,
+        t: false,
         m: '',
         e: '',
         c: 0,
         i: initialValue,
+        l: null,
+        g: null,
+        n: null,
       }).state,
     );
   }

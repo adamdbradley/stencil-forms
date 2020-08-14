@@ -109,16 +109,19 @@ const setValueChange = (ctrlData: ControlData, event: ReactiveFormEvent) => {
             if (isFunction(ctrlData.onEnterKey)) {
               rtns.push(ctrlData.onEnterKey!(event));
             }
-            if (isFunction(ctrlData.onCommit)) {
+            if (ctrlState.n !== event.value && isFunction(ctrlData.onCommit)) {
+              ctrlState.n = event.value;
               rtns.push(ctrlData.onCommit!(event));
             }
           }
-        } else if (isFunction(ctrlData.onValueChange)) {
+        } else if (ctrlState.g !== event.value && isFunction(ctrlData.onValueChange)) {
+          ctrlState.g = event.value;
           rtns.push(ctrlData.onValueChange!(event));
         }
 
-        if (eventType === 'change' && isFunction(ctrlData.onCommit)) {
+        if (eventType === 'change' && ctrlState.n !== event.value && isFunction(ctrlData.onCommit)) {
           // onCommit on blur event and Enter key event
+          ctrlState.n = event.value;
           rtns.push(ctrlData.onCommit!(event as any));
         }
 

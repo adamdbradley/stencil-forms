@@ -215,10 +215,15 @@ const setControlState = (initialValue, ctrlData) => {
   if (ctrlData.x === ctrlStates.length) {
     ctrlStates.push(createStore({
       f: true,
+      d: false,
+      t: false,
       m: '',
       e: '',
       c: 0,
       i: initialValue,
+      l: null,
+      g: null,
+      n: null,
     }).state);
   }
   return ctrlStates[ctrlData.x];
@@ -259,37 +264,44 @@ const setAttribute = (elm, attrName, attrValue = '') => (elm === null || elm ===
 const showNativeReport = (elm) => { var _a, _b; return !(elm === null || elm === void 0 ? void 0 : elm.hasAttribute('formnovalidate')) && !((_b = (_a = elm) === null || _a === void 0 ? void 0 : _a.form) === null || _b === void 0 ? void 0 : _b.hasAttribute('novalidate')); };
 
 const checkValidity = (ctrlData, ctrlState, ctrlElm, event, cb) => {
-  if (ctrlElm && ctrlElm.validity && event.value !== ctrlState.l) {
-    const callbackId = ++ctrlState.c;
-    ctrlState.l = event.value;
-    ctrlElm.setCustomValidity((ctrlState.e = ''));
-    if (!ctrlElm.validity.valid) {
-      // native browser constraint
-      ctrlState.e = ctrlElm.validationMessage;
-    }
-    else if (isFunction(ctrlData.validate)) {
-      // has custom validate fn and the native browser constraints are valid
-      const results = ctrlData.validate(event);
-      if (isPromise(results)) {
-        // results return a promise, let's wait on those
-        ctrlState.m = isString(ctrlData.activelyValidatingMessage)
-          ? ctrlData.activelyValidatingMessage
-          : isFunction(ctrlData.activelyValidatingMessage)
-            ? ctrlData.activelyValidatingMessage(event)
-            : `Validating...`;
-        ctrlElm.setCustomValidity(ctrlState.m);
-        results
-          .then((promiseResults) => checkValidateResults(promiseResults, ctrlData, ctrlElm, event, callbackId, cb))
-          .catch((err) => checkValidateResults(err, ctrlData, ctrlElm, event, callbackId, cb));
+  if (ctrlElm) {
+    if (ctrlElm.validity && event.value !== ctrlState.l) {
+      // need to do a new validation
+      const callbackId = ++ctrlState.c;
+      ctrlState.l = event.value;
+      ctrlElm.setCustomValidity((ctrlState.e = ''));
+      if (!ctrlElm.validity.valid) {
+        // native browser constraint
+        ctrlState.e = ctrlElm.validationMessage;
+      }
+      else if (isFunction(ctrlData.validate)) {
+        // has custom validate fn and the native browser constraints are valid
+        const results = ctrlData.validate(event);
+        if (isPromise(results)) {
+          // results return a promise, let's wait on those
+          ctrlState.m = isString(ctrlData.activelyValidatingMessage)
+            ? ctrlData.activelyValidatingMessage
+            : isFunction(ctrlData.activelyValidatingMessage)
+              ? ctrlData.activelyValidatingMessage(event)
+              : `Validating...`;
+          ctrlElm.setCustomValidity(ctrlState.m);
+          results
+            .then((promiseResults) => checkValidateResults(promiseResults, ctrlData, ctrlElm, event, callbackId, cb))
+            .catch((err) => checkValidateResults(err, ctrlData, ctrlElm, event, callbackId, cb));
+        }
+        else {
+          // results were not a promise
+          checkValidateResults(results, ctrlData, ctrlElm, event, callbackId, cb);
+        }
       }
       else {
-        // results were not a promise
-        checkValidateResults(results, ctrlData, ctrlElm, event, callbackId, cb);
+        // no validate fn
+        checkValidateResults('', ctrlData, ctrlElm, event, callbackId, cb);
       }
     }
-    else {
-      // no validate fn
-      checkValidateResults('', ctrlData, ctrlElm, event, callbackId, cb);
+    else if (isFunction(cb)) {
+      // already validated this same value or element doesn't have validity
+      cb(ctrlData, event);
     }
   }
 };
@@ -526,6 +538,7 @@ const getGroupChild = (parentCtrl, groupItemValue) => {
         i: parentCtrlData.g + '-' + groupItemValue,
         n: parentCtrlData.g,
         onValueChange: parentCtrlData.onValueChange,
+        onCommit: parentCtrlData.onCommit,
       },
     }));
     ctrlDatas.set(child.ctrl, child.data);
@@ -693,16 +706,19 @@ const setValueChange = (ctrlData, event) => {
             if (isFunction(ctrlData.onEnterKey)) {
               rtns.push(ctrlData.onEnterKey(event));
             }
-            if (isFunction(ctrlData.onCommit)) {
+            if (ctrlState.n !== event.value && isFunction(ctrlData.onCommit)) {
+              ctrlState.n = event.value;
               rtns.push(ctrlData.onCommit(event));
             }
           }
         }
-        else if (isFunction(ctrlData.onValueChange)) {
+        else if (ctrlState.g !== event.value && isFunction(ctrlData.onValueChange)) {
+          ctrlState.g = event.value;
           rtns.push(ctrlData.onValueChange(event));
         }
-        if (eventType === 'change' && isFunction(ctrlData.onCommit)) {
+        if (eventType === 'change' && ctrlState.n !== event.value && isFunction(ctrlData.onCommit)) {
           // onCommit on blur event and Enter key event
+          ctrlState.n = event.value;
           rtns.push(ctrlData.onCommit(event));
         }
         Promise.all(rtns).catch((err) => catchError(ctrlState, event, err));

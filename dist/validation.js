@@ -1,37 +1,44 @@
 import { ctrlElms, ctrlStates, getControlState } from './state';
 import { isFunction, isPromise, isString, setAttribute, showNativeReport } from './helpers';
 export const checkValidity = (ctrlData, ctrlState, ctrlElm, event, cb) => {
-    if (ctrlElm && ctrlElm.validity && event.value !== ctrlState.l) {
-        const callbackId = ++ctrlState.c;
-        ctrlState.l = event.value;
-        ctrlElm.setCustomValidity((ctrlState.e = ''));
-        if (!ctrlElm.validity.valid) {
-            // native browser constraint
-            ctrlState.e = ctrlElm.validationMessage;
-        }
-        else if (isFunction(ctrlData.validate)) {
-            // has custom validate fn and the native browser constraints are valid
-            const results = ctrlData.validate(event);
-            if (isPromise(results)) {
-                // results return a promise, let's wait on those
-                ctrlState.m = isString(ctrlData.activelyValidatingMessage)
-                    ? ctrlData.activelyValidatingMessage
-                    : isFunction(ctrlData.activelyValidatingMessage)
-                        ? ctrlData.activelyValidatingMessage(event)
-                        : `Validating...`;
-                ctrlElm.setCustomValidity(ctrlState.m);
-                results
-                    .then((promiseResults) => checkValidateResults(promiseResults, ctrlData, ctrlElm, event, callbackId, cb))
-                    .catch((err) => checkValidateResults(err, ctrlData, ctrlElm, event, callbackId, cb));
+    if (ctrlElm) {
+        if (ctrlElm.validity && event.value !== ctrlState.l) {
+            // need to do a new validation
+            const callbackId = ++ctrlState.c;
+            ctrlState.l = event.value;
+            ctrlElm.setCustomValidity((ctrlState.e = ''));
+            if (!ctrlElm.validity.valid) {
+                // native browser constraint
+                ctrlState.e = ctrlElm.validationMessage;
+            }
+            else if (isFunction(ctrlData.validate)) {
+                // has custom validate fn and the native browser constraints are valid
+                const results = ctrlData.validate(event);
+                if (isPromise(results)) {
+                    // results return a promise, let's wait on those
+                    ctrlState.m = isString(ctrlData.activelyValidatingMessage)
+                        ? ctrlData.activelyValidatingMessage
+                        : isFunction(ctrlData.activelyValidatingMessage)
+                            ? ctrlData.activelyValidatingMessage(event)
+                            : `Validating...`;
+                    ctrlElm.setCustomValidity(ctrlState.m);
+                    results
+                        .then((promiseResults) => checkValidateResults(promiseResults, ctrlData, ctrlElm, event, callbackId, cb))
+                        .catch((err) => checkValidateResults(err, ctrlData, ctrlElm, event, callbackId, cb));
+                }
+                else {
+                    // results were not a promise
+                    checkValidateResults(results, ctrlData, ctrlElm, event, callbackId, cb);
+                }
             }
             else {
-                // results were not a promise
-                checkValidateResults(results, ctrlData, ctrlElm, event, callbackId, cb);
+                // no validate fn
+                checkValidateResults('', ctrlData, ctrlElm, event, callbackId, cb);
             }
         }
-        else {
-            // no validate fn
-            checkValidateResults('', ctrlData, ctrlElm, event, callbackId, cb);
+        else if (isFunction(cb)) {
+            // already validated this same value or element doesn't have validity
+            cb(ctrlData, event);
         }
     }
 };

@@ -1,5 +1,5 @@
 import type { ControlData, ControlElement, ControlState, ReactiveFormControl, ReactiveFormEvent } from './types';
-export declare const checkValidity: (ctrlData: ControlData, ctrlState: ControlState, ctrlElm: ControlElement, event: ReactiveFormEvent, cb: ((ctrlData: ControlData, event: ReactiveFormEvent) => void) | null) => any;
+export declare const checkValidity: (ctrlData: ControlData, ctrlState: ControlState, ctrlElm: ControlElement, event: ReactiveFormEvent, cb: ((ctrlData: ControlData, event: ReactiveFormEvent) => void) | null) => void;
 export declare const catchError: (ctrlState: ControlState, event: ReactiveFormEvent, err: any) => void;
 /**
  * If the value has changed, or control has been "touched",
