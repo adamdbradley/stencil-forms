@@ -1,16 +1,16 @@
 import {
-  Control,
   ctrlChildren,
   ctrlDatas,
   ctrlElms,
   ctrlElmIds,
+  ctrlStates,
   ctrls,
   labellingElms,
   LabellingType,
   setControlState,
   state,
 } from './state';
-import { isString, setAttribute, isFunction } from './helpers';
+import { isFunction, isString, setAttribute } from './helpers';
 import type {
   ControlData,
   ControlElement,
@@ -18,7 +18,6 @@ import type {
   ReactiveControlProperties,
   ReactiveFormControl,
   ReactiveFormControlGroup,
-  ReactiveFormValuePropType,
 } from './types';
 import {
   getGroupChild,
@@ -26,8 +25,9 @@ import {
   setErrormessageAttributes,
   setLabelledbyAttributes,
 } from './labelling-for';
-import { sharedEventHandler } from './handlers';
 import { checkValidity } from './validation';
+import { sharedEventHandler } from './handlers';
+import { setValueToControlElement } from './value';
 
 export const inputControl = (value: any, ctrlData: ControlData) => {
   // create the control arrow fn that'll be used as a weakmap key
@@ -40,24 +40,32 @@ export const inputControl = (value: any, ctrlData: ControlData) => {
 
     // create the object to be used as a property spread in the render()
     const props: ReactiveControlProperties = {
-      // set the value
-      [ctrlData.valuePropName!]: getPropValue(ctrlData.valuePropType!, value),
-
       // get the reference to this form control element
       // and remember it so we can look up the form control by the element
-      ref: (ctrlElm) => ctrlElm && ctrlElmRef(ctrl, ctrlData, ctrlState, ctrlElm, false),
+      ref: (ctrlElm) => {
+        if (ctrlElm) {
+          if (ctrlState?.f) {
+            setValueToControlElement(ctrlData, ctrlElm, value);
+          }
+          ctrlElmRef(ctrl, ctrlData, ctrlState, ctrlElm, false);
+        }
+      },
 
       // add the shared event listeners
       onInvalid: sharedEventHandler,
-      [ctrlData.changeEventName!]: sharedEventHandler,
+      onInput: sharedEventHandler,
+      onChange: sharedEventHandler,
       onKeyUp: sharedEventHandler,
       onFocus: sharedEventHandler,
       onBlur: sharedEventHandler,
-      onChange: sharedEventHandler,
     };
 
     if (isFunction(ctrlData.onKeyDown)) {
       props.onKeyDown = sharedEventHandler;
+    }
+
+    if (ctrlData.changeEventName) {
+      (props as any)[ctrlData.changeEventName] = sharedEventHandler;
     }
 
     return props;
@@ -69,24 +77,6 @@ export const inputControl = (value: any, ctrlData: ControlData) => {
   // return the control to be used as a key and what's
   // called to get all of the props for the control element
   return ctrl;
-};
-
-const getPropValue = (valueTypeCast: ReactiveFormValuePropType, value: any) => {
-  // get the actual value we'll be assigning to the control element's
-  // "value" or "checked" property. So it should actually only return a
-  // string (for "value") or boolean (for "checked").
-  if (valueTypeCast === 'boolean') {
-    // may have been give a string "true" or "false", so lets just
-    // just always compare as a string boolean and return a boolean
-    return String(value) === 'true';
-  } else if (value == null || (valueTypeCast === 'number' && isNaN(value))) {
-    // we don't want the word "null" "undefined" or "NaN" to be the value for
-    // an <input> element, so check first and return it as an empty string
-    return '';
-  } else {
-    // always assign the value as an actual string value, even for number
-    return String(value);
-  }
 };
 
 export const inputControlGroup = (selectedValue: any, ctrlData: ControlData) => {
@@ -129,7 +119,7 @@ const inputControlGroupItem = (
   // grouped control input item, like <input type="radio"> a group
   // only has one "value" and the individual group item that has
   // the same "value" as the group value is the "checked" item
-  return {
+  const props: ReactiveControlProperties = {
     // group item "value"
     // individual radio should each have a unique "value" assigned
     value,
@@ -139,15 +129,21 @@ const inputControlGroupItem = (
     // however, it's always false if the group's "selectedValue" is null or undefined
     checked: selectedGroupValue != null ? String(selectedGroupValue) === value : false,
 
-    [parentCtrlData.changeEventName!]: sharedEventHandler,
-
     onFocus: sharedEventHandler,
     onBlur: sharedEventHandler,
+    onInput: sharedEventHandler,
+    onChange: sharedEventHandler,
 
     // ref for <input type="radio">
     ref: (childCtrlElm: ControlElement) =>
       childCtrlElm && ctrlGroupItemElmRef(parentCtrl, ctrlState, childCtrlElm, value),
   };
+
+  if (parentCtrlData.changeEventName) {
+    (props as any)[parentCtrlData.changeEventName] = sharedEventHandler;
+  }
+
+  return props;
 };
 
 const ctrlElmRef = (
@@ -211,7 +207,7 @@ const ctrlElmRef = (
 
   ctrls.set(ctrlElm, ctrl);
   ctrlElms.set(ctrl, ctrlElm);
-  (ctrlElm as any)[Control] = ctrlState;
+  ctrlStates.set(ctrlElm, ctrlState!);
 
   if (ctrlState?.f) {
     checkValidity(ctrlData, ctrlState, ctrlElm, { ctrl: ctrlElm }, null);
@@ -226,6 +222,6 @@ const ctrlGroupItemElmRef = (
   childValue: string,
 ) => {
   const child = getGroupChild(parentCtrl, childValue);
-  (childCtrlElm as any)[Control] = ctrlState;
+  ctrlStates.set(childCtrlElm, ctrlState!);
   return ctrlElmRef(child?.ctrl!, child?.data!, ctrlState, childCtrlElm, false);
 };

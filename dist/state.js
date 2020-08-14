@@ -26,7 +26,7 @@ export const ctrlDatas = /*@__PURE__*/ new WeakMap();
 export const inputDebounces = /*@__PURE__*/ new WeakMap();
 export const instanceIds = /*@__PURE__*/ new WeakMap();
 const CurrentControlIndex = /*@__PURE__*/ Symbol();
-export const Control = /*@__PURE__*/ Symbol();
+export const ctrlStates = /*@__PURE__*/ new WeakMap();
 const ControlStates = /*@__PURE__*/ Symbol();
 export const setControlState = (initialValue, ctrlData) => {
     const renderingRef = getRenderingRef();
@@ -43,8 +43,6 @@ export const setControlState = (initialValue, ctrlData) => {
     }
     if (ctrlData.x === ctrlStates.length) {
         ctrlStates.push(createStore({
-            d: false,
-            t: false,
             f: true,
             m: '',
             e: '',
@@ -57,15 +55,15 @@ export const setControlState = (initialValue, ctrlData) => {
 export const getControlState = (ctrl) => {
     let renderingRef = getRenderingRef();
     let ctrlData;
-    let ctrlStates;
+    let renderingRefCtrlStates;
     let ctrlElm;
     let ctrlState;
     if (renderingRef) {
         ctrlData = ctrlDatas.get(ctrl);
         if (ctrlData) {
-            ctrlStates = renderingRef[ControlStates];
+            renderingRefCtrlStates = renderingRef[ControlStates];
             if (ctrlStates) {
-                ctrlState = ctrlStates[ctrlData.x];
+                ctrlState = renderingRefCtrlStates[ctrlData.x];
                 if (ctrlState) {
                     return ctrlState;
                 }
@@ -73,5 +71,5 @@ export const getControlState = (ctrl) => {
         }
     }
     ctrlElm = ctrlElms.get(ctrl);
-    return ctrlElm ? ctrlElm[Control] : {};
+    return ctrlStates.get(ctrlElm) || {};
 };

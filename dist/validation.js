@@ -1,8 +1,9 @@
-import { Control, ctrlElms, getControlState } from './state';
+import { ctrlElms, ctrlStates, getControlState } from './state';
 import { isFunction, isPromise, isString, setAttribute, showNativeReport } from './helpers';
 export const checkValidity = (ctrlData, ctrlState, ctrlElm, event, cb) => {
-    if (ctrlElm && ctrlElm.validity) {
+    if (ctrlElm && ctrlElm.validity && event.value !== ctrlState.l) {
         const callbackId = ++ctrlState.c;
+        ctrlState.l = event.value;
         ctrlElm.setCustomValidity((ctrlState.e = ''));
         if (!ctrlElm.validity.valid) {
             // native browser constraint
@@ -36,7 +37,7 @@ export const checkValidity = (ctrlData, ctrlState, ctrlElm, event, cb) => {
 };
 const checkValidateResults = (results, ctrlData, ctrlElm, event, callbackId, cb) => {
     if (ctrlElm) {
-        const ctrlState = ctrlElm[Control];
+        const ctrlState = ctrlStates.get(ctrlElm);
         if (ctrlState && (ctrlState.c === callbackId || (!ctrlElm.validity.valid && !ctrlElm.validity.customError))) {
             const msg = isString(results) ? results.trim() : '';
             ctrlElm.setCustomValidity(msg);

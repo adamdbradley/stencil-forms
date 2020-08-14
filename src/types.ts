@@ -78,7 +78,7 @@ export interface ReactiveFormBindOptions {
    */
   valuePropName?: string;
   /**
-   * The primitive type to cast the value property to and from. Default for a `bindBoolean`
+   * The primitive type to cast the value property to and from. Default for a `bindChecked`
    * input will be `boolean`. Default for `bindNumber` will be `number, and default for all
    * others will be a `string`.
    */
@@ -173,11 +173,11 @@ export interface ControlState {
   /**
    * Is Dirty
    */
-  d: boolean;
+  d?: boolean;
   /**
    * Is Touched
    */
-  t: boolean;
+  t?: boolean;
   /**
    * The message while actively validating
    */
@@ -195,6 +195,10 @@ export interface ControlState {
    * Initial value when the control received focus.
    */
   i: any;
+  /**
+   * Last value used to check validity.
+   */
+  l?: any;
 }
 
 export type ReactiveControlProperties = {

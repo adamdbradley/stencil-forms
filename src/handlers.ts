@@ -1,7 +1,7 @@
 import { checkValidity, catchError } from './validation';
-import type { ControlElement, ControlData, ControlState, ReactiveFormEvent } from './types';
-import { Control, ctrls, ctrlDatas, getControlState, inputDebounces } from './state';
-import { getValueFromControlElement, setValueFromControlElement } from './value';
+import type { ControlElement, ControlData, ReactiveFormEvent } from './types';
+import { ctrls, ctrlDatas, ctrlStates, getControlState, inputDebounces } from './state';
+import { getValueFromControlElement, setValueToControlElement } from './value';
 import { isFunction, isNumber, showNativeReport } from './helpers';
 
 export const sharedEventHandler = (ev: Event) => {
@@ -60,7 +60,7 @@ export const sharedEventHandler = (ev: Event) => {
         ctrlState.d = true;
 
         if (key === 'Escape' && ctrlData.resetOnEscape !== false) {
-          setValueFromControlElement(ctrlData, ctrlElm, ctrlState.i);
+          setValueToControlElement(ctrlData, ctrlElm, ctrlState.i);
           if (isFunction(ctrlData.onValueChange)) {
             event.value = ctrlState.i;
             rtns.push(ctrlData.onValueChange(event));
@@ -87,43 +87,45 @@ export const sharedEventHandler = (ev: Event) => {
 
 const setValueChange = (ctrlData: ControlData, event: ReactiveFormEvent) => {
   if (ctrlData && event && event.ctrl && event.ctrl.parentNode) {
-    const ctrlState: ControlState = (event.ctrl as any)[Control];
+    const ctrlState = ctrlStates.get(event.ctrl!);
     const rtns: (any | Promise<any>)[] = [];
     const eventType = event.type;
 
-    try {
-      ctrlState.d = true;
+    if (ctrlState) {
+      try {
+        ctrlState.d = true;
 
-      if (eventType === 'keydown' && isFunction(ctrlData.onKeyDown)) {
-        rtns.push(ctrlData.onKeyDown(event));
-      } else if (eventType === 'keyup') {
-        if (isFunction(ctrlData.onKeyUp)) {
-          rtns.push(ctrlData.onKeyUp!(event));
+        if (eventType === 'keydown' && isFunction(ctrlData.onKeyDown)) {
+          rtns.push(ctrlData.onKeyDown(event));
+        } else if (eventType === 'keyup') {
+          if (isFunction(ctrlData.onKeyUp)) {
+            rtns.push(ctrlData.onKeyUp!(event));
+          }
+
+          if (event.key === 'Escape' && isFunction(ctrlData.onEscapeKey)) {
+            rtns.push(ctrlData.onEscapeKey!(event));
+          } else if (event.key === 'Enter') {
+            ctrlState.i = eventType;
+            if (isFunction(ctrlData.onEnterKey)) {
+              rtns.push(ctrlData.onEnterKey!(event));
+            }
+            if (isFunction(ctrlData.onCommit)) {
+              rtns.push(ctrlData.onCommit!(event));
+            }
+          }
+        } else if (isFunction(ctrlData.onValueChange)) {
+          rtns.push(ctrlData.onValueChange!(event));
         }
 
-        if (event.key === 'Escape' && isFunction(ctrlData.onEscapeKey)) {
-          rtns.push(ctrlData.onEscapeKey!(event));
-        } else if (event.key === 'Enter') {
-          ctrlState.i = eventType;
-          if (isFunction(ctrlData.onEnterKey)) {
-            rtns.push(ctrlData.onEnterKey!(event));
-          }
-          if (isFunction(ctrlData.onCommit)) {
-            rtns.push(ctrlData.onCommit!(event));
-          }
+        if (eventType === 'change' && isFunction(ctrlData.onCommit)) {
+          // onCommit on blur event and Enter key event
+          rtns.push(ctrlData.onCommit!(event as any));
         }
-      } else if (isFunction(ctrlData.onValueChange)) {
-        rtns.push(ctrlData.onValueChange!(event));
-      }
 
-      if (eventType === 'change' && isFunction(ctrlData.onCommit)) {
-        // onCommit on blur event and Enter key event
-        rtns.push(ctrlData.onCommit!(event as any));
+        Promise.all(rtns).catch((err) => catchError(ctrlState, event, err));
+      } catch (e) {
+        catchError(ctrlState, event, e);
       }
-
-      Promise.all(rtns).catch((err) => catchError(ctrlState, event, err));
-    } catch (e) {
-      catchError(ctrlState, event, e);
     }
   }
 };

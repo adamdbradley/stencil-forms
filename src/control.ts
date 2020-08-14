@@ -3,29 +3,25 @@ import type { ReactiveFormControlOptions, ReactiveFormValuePropType, ControlData
 import { state } from './state';
 
 export const control = (initialValue: any, ctrlOpts: ReactiveFormControlOptions) =>
-  inputControl(initialValue, normalizeControlOpts(ctrlOpts, 'onInput', 'value', 'string'));
+  inputControl(initialValue, normalizeControlOpts(ctrlOpts));
 
 export const controlBoolean = (initialValue: any, ctrlOpts: ReactiveFormControlOptions) =>
-  inputControl(initialValue, normalizeControlOpts(ctrlOpts, 'onChange', 'checked', 'boolean'));
+  inputControl(initialValue, normalizeControlOpts(ctrlOpts, 'boolean'));
 
 export const controlNumber = (initialValue: any, ctrlOpts: ReactiveFormControlOptions) =>
-  inputControl(initialValue, normalizeControlOpts(ctrlOpts, 'onInput', 'value', 'number'));
+  inputControl(initialValue, normalizeControlOpts(ctrlOpts, 'number'));
 
 export const controlGroup = (initialSelectedValue: any, ctrlOpts: ReactiveFormControlOptions) =>
-  inputControlGroup(initialSelectedValue, normalizeControlOpts(ctrlOpts, 'onChange', 'value', 'string'));
+  inputControlGroup(initialSelectedValue, normalizeControlOpts(ctrlOpts));
 
 const normalizeControlOpts = (
   ctrlOpts: ReactiveFormControlOptions,
-  changeEventName: string,
-  valuePropName: string,
-  valuePropType: ReactiveFormValuePropType,
+  valuePropType: ReactiveFormValuePropType = 'string',
 ): ControlData => {
   const propName = 'ctrl' + state.i++;
   return {
     i: propName,
     n: propName,
-    changeEventName,
-    valuePropName,
     valuePropType,
     ...ctrlOpts,
   };

@@ -6,7 +6,7 @@ import type {
   ReactiveFormEvent,
   ReactiveValidateResult,
 } from './types';
-import { Control, ctrlElms, getControlState } from './state';
+import { ctrlElms, ctrlStates, getControlState } from './state';
 import { isFunction, isPromise, isString, setAttribute, showNativeReport } from './helpers';
 
 export const checkValidity = (
@@ -16,8 +16,9 @@ export const checkValidity = (
   event: ReactiveFormEvent,
   cb: ((ctrlData: ControlData, event: ReactiveFormEvent) => void) | null,
 ): any => {
-  if (ctrlElm && ctrlElm.validity) {
+  if (ctrlElm && ctrlElm.validity && event.value !== ctrlState.l) {
     const callbackId = ++ctrlState.c;
+    ctrlState.l = event.value;
 
     ctrlElm.setCustomValidity((ctrlState.e = ''));
 
@@ -59,7 +60,7 @@ const checkValidateResults = (
   cb: ((ctrlData: ControlData, event: ReactiveFormEvent) => void | Promise<void>) | null,
 ) => {
   if (ctrlElm) {
-    const ctrlState: ControlState = (ctrlElm as any)[Control];
+    const ctrlState = ctrlStates.get(ctrlElm);
     if (ctrlState && (ctrlState.c === callbackId || (!ctrlElm.validity.valid && !ctrlElm.validity.customError))) {
       const msg = isString(results) ? results.trim() : '';
       ctrlElm.setCustomValidity(msg);

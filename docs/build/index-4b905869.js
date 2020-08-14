@@ -1,5 +1,5 @@
 const NAMESPACE = 'stencil-forms';
-const BUILD = /* stencil-forms */ { allRenderFn: true, appendChildSlotFix: false, asyncLoading: true, asyncQueue: false, attachStyles: true, cloneNodeFix: false, cmpDidLoad: false, cmpDidRender: false, cmpDidUnload: false, cmpDidUpdate: false, cmpShouldUpdate: false, cmpWillLoad: true, cmpWillRender: false, cmpWillUpdate: false, connectedCallback: false, constructableCSS: false, cssAnnotations: true, cssVarShim: true, devTools: true, disconnectedCallback: false, dynamicImportShim: true, element: false, event: false, hasRenderFn: true, hostListener: false, hostListenerTarget: false, hostListenerTargetBody: false, hostListenerTargetDocument: false, hostListenerTargetParent: false, hostListenerTargetWindow: false, hotModuleReplacement: true, hydrateClientSide: false, hydrateServerSide: false, hydratedAttribute: false, hydratedClass: true, initializeNextTick: true, isDebug: false, isDev: true, isTesting: false, lazyLoad: true, lifecycle: true, lifecycleDOMEvents: false, member: true, method: false, mode: false, observeAttribute: true, profile: true, prop: true, propBoolean: true, propMutable: false, propNumber: true, propString: true, reflect: false, safari10: true, scoped: false, scriptDataOpts: true, shadowDelegatesFocus: false, shadowDom: false, shadowDomShim: true, slot: false, slotChildNodesFix: false, slotRelocation: false, state: true, style: true, svg: false, taskQueue: true, transformTagName: false, updatable: true, vdomAttribute: true, vdomClass: true, vdomFunctional: false, vdomKey: true, vdomListener: true, vdomPropOrAttr: true, vdomRef: true, vdomRender: true, vdomStyle: true, vdomText: true, vdomXlink: true, watchCallback: false };
+const BUILD = /* stencil-forms */ { allRenderFn: true, appendChildSlotFix: false, asyncLoading: true, asyncQueue: false, attachStyles: true, cloneNodeFix: false, cmpDidLoad: false, cmpDidRender: false, cmpDidUnload: false, cmpDidUpdate: false, cmpShouldUpdate: false, cmpWillLoad: true, cmpWillRender: false, cmpWillUpdate: false, connectedCallback: false, constructableCSS: false, cssAnnotations: true, cssVarShim: false, devTools: true, disconnectedCallback: false, dynamicImportShim: false, element: false, event: false, hasRenderFn: true, hostListener: false, hostListenerTarget: false, hostListenerTargetBody: false, hostListenerTargetDocument: false, hostListenerTargetParent: false, hostListenerTargetWindow: false, hotModuleReplacement: true, hydrateClientSide: false, hydrateServerSide: false, hydratedAttribute: false, hydratedClass: true, initializeNextTick: false, isDebug: false, isDev: true, isTesting: false, lazyLoad: true, lifecycle: true, lifecycleDOMEvents: false, member: true, method: false, mode: false, observeAttribute: true, profile: true, prop: true, propBoolean: true, propMutable: false, propNumber: true, propString: true, reflect: false, safari10: false, scoped: false, scriptDataOpts: false, shadowDelegatesFocus: false, shadowDom: false, shadowDomShim: false, slot: false, slotChildNodesFix: false, slotRelocation: false, state: true, style: true, svg: false, taskQueue: true, transformTagName: false, updatable: true, vdomAttribute: true, vdomClass: true, vdomFunctional: false, vdomKey: true, vdomListener: true, vdomPropOrAttr: true, vdomRef: true, vdomRender: true, vdomStyle: true, vdomText: true, vdomXlink: true, watchCallback: false };
 
 let scopeId;
 let contentRef;
@@ -63,13 +63,13 @@ const addHostEventListeners = (elm, hostRef, listeners, attachParentListeners) =
                 // this is being ran from within the connectedCallback
                 // which is important so that we know the host element actually has a parent element
                 // filter out the listeners to only have the ones that ARE being attached to the parent
-                listeners = listeners.filter(([flags]) => flags & 16 /* TargetParent */);
+                listeners = listeners.filter(([flags]) => flags & 32 /* TargetParent */);
             }
             else {
                 // this is being ran from within the component constructor
                 // everything BUT the parent element listeners should be attached at this time
                 // filter out the listeners that are NOT being attached to the parent
-                listeners = listeners.filter(([flags]) => !(flags & 16 /* TargetParent */));
+                listeners = listeners.filter(([flags]) => !(flags & 32 /* TargetParent */));
             }
         }
         listeners.map(([flags, name, method]) => {
@@ -100,9 +100,9 @@ const getHostListenerTarget = (elm, flags) => {
         return doc;
     if (BUILD.hostListenerTargetWindow && flags & 8 /* TargetWindow */)
         return win;
-    if (BUILD.hostListenerTargetBody && flags & 32 /* TargetBody */)
+    if (BUILD.hostListenerTargetBody && flags & 16 /* TargetBody */)
         return doc.body;
-    if (BUILD.hostListenerTargetParent && flags & 16 /* TargetParent */)
+    if (BUILD.hostListenerTargetParent && flags & 32 /* TargetParent */)
         return elm.parentElement;
     return elm;
 };
@@ -332,9 +332,9 @@ const IS_NODE_ENV = !IS_DENO_ENV &&
     !!global.process &&
     typeof __filename === 'string' &&
     (!global.origin || typeof global.origin !== 'string');
-const IS_DENO_WINDOWS_ENV = IS_DENO_ENV && Deno.build.os === 'windows';
+const OS_PLATFORM = IS_NODE_ENV ? process.platform : IS_DENO_ENV ? Deno.build.os : '';
+const requireFunc = IS_NODE_ENV ? require : noop;
 const getCurrentDirectory = IS_NODE_ENV ? process.cwd : IS_DENO_ENV ? Deno.cwd : () => '/';
-const exit = IS_NODE_ENV ? process.exit : IS_DENO_ENV ? Deno.exit : noop;
 /**
  * Production h() function based on Preact by
  * Jason Miller (@developit)
@@ -449,10 +449,7 @@ const Host = {};
 const isHost = (node) => node && node.$tag$ === Host;
 const vdomFnUtils = {
     forEach: (children, cb) => children.map(convertToPublic).forEach(cb),
-    map: (children, cb) => children
-        .map(convertToPublic)
-        .map(cb)
-        .map(convertToPrivate),
+    map: (children, cb) => children.map(convertToPublic).map(cb).map(convertToPrivate),
 };
 const convertToPublic = (node) => ({
     vattrs: node.$attrs$,
@@ -471,7 +468,7 @@ const convertToPrivate = (node) => {
         if (node.vname) {
             vnodeData.name = node.vname;
         }
-        return h(node.vtag, vnodeData, ...node.vchildren || []);
+        return h(node.vtag, vnodeData, ...(node.vchildren || []));
     }
     const vnode = newVNode(node.vtag, node.vtext);
     vnode.$attrs$ = node.vattrs;
@@ -1295,11 +1292,11 @@ const scheduleUpdate = (hostRef, isInitialLoad) => {
         return;
     }
     attachToAncestor(hostRef, hostRef.$ancestorComponent$);
-    // there is no ancestorc omponent or the ancestor component
+    // there is no ancestor component or the ancestor component
     // has already fired off its lifecycle update then
     // fire off the initial update
     const dispatch = () => dispatchHooks(hostRef, isInitialLoad);
-    return BUILD.taskQueue ? writeTask(dispatch) : dispatch;
+    return BUILD.taskQueue ? writeTask(dispatch) : dispatch();
 };
 const dispatchHooks = (hostRef, isInitialLoad) => {
     const elm = hostRef.$hostElement$;
@@ -1996,7 +1993,7 @@ const initializeComponent = async (elm, hostRef, cmpMeta, hmrVersionId, Cstr) =>
             if (!styles.has(scopeId)) {
                 const endRegisterStyles = createTime('registerStyles', cmpMeta.$tagName$);
                 if (!BUILD.hydrateServerSide && BUILD.shadowDom && BUILD.shadowDomShim && cmpMeta.$flags$ & 8 /* needsShadowDomShim */) {
-                    style = await __sc_import_stencil_forms('./shadow-css-056e63cd.js').then(m => m.scopeCss(style, scopeId, false));
+                    style = await import('./shadow-css-3c91b4d2.js').then(m => m.scopeCss(style, scopeId, false));
                 }
                 registerStyle(scopeId, style, !!(cmpMeta.$flags$ & 1 /* shadowDomEncapsulation */));
                 endRegisterStyles();
@@ -2430,17 +2427,6 @@ const bootstrapLazy = (lazyBundles, options = {}) => {
             disconnectedCallback() {
                 plt.jmp(() => disconnectedCallback(this));
             }
-            forceUpdate() {
-                if (BUILD.isDev) {
-                    consoleDevWarn(`element.forceUpdate() is deprecated, use the "forceUpdate" function from "@stencil/core" instead:
-
-  import { forceUpdate } from ‘@stencil/core’;
-
-  forceUpdate(this);
-  forceUpdate(element);`);
-                }
-                forceUpdate(this);
-            }
             componentOnReady() {
                 return getHostRef(this).$onReadyPromise$;
             }
@@ -2720,7 +2706,7 @@ const loadModule = (cmpMeta, hostRef, hmrVersionId) => {
     if (module) {
         return module[exportName];
     }
-    return __sc_import_stencil_forms(
+    return import(
     /* webpackInclude: /\.entry\.js$/ */
     /* webpackExclude: /\.system\.entry\.js$/ */
     /* webpackMode: "lazy" */

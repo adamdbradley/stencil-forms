@@ -1,8 +1,9 @@
-import { Control, ctrlChildren, ctrlDatas, ctrlElms, ctrlElmIds, ctrls, labellingElms, setControlState, state, } from './state';
-import { isString, setAttribute, isFunction } from './helpers';
+import { ctrlChildren, ctrlDatas, ctrlElms, ctrlElmIds, ctrlStates, ctrls, labellingElms, setControlState, state, } from './state';
+import { isFunction, isString, setAttribute } from './helpers';
 import { getGroupChild, setDescribedbyAttributes, setErrormessageAttributes, setLabelledbyAttributes, } from './labelling-for';
-import { sharedEventHandler } from './handlers';
 import { checkValidity } from './validation';
+import { sharedEventHandler } from './handlers';
+import { setValueToControlElement } from './value';
 export const inputControl = (value, ctrlData) => {
     // create the control arrow fn that'll be used as a weakmap key
     // and as a function to return the props for the control element
@@ -11,21 +12,29 @@ export const inputControl = (value, ctrlData) => {
         state.r = null;
         // create the object to be used as a property spread in the render()
         const props = {
-            // set the value
-            [ctrlData.valuePropName]: getPropValue(ctrlData.valuePropType, value),
             // get the reference to this form control element
             // and remember it so we can look up the form control by the element
-            ref: (ctrlElm) => ctrlElm && ctrlElmRef(ctrl, ctrlData, ctrlState, ctrlElm, false),
+            ref: (ctrlElm) => {
+                if (ctrlElm) {
+                    if (ctrlState === null || ctrlState === void 0 ? void 0 : ctrlState.f) {
+                        setValueToControlElement(ctrlData, ctrlElm, value);
+                    }
+                    ctrlElmRef(ctrl, ctrlData, ctrlState, ctrlElm, false);
+                }
+            },
             // add the shared event listeners
             onInvalid: sharedEventHandler,
-            [ctrlData.changeEventName]: sharedEventHandler,
+            onInput: sharedEventHandler,
+            onChange: sharedEventHandler,
             onKeyUp: sharedEventHandler,
             onFocus: sharedEventHandler,
             onBlur: sharedEventHandler,
-            onChange: sharedEventHandler,
         };
         if (isFunction(ctrlData.onKeyDown)) {
             props.onKeyDown = sharedEventHandler;
+        }
+        if (ctrlData.changeEventName) {
+            props[ctrlData.changeEventName] = sharedEventHandler;
         }
         return props;
     };
@@ -34,25 +43,6 @@ export const inputControl = (value, ctrlData) => {
     // return the control to be used as a key and what's
     // called to get all of the props for the control element
     return ctrl;
-};
-const getPropValue = (valueTypeCast, value) => {
-    // get the actual value we'll be assigning to the control element's
-    // "value" or "checked" property. So it should actually only return a
-    // string (for "value") or boolean (for "checked").
-    if (valueTypeCast === 'boolean') {
-        // may have been give a string "true" or "false", so lets just
-        // just always compare as a string boolean and return a boolean
-        return String(value) === 'true';
-    }
-    else if (value == null || (valueTypeCast === 'number' && isNaN(value))) {
-        // we don't want the word "null" "undefined" or "NaN" to be the value for
-        // an <input> element, so check first and return it as an empty string
-        return '';
-    }
-    else {
-        // always assign the value as an actual string value, even for number
-        return String(value);
-    }
 };
 export const inputControlGroup = (selectedValue, ctrlData) => {
     const ctrlState = setControlState(selectedValue, ctrlData);
@@ -81,7 +71,7 @@ const inputControlGroupItem = (selectedGroupValue, parentCtrl, parentCtrlData, c
     // grouped control input item, like <input type="radio"> a group
     // only has one "value" and the individual group item that has
     // the same "value" as the group value is the "checked" item
-    return {
+    const props = {
         // group item "value"
         // individual radio should each have a unique "value" assigned
         value,
@@ -89,12 +79,17 @@ const inputControlGroupItem = (selectedGroupValue, parentCtrl, parentCtrlData, c
         // compare as strings so we can normalize any passed in boolean strings or actual booleans
         // however, it's always false if the group's "selectedValue" is null or undefined
         checked: selectedGroupValue != null ? String(selectedGroupValue) === value : false,
-        [parentCtrlData.changeEventName]: sharedEventHandler,
         onFocus: sharedEventHandler,
         onBlur: sharedEventHandler,
+        onInput: sharedEventHandler,
+        onChange: sharedEventHandler,
         // ref for <input type="radio">
         ref: (childCtrlElm) => childCtrlElm && ctrlGroupItemElmRef(parentCtrl, ctrlState, childCtrlElm, value),
     };
+    if (parentCtrlData.changeEventName) {
+        props[parentCtrlData.changeEventName] = sharedEventHandler;
+    }
+    return props;
 };
 const ctrlElmRef = (ctrl, ctrlData, ctrlState, ctrlElm, isParentGroup) => {
     // we just got a reference to the control input element
@@ -144,7 +139,7 @@ const ctrlElmRef = (ctrl, ctrlData, ctrlState, ctrlElm, isParentGroup) => {
     }
     ctrls.set(ctrlElm, ctrl);
     ctrlElms.set(ctrl, ctrlElm);
-    ctrlElm[Control] = ctrlState;
+    ctrlStates.set(ctrlElm, ctrlState);
     if (ctrlState === null || ctrlState === void 0 ? void 0 : ctrlState.f) {
         checkValidity(ctrlData, ctrlState, ctrlElm, { ctrl: ctrlElm }, null);
         ctrlState.f = false;
@@ -152,6 +147,6 @@ const ctrlElmRef = (ctrl, ctrlData, ctrlState, ctrlElm, isParentGroup) => {
 };
 const ctrlGroupItemElmRef = (parentCtrl, ctrlState, childCtrlElm, childValue) => {
     const child = getGroupChild(parentCtrl, childValue);
-    childCtrlElm[Control] = ctrlState;
+    ctrlStates.set(childCtrlElm, ctrlState);
     return ctrlElmRef(child === null || child === void 0 ? void 0 : child.ctrl, child === null || child === void 0 ? void 0 : child.data, ctrlState, childCtrlElm, false);
 };

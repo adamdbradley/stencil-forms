@@ -1,9 +1,9 @@
 import { Component, h, Host, Prop, State } from '@stencil/core';
 import {
   bind,
-  bindNumber,
+  bindBoolean,
   controlBoolean,
-  controlNumber,
+  control,
   controlGroup,
   labelFor,
   descriptionFor,
@@ -30,9 +30,11 @@ export class MyForm {
   @Prop() age = 17;
   @Prop() volume = 11;
   @Prop() vegetarian = false;
+  @Prop() busy = true;
   @Prop() specialInstructions = '';
   @Prop() favoriteCar = '';
   @Prop() carBodyStyle = '';
+  @Prop() hoodScoop = false;
   @Prop() counter = 0;
   @State() json = '';
 
@@ -79,14 +81,14 @@ export class MyForm {
       }
     };
 
-    const age = bindNumber(this, 'age', {
+    const age = bind(this, 'age', {
       validate: validateAge,
       onCommit({ value }) {
         console.log(`age commit: ${value}`);
       },
     });
 
-    const volume = controlNumber(this.volume, {
+    const volume = control(this.volume, {
       onValueChange: ({ value }) => {
         this.volume = value;
       },
@@ -96,9 +98,15 @@ export class MyForm {
     });
 
     const vegetarian = controlBoolean(this.vegetarian, {
-      onValueChange: ({ value }) => (this.vegetarian = value),
+      onValueChange: ({ value }) => (this.vegetarian = !!value),
       onCommit({ value }) {
         console.log(`vegetarian commit: ${value}`);
+      },
+    });
+
+    const busy = bindBoolean(this, 'busy', {
+      onCommit({ value }) {
+        console.log(`busy commit: ${value}`);
       },
     });
 
@@ -129,6 +137,12 @@ export class MyForm {
       },
       onCommit({ value }) {
         console.log(`car body style commit: ${value}`);
+      },
+    });
+
+    const hoodScoop = bind(this, 'hoodScoop', {
+      onCommit({ value }) {
+        console.log(`hood scoop commit: ${value}`);
       },
     });
 
@@ -221,6 +235,14 @@ export class MyForm {
           </section>
           <section>
             <div>
+              <label {...labelFor(busy)}>Busy: {String(this.busy)}</label>
+            </div>
+            <div>
+              <input type="checkbox" {...busy()} />
+            </div>
+          </section>
+          <section>
+            <div>
               <label {...labelFor(specialInstructions)}>Special Instructions</label>
             </div>
             <div {...descriptionFor(specialInstructions)}>
@@ -259,6 +281,15 @@ export class MyForm {
                 <option value="convertible">Convertible</option>
               </select>
               <div {...validationFor(carBodyStyle)}>{validationMessage(carBodyStyle)}</div>
+            </div>
+          </section>
+          <section>
+            <label {...labelFor(hoodScoop)}>Hood Scoop: {String(this.hoodScoop)}</label>
+            <div>
+              <select {...hoodScoop()}>
+                <option selected={this.hoodScoop}>true</option>
+                <option selected={!this.hoodScoop}>false</option>
+              </select>
             </div>
           </section>
           <section>

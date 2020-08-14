@@ -1,3 +1,4 @@
+export const isBoolean = (v: any): v is string => typeof v === 'boolean';
 export const isFunction = (v: any): v is Function => typeof v === 'function';
 export const isNumber = (v: any): v is number => typeof v === 'number';
 export const isString = (v: any): v is string => typeof v === 'string';
