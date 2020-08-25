@@ -22,7 +22,9 @@ export const checkValidity = (
       const callbackId = ++ctrlState.c;
       ctrlState.l = event.value;
 
-      ctrlElm.setCustomValidity((ctrlState.e = ''));
+      if (ctrlElm.setCustomValidity) {
+        ctrlElm.setCustomValidity((ctrlState.e = ''));
+      }
 
       if (!ctrlElm.validity.valid) {
         // native browser constraint
@@ -38,7 +40,9 @@ export const checkValidity = (
             ? ctrlData.activelyValidatingMessage(event)
             : `Validating...`;
 
-          ctrlElm.setCustomValidity(ctrlState.m);
+          if (ctrlElm.setCustomValidity) {
+            ctrlElm.setCustomValidity(ctrlState.m);
+          }
           results
             .then((promiseResults) => checkValidateResults(promiseResults, ctrlData, ctrlElm, event, callbackId, cb))
             .catch((err) => checkValidateResults(err, ctrlData, ctrlElm, event, callbackId, cb));
@@ -69,11 +73,13 @@ const checkValidateResults = (
     const ctrlState = ctrlStates.get(ctrlElm);
     if (ctrlState && (ctrlState.c === callbackId || (!ctrlElm.validity.valid && !ctrlElm.validity.customError))) {
       const msg = isString(results) ? results.trim() : '';
-      ctrlElm.setCustomValidity(msg);
+      if (ctrlElm.setCustomValidity) {
+        ctrlElm.setCustomValidity(msg);
+      }
       ctrlState.e = ctrlElm.validationMessage;
       ctrlState.m = '';
 
-      if (!ctrlElm.validity.valid && showNativeReport(ctrlElm)) {
+      if (!ctrlElm.validity.valid && showNativeReport(ctrlElm) && ctrlElm.reportValidity) {
         ctrlElm.reportValidity();
       }
     }
@@ -84,7 +90,9 @@ const checkValidateResults = (
 };
 
 export const catchError = (ctrlState: ControlState, event: ReactiveFormEvent, err: any) => {
-  event.ctrl!.setCustomValidity((ctrlState.e = String(err.message || err)));
+  if (event.ctrl!.setCustomValidity!) {
+    event.ctrl!.setCustomValidity((ctrlState.e = String(err.message || err)));
+  }
   ctrlState.m = '';
 };
 
@@ -188,12 +196,10 @@ export const isDirty = (ctrl: ReactiveFormControl) => !!getControlState(ctrl).d;
  */
 export const isTouched = (ctrl: ReactiveFormControl) => !!getControlState(ctrl).t;
 
-export const submitValidity = (message: string | undefined) => {
-  return {
-    ref(btn: HTMLInputElement | HTMLButtonElement | undefined) {
-      if (btn && btn.setCustomValidity) {
-        btn.setCustomValidity(message ?? '');
-      }
-    },
-  };
-};
+export const submitValidity = (message: string | undefined) => ({
+  ref(btn: HTMLInputElement | HTMLButtonElement | undefined) {
+    if (btn && btn.setCustomValidity) {
+      btn.setCustomValidity(message ?? '');
+    }
+  },
+});
