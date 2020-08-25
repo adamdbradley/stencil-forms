@@ -190,8 +190,10 @@ export const isTouched = (ctrl: ReactiveFormControl) => !!getControlState(ctrl).
 
 export const submitValidity = (message: string | undefined) => {
   return {
-    ref(btn: HTMLInputElement | HTMLButtonElement) {
-      btn.setCustomValidity(message ?? '');
+    ref(btn: HTMLInputElement | HTMLButtonElement | undefined) {
+      if (btn) {
+        btn.setCustomValidity(message ?? '');
+      }
     },
   };
 };
