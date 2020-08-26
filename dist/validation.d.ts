@@ -67,5 +67,5 @@ export declare const isDirty: (ctrl: ReactiveFormControl) => boolean;
  */
 export declare const isTouched: (ctrl: ReactiveFormControl) => boolean;
 export declare const submitValidity: (message: string | undefined) => {
-    ref(btn: HTMLInputElement): void;
+    ref(btn: HTMLInputElement | HTMLButtonElement | undefined): void;
 };
