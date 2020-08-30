@@ -113,6 +113,7 @@ export const getGroupChild = (parentCtrl, groupItemValue) => {
                 i: parentCtrlData.g + '-' + groupItemValue,
                 n: parentCtrlData.g,
                 onValueChange: parentCtrlData.onValueChange,
+                onCommit: parentCtrlData.onCommit,
             },
         }));
         ctrlDatas.set(child.ctrl, child.data);

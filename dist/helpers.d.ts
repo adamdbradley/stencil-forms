@@ -1,3 +1,4 @@
+export declare const isBoolean: (v: any) => v is string;
 export declare const isFunction: (v: any) => v is Function;
 export declare const isNumber: (v: any) => v is number;
 export declare const isString: (v: any) => v is string;

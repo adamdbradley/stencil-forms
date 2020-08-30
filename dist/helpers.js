@@ -1,3 +1,4 @@
+export const isBoolean = (v) => typeof v === 'boolean';
 export const isFunction = (v) => typeof v === 'function';
 export const isNumber = (v) => typeof v === 'number';
 export const isString = (v) => typeof v === 'string';

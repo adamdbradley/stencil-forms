@@ -17,11 +17,11 @@ export interface ReactiveFormBindOptions {
      */
     onBlur?: (event: ReactiveFormEvent) => void;
     /**
-     * The `onCommit()` hook is trigged when either an "Enter" `keyup`
-     * event and the control element is not a `<textarea>`, or a
-     * `blur` event has occurred. It's a combination of `onEnterKey()`
-     * and `onBlur()`, and could be used to run the same logic for both
-     * hooks.
+     * The `onCommit()` hook is trigged when:
+     * - The "Enter" key was pressed from a `keyup` event (but not for `<textarea>`)
+     * - The `change` event has fired for the control. Note that the `change`
+     *   event is fired when an text input looses focus and the value
+     *   has changed, or when the value has changed for a radio or select control.
      */
     onCommit?: (event: ReactiveFormEvent) => void;
     /**
@@ -78,7 +78,7 @@ export interface ReactiveFormBindOptions {
      */
     valuePropName?: string;
     /**
-     * The primitive type to cast the value property to and from. Default for a `bindBoolean`
+     * The primitive type to cast the value property to and from. Default for a `bindChecked`
      * input will be `boolean`. Default for `bindNumber` will be `number, and default for all
      * others will be a `string`.
      */
@@ -184,6 +184,18 @@ export interface ControlState {
      * Initial value when the control received focus.
      */
     i: any;
+    /**
+     * Last value used to check validity.
+     */
+    l: any;
+    /**
+     * Last value used to call onValueChange
+     */
+    g: any;
+    /**
+     * Last value used to call onCommit
+     */
+    n: any;
 }
 export declare type ReactiveControlProperties = {
     checked?: boolean;

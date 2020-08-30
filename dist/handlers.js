@@ -1,6 +1,6 @@
 import { checkValidity, catchError } from './validation';
-import { Control, ctrls, ctrlDatas, getControlState, inputDebounces } from './state';
-import { getValueFromControlElement, setValueFromControlElement } from './value';
+import { ctrls, ctrlDatas, ctrlStates, getControlState, inputDebounces } from './state';
+import { getValueFromControlElement, setValueToControlElement } from './value';
 import { isFunction, isNumber, showNativeReport } from './helpers';
 export const sharedEventHandler = (ev) => {
     const ctrlElm = ev.currentTarget;
@@ -26,10 +26,6 @@ export const sharedEventHandler = (ev) => {
                 ctrlState.t = true;
                 if (isFunction(ctrlData.onBlur)) {
                     rtns.push(ctrlData.onBlur(event));
-                }
-                if (isFunction(ctrlData.onCommit)) {
-                    // onCommit on blur event and Enter key event
-                    rtns.push(ctrlData.onCommit(event));
                 }
             }
             else if (type === 'focus') {
@@ -58,7 +54,7 @@ export const sharedEventHandler = (ev) => {
                 // "input" or "change" or keyboard events
                 ctrlState.d = true;
                 if (key === 'Escape' && ctrlData.resetOnEscape !== false) {
-                    setValueFromControlElement(ctrlData, ctrlElm, ctrlState.i);
+                    setValueToControlElement(ctrlData, ctrlElm, ctrlState.i);
                     if (isFunction(ctrlData.onValueChange)) {
                         event.value = ctrlState.i;
                         rtns.push(ctrlData.onValueChange(event));
@@ -81,40 +77,47 @@ export const sharedEventHandler = (ev) => {
 };
 const setValueChange = (ctrlData, event) => {
     if (ctrlData && event && event.ctrl && event.ctrl.parentNode) {
-        // const eventType = ev.type;
-        // const key = (ev as KeyboardEvent).key;
-        // const validity = ctrlElm.validity;
-        const ctrlState = event.ctrl[Control];
+        const ctrlState = ctrlStates.get(event.ctrl);
         const rtns = [];
-        try {
-            ctrlState.d = true;
-            if (event.type === 'keydown' && isFunction(ctrlData.onKeyDown)) {
-                rtns.push(ctrlData.onKeyDown(event));
-            }
-            else if (event.type === 'keyup') {
-                if (isFunction(ctrlData.onKeyUp)) {
-                    rtns.push(ctrlData.onKeyUp(event));
+        const eventType = event.type;
+        if (ctrlState) {
+            try {
+                ctrlState.d = true;
+                if (eventType === 'keydown' && isFunction(ctrlData.onKeyDown)) {
+                    rtns.push(ctrlData.onKeyDown(event));
                 }
-                if (event.key === 'Escape' && isFunction(ctrlData.onEscapeKey)) {
-                    rtns.push(ctrlData.onEscapeKey(event));
-                }
-                else if (event.key === 'Enter') {
-                    ctrlState.i = event.value;
-                    if (isFunction(ctrlData.onEnterKey)) {
-                        rtns.push(ctrlData.onEnterKey(event));
+                else if (eventType === 'keyup') {
+                    if (isFunction(ctrlData.onKeyUp)) {
+                        rtns.push(ctrlData.onKeyUp(event));
                     }
-                    if (isFunction(ctrlData.onCommit)) {
-                        rtns.push(ctrlData.onCommit(event));
+                    if (event.key === 'Escape' && isFunction(ctrlData.onEscapeKey)) {
+                        rtns.push(ctrlData.onEscapeKey(event));
+                    }
+                    else if (event.key === 'Enter') {
+                        ctrlState.i = eventType;
+                        if (isFunction(ctrlData.onEnterKey)) {
+                            rtns.push(ctrlData.onEnterKey(event));
+                        }
+                        if (ctrlState.n !== event.value && isFunction(ctrlData.onCommit)) {
+                            ctrlState.n = event.value;
+                            rtns.push(ctrlData.onCommit(event));
+                        }
                     }
                 }
+                else if (ctrlState.g !== event.value && isFunction(ctrlData.onValueChange)) {
+                    ctrlState.g = event.value;
+                    rtns.push(ctrlData.onValueChange(event));
+                }
+                if (eventType === 'change' && ctrlState.n !== event.value && isFunction(ctrlData.onCommit)) {
+                    // onCommit on blur event and Enter key event
+                    ctrlState.n = event.value;
+                    rtns.push(ctrlData.onCommit(event));
+                }
+                Promise.all(rtns).catch((err) => catchError(ctrlState, event, err));
             }
-            else if (isFunction(ctrlData.onValueChange)) {
-                rtns.push(ctrlData.onValueChange(event));
+            catch (e) {
+                catchError(ctrlState, event, e);
             }
-            Promise.all(rtns).catch((err) => catchError(ctrlState, event, err));
-        }
-        catch (e) {
-            catchError(ctrlState, event, e);
         }
     }
 };

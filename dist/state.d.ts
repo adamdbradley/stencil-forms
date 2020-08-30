@@ -28,6 +28,6 @@ export declare const ctrls: WeakMap<ControlElement, ReactiveFormControl | Reacti
 export declare const ctrlDatas: WeakMap<ReactiveFormControl, ControlData>;
 export declare const inputDebounces: WeakMap<ControlElement, any>;
 export declare const instanceIds: WeakMap<any, number>;
-export declare const Control: unique symbol;
+export declare const ctrlStates: WeakMap<ControlElement, ControlState>;
 export declare const setControlState: (initialValue: any, ctrlData: ControlData) => ControlState | null;
 export declare const getControlState: (ctrl: ReactiveFormControl) => ControlState;

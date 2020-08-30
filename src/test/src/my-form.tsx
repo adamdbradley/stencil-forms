@@ -1,9 +1,9 @@
 import { Component, h, Host, Prop, State } from '@stencil/core';
 import {
   bind,
-  bindNumber,
+  bindBoolean,
   controlBoolean,
-  controlNumber,
+  control,
   controlGroup,
   labelFor,
   descriptionFor,
@@ -30,8 +30,11 @@ export class MyForm {
   @Prop() age = 17;
   @Prop() volume = 11;
   @Prop() vegetarian = false;
+  @Prop() busy = true;
   @Prop() specialInstructions = '';
   @Prop() favoriteCar = '';
+  @Prop() carBodyStyle = '';
+  @Prop() hoodScoop = false;
   @Prop() counter = 0;
   @State() json = '';
 
@@ -57,8 +60,8 @@ export class MyForm {
 
     const userName = bind(this, 'userName', {
       debounce: 500,
-      activelyValidatingMessage: (value) => `Checking if "${value}" is already taken...`,
-      validate: (value) => {
+      activelyValidatingMessage: ({ value }) => `Checking if "${value}" is already taken...`,
+      validate: ({ value }) => {
         console.log(`async checking "${value}" username, this will take 3 seconds...`);
         return new Promise((resolve) => {
           setTimeout(() => {
@@ -66,6 +69,9 @@ export class MyForm {
             resolve();
           }, 3000);
         });
+      },
+      onCommit({ value }) {
+        console.log(`userName commit: ${value}`);
       },
     });
 
@@ -75,18 +81,33 @@ export class MyForm {
       }
     };
 
-    const age = bindNumber(this, 'age', {
+    const age = bind(this, 'age', {
       validate: validateAge,
+      onCommit({ value }) {
+        console.log(`age commit: ${value}`);
+      },
     });
 
-    const volume = controlNumber(this.volume, {
+    const volume = control(this.volume, {
       onValueChange: ({ value }) => {
         this.volume = value;
+      },
+      onCommit({ value }) {
+        console.log(`volume commit: ${value}`);
       },
     });
 
     const vegetarian = controlBoolean(this.vegetarian, {
-      onValueChange: ({ value }) => (this.vegetarian = value),
+      onValueChange: ({ value }) => (this.vegetarian = !!value),
+      onCommit({ value }) {
+        console.log(`vegetarian commit: ${value}`);
+      },
+    });
+
+    const busy = bindBoolean(this, 'busy', {
+      onCommit({ value }) {
+        console.log(`busy commit: ${value}`);
+      },
     });
 
     const specialInstructions = bind(this, 'specialInstructions', {
@@ -96,10 +117,33 @@ export class MyForm {
       onKeyUp: ({ key, value }) => {
         console.log('onKeyUp, key', key, 'value', value);
       },
+      onCommit({ value }) {
+        console.log(`special instructions commit: ${value}`);
+      },
     });
 
     const favoriteCar = controlGroup(this.favoriteCar, {
       onValueChange: ({ value }) => (this.favoriteCar = value),
+      onCommit({ value }) {
+        console.log(`favorite car commit: ${value}`);
+      },
+    });
+
+    const carBodyStyle = bind(this, 'carBodyStyle', {
+      validate({ value }) {
+        if (!value) {
+          return 'Select a body style';
+        }
+      },
+      onCommit({ value }) {
+        console.log(`car body style commit: ${value}`);
+      },
+    });
+
+    const hoodScoop = bind(this, 'hoodScoop', {
+      onCommit({ value }) {
+        console.log(`hood scoop commit: ${value}`);
+      },
     });
 
     return (
@@ -115,7 +159,6 @@ export class MyForm {
             </div>
             <span {...validationFor(fullName)}>{validationMessage(fullName)}</span>
           </section>
-
           <section>
             <div>
               <label {...labelFor(email)}>Email</label>
@@ -133,7 +176,6 @@ export class MyForm {
             </div>
             <div {...validationFor(email)}>{validationMessage(email)}</div>
           </section>
-
           <section>
             <div>
               <label {...labelFor(age)}>Age</label>
@@ -171,7 +213,6 @@ export class MyForm {
             </div>
             <div {...validationFor(userName)}>{validationMessage(userName)}</div>
           </section>
-
           <section>
             <div>
               <label {...labelFor(volume)}>Volume</label>
@@ -182,7 +223,6 @@ export class MyForm {
             </div>
             <div {...validationFor(volume)}>{validationMessage(volume)}</div>
           </section>
-
           <section>
             <div>
               <label {...labelFor(vegetarian)}>Vegetarian</label>
@@ -193,7 +233,14 @@ export class MyForm {
             </div>
             <div {...validationFor(vegetarian)}>{validationMessage(vegetarian)}</div>
           </section>
-
+          <section>
+            <div>
+              <label {...labelFor(busy)}>Busy: {String(this.busy)}</label>
+            </div>
+            <div>
+              <input type="checkbox" {...busy()} />
+            </div>
+          </section>
           <section>
             <div>
               <label {...labelFor(specialInstructions)}>Special Instructions</label>
@@ -205,7 +252,6 @@ export class MyForm {
               <textarea required {...specialInstructions()} />
             </div>
           </section>
-
           <section {...favoriteCar()}>
             <div class="group-label" {...labelFor(favoriteCar)}>
               Favorite Car
@@ -225,7 +271,27 @@ export class MyForm {
             </div>
             <div {...validationFor(favoriteCar)}>{validationMessage(favoriteCar)}</div>
           </section>
-
+          <section>
+            <label {...labelFor(carBodyStyle)}>Car Body Style: {this.carBodyStyle}</label>
+            <div>
+              <select {...carBodyStyle()}>
+                <option></option>
+                <option value="fastback">Fastback</option>
+                <option value="coupe">Coupe</option>
+                <option value="convertible">Convertible</option>
+              </select>
+              <div {...validationFor(carBodyStyle)}>{validationMessage(carBodyStyle)}</div>
+            </div>
+          </section>
+          <section>
+            <label {...labelFor(hoodScoop)}>Hood Scoop: {String(this.hoodScoop)}</label>
+            <div>
+              <select {...hoodScoop()}>
+                <option selected={this.hoodScoop}>true</option>
+                <option selected={!this.hoodScoop}>false</option>
+              </select>
+            </div>
+          </section>
           <section>
             <button type="submit" {...submitValidity(!this.login ? 'Bad auth. Add ?token=test' : undefined)}>
               Submit

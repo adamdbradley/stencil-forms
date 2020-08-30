@@ -48,7 +48,7 @@ export const instanceIds = /*@__PURE__*/ new WeakMap<any, number>();
 
 const CurrentControlIndex = /*@__PURE__*/ Symbol();
 
-export const Control = /*@__PURE__*/ Symbol();
+export const ctrlStates = /*@__PURE__*/ new WeakMap<ControlElement, ControlState>();
 
 const ControlStates = /*@__PURE__*/ Symbol();
 
@@ -69,13 +69,16 @@ export const setControlState = (initialValue: any, ctrlData: ControlData) => {
   if (ctrlData.x === ctrlStates.length) {
     ctrlStates.push(
       createStore<ControlState>({
+        f: true,
         d: false,
         t: false,
-        f: true,
         m: '',
         e: '',
         c: 0,
         i: initialValue,
+        l: null,
+        g: null,
+        n: null,
       }).state,
     );
   }
@@ -86,16 +89,16 @@ export const setControlState = (initialValue: any, ctrlData: ControlData) => {
 export const getControlState = (ctrl: ReactiveFormControl): ControlState => {
   let renderingRef = getRenderingRef();
   let ctrlData: ControlData | undefined;
-  let ctrlStates: ControlState[];
+  let renderingRefCtrlStates: ControlState[];
   let ctrlElm: ControlElement | undefined;
   let ctrlState: ControlState;
 
   if (renderingRef) {
     ctrlData = ctrlDatas.get(ctrl);
     if (ctrlData) {
-      ctrlStates = renderingRef[ControlStates];
+      renderingRefCtrlStates = renderingRef[ControlStates];
       if (ctrlStates) {
-        ctrlState = ctrlStates[ctrlData.x!];
+        ctrlState = renderingRefCtrlStates[ctrlData.x!];
         if (ctrlState) {
           return ctrlState;
         }
@@ -104,5 +107,5 @@ export const getControlState = (ctrl: ReactiveFormControl): ControlState => {
   }
 
   ctrlElm = ctrlElms.get(ctrl);
-  return ctrlElm ? (ctrlElm as any)[Control] : {};
+  return ctrlStates.get(ctrlElm!) || ({} as any);
 };

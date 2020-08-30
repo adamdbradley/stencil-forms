@@ -139,6 +139,7 @@ export const getGroupChild = (parentCtrl: ReactiveFormControl, groupItemValue: s
           i: parentCtrlData.g + '-' + groupItemValue,
           n: parentCtrlData.g,
           onValueChange: parentCtrlData.onValueChange,
+          onCommit: parentCtrlData.onCommit,
         },
       }),
     );

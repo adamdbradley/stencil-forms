@@ -1,41 +1,38 @@
 import type { ControlData, ReactiveFormBindOptions, ReactiveFormValuePropType } from './types';
-import { toDashCase } from './helpers';
-import { instanceIds, state } from './state';
 import { inputControl, inputControlGroup } from './input-control';
+import { instanceIds, state } from './state';
+import { toDashCase } from './helpers';
+import { setCastedBindValue } from './value';
 
 export const bind = <T extends any, PropName extends keyof T>(
   instance: T,
   propName: PropName,
   bindOpts?: ReactiveFormBindOptions,
-) => inputControl(instance[propName], normalizeBindOpts(bindOpts, instance, propName, 'onInput', 'value', 'string'));
+) => inputControl(instance[propName], normalizeBindOpts(bindOpts, instance, propName));
 
 export const bindBoolean = <T extends any, PropName extends keyof T>(
   instance: T,
   propName: PropName,
   bindOpts?: ReactiveFormBindOptions,
-) =>
-  inputControl(instance[propName], normalizeBindOpts(bindOpts, instance, propName, 'onChange', 'checked', 'boolean'));
+) => inputControl(instance[propName], normalizeBindOpts(bindOpts, instance, propName, 'boolean'));
 
 export const bindNumber = <T extends any, PropName extends keyof T>(
   instance: T,
   propName: PropName,
   bindOpts?: ReactiveFormBindOptions,
-) => inputControl(instance[propName], normalizeBindOpts(bindOpts, instance, propName, 'onInput', 'value', 'number'));
+) => inputControl(instance[propName], normalizeBindOpts(bindOpts, instance, propName, 'number'));
 
 export const bindGroup = <T extends any, PropName extends keyof T>(
   instance: T,
   propName: PropName,
   bindOpts?: ReactiveFormBindOptions,
-) =>
-  inputControlGroup(instance[propName], normalizeBindOpts(bindOpts, instance, propName, 'onChange', 'value', 'string'));
+) => inputControlGroup(instance[propName], normalizeBindOpts(bindOpts, instance, propName));
 
 const normalizeBindOpts = (
   bindOpts: ReactiveFormBindOptions | undefined,
   instance: any,
   propName: any,
-  changeEventName: string,
-  valuePropName: string,
-  valuePropType: ReactiveFormValuePropType,
+  valuePropType: ReactiveFormValuePropType = 'string',
 ): ControlData => {
   let instanceId = instanceIds.get(instance);
   if (instanceId == null) {
@@ -44,10 +41,8 @@ const normalizeBindOpts = (
   return {
     i: toDashCase(propName) + instanceId,
     n: propName,
-    changeEventName,
-    valuePropName,
     valuePropType,
     ...bindOpts,
-    onValueChange: ({ value }) => (instance[propName] = value),
+    onValueChange: ({ value }) => setCastedBindValue(instance, propName, value),
   };
 };
