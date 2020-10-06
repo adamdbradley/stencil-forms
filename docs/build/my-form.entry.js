@@ -1,4 +1,4 @@
-import { g as getRenderingRef, f as forceUpdate, r as registerInstance, h, e as Host } from './index-4b905869.js';
+import { g as getRenderingRef, f as forceUpdate, r as registerInstance, h, e as Host } from './index-8f8cb246.js';
 
 const appendToMap = (map, propName, value) => {
     const items = map.get(propName);
@@ -269,7 +269,9 @@ const checkValidity = (ctrlData, ctrlState, ctrlElm, event, cb) => {
       // need to do a new validation
       const callbackId = ++ctrlState.c;
       ctrlState.l = event.value;
-      ctrlElm.setCustomValidity((ctrlState.e = ''));
+      if (ctrlElm.setCustomValidity) {
+        ctrlElm.setCustomValidity((ctrlState.e = ''));
+      }
       if (!ctrlElm.validity.valid) {
         // native browser constraint
         ctrlState.e = ctrlElm.validationMessage;
@@ -284,7 +286,9 @@ const checkValidity = (ctrlData, ctrlState, ctrlElm, event, cb) => {
             : isFunction(ctrlData.activelyValidatingMessage)
               ? ctrlData.activelyValidatingMessage(event)
               : `Validating...`;
-          ctrlElm.setCustomValidity(ctrlState.m);
+          if (ctrlElm.setCustomValidity) {
+            ctrlElm.setCustomValidity(ctrlState.m);
+          }
           results
             .then((promiseResults) => checkValidateResults(promiseResults, ctrlData, ctrlElm, event, callbackId, cb))
             .catch((err) => checkValidateResults(err, ctrlData, ctrlElm, event, callbackId, cb));
@@ -310,10 +314,12 @@ const checkValidateResults = (results, ctrlData, ctrlElm, event, callbackId, cb)
     const ctrlState = ctrlStates.get(ctrlElm);
     if (ctrlState && (ctrlState.c === callbackId || (!ctrlElm.validity.valid && !ctrlElm.validity.customError))) {
       const msg = isString(results) ? results.trim() : '';
-      ctrlElm.setCustomValidity(msg);
+      if (ctrlElm.setCustomValidity) {
+        ctrlElm.setCustomValidity(msg);
+      }
       ctrlState.e = ctrlElm.validationMessage;
       ctrlState.m = '';
-      if (!ctrlElm.validity.valid && showNativeReport(ctrlElm)) {
+      if (!ctrlElm.validity.valid && showNativeReport(ctrlElm) && ctrlElm.reportValidity) {
         ctrlElm.reportValidity();
       }
     }
@@ -323,7 +329,9 @@ const checkValidateResults = (results, ctrlData, ctrlElm, event, callbackId, cb)
   }
 };
 const catchError = (ctrlState, event, err) => {
-  event.ctrl.setCustomValidity((ctrlState.e = String(err.message || err)));
+  if (event.ctrl.setCustomValidity) {
+    event.ctrl.setCustomValidity((ctrlState.e = String(err.message || err)));
+  }
   ctrlState.m = '';
 };
 /**
@@ -417,13 +425,13 @@ const isDirty = (ctrl) => !!getControlState(ctrl).d;
  * `false`.
  */
 const isTouched = (ctrl) => !!getControlState(ctrl).t;
-const submitValidity = (message) => {
-  return {
-    ref(btn) {
+const submitValidity = (message) => ({
+  ref(btn) {
+    if (btn && btn.setCustomValidity) {
       btn.setCustomValidity(message !== null && message !== void 0 ? message : '');
-    },
-  };
-};
+    }
+  },
+});
 
 const labellingFor = (ctrl, groupItemValue, labellingType, setAttrs) => {
   state.r = null;
@@ -920,9 +928,10 @@ const MyForm = class {
     this.onSubmit = (ev) => {
       ev.preventDefault();
       ev.stopPropagation();
-      const formData = new FormData(ev.currentTarget);
-      this.json = JSON.stringify(Object.fromEntries(formData), null, 2);
-      console.warn('submit', this.json);
+      // const formData = new FormData(ev.currentTarget as HTMLFormElement);
+      // this.json = JSON.stringify(Object.fromEntries(formData as any), null, 2);
+      this.buildFormData();
+      console.info('submit', this.json);
     };
   }
   componentWillLoad() {
@@ -931,9 +940,23 @@ const MyForm = class {
       this.login = true;
     }
   }
+  buildFormData() {
+    if (!this.formEl.checkValidity()) {
+      return;
+    }
+    const formData = new FormData(this.formEl);
+    console.log('BF formData', formData);
+    console.log('BF Object.fromEntries(formData as any)', Object.fromEntries(formData));
+    this.json = JSON.stringify(Object.fromEntries(formData), null, 2);
+  }
   render() {
     const fullName = bind(this, 'fullName');
-    const email = bind(this, 'email');
+    const email = bind(this, 'email', {
+      onKeyUp: (e) => {
+        this.buildFormData();
+        console.log('onKeyUp', this.json, e);
+      },
+    });
     const userName = bind(this, 'userName', {
       debounce: 500,
       activelyValidatingMessage: ({ value }) => `Checking if "${value}" is already taken...`,
@@ -950,12 +973,12 @@ const MyForm = class {
         console.log(`userName commit: ${value}`);
       },
     });
-    const validateAge = (event) => {
-      if (event.value < 18) {
-        return `Must be 18 or older, but you entered ${event.value}`;
+    const validateAge = ({ value }) => {
+      if (value < 18) {
+        return `Must be 18 or older, but you entered ${value}`;
       }
     };
-    const age = bind(this, 'age', {
+    const age = bindNumber(this, 'age', {
       validate: validateAge,
       onCommit({ value }) {
         console.log(`age commit: ${value}`);
@@ -1012,9 +1035,9 @@ const MyForm = class {
         console.log(`hood scoop commit: ${value}`);
       },
     });
-    return (h(Host, null, h("form", { onSubmit: this.onSubmit }, h("section", null, h("div", null, h("label", Object.assign({}, labelFor(fullName)), "Name")), h("div", Object.assign({}, descriptionFor(fullName)), "What's your full name? ", this.fullName), h("div", null, h("input", Object.assign({ required: true }, fullName()))), h("span", Object.assign({}, validationFor(fullName)), validationMessage(fullName))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(email)), "Email")), h("div", Object.assign({ class: {
+    return (h(Host, null, h("form", { onSubmit: this.onSubmit, ref: (el) => (this.formEl = el) }, h("section", null, h("div", null, h("label", Object.assign({}, labelFor(fullName)), "Name")), h("div", Object.assign({}, descriptionFor(fullName)), "What's your full name? ", this.fullName), h("div", null, h("input", Object.assign({ required: true }, fullName()))), h("span", Object.assign({}, validationFor(fullName)), validationMessage(fullName))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(email)), "Email")), h("div", Object.assign({ class: {
         'is-dirty': isDirty(email),
-      } }, descriptionFor(email)), "(Purple means the input is \"dirty\" because the value has changed)"), h("div", null, h("input", Object.assign({ id: "my-email-id", name: "my-email-name", type: "email", required: true }, email()))), h("div", Object.assign({}, validationFor(email)), validationMessage(email))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(age)), "Age")), h("div", Object.assign({ class: {
+      } }, descriptionFor(email)), "(Purple means the input is \"dirty\" because the value has changed) ", this.email), h("div", null, h("input", Object.assign({ id: "my-email-id", name: "my-email-name", type: "email", required: true }, email()))), h("div", Object.assign({}, validationFor(email)), validationMessage(email))), h("section", null, h("div", null, h("label", Object.assign({}, labelFor(age)), "Age")), h("div", Object.assign({ class: {
         'is-touched': isTouched(age),
       } }, descriptionFor(age)), "(Blue means it's \"touched\" because the blur event happened)"), h("div", null, h("input", Object.assign({ type: "number", min: "0", max: "150" }, age()))), h("div", Object.assign({}, validationFor(age)), validationMessage(age))), h("section", { class: {
         'is-validating': isActivelyValidating(userName),

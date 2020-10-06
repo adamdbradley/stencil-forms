@@ -3,7 +3,7 @@ export interface ReactiveFormBindOptions {
      * The JSX event name property used to listen for input changes.
      * Defaults to `onInput` for text inputs, and `onChange` for
      * `checkbox` and `radio`. This can be used to bind to custom
-     * event names, such as `ionOnChange`.
+     * event names, such as `onIonChange`.
      */
     changeEventName?: string;
     /**

@@ -1,22 +1,9 @@
-import { B as BUILD, c as consoleDevInfo, p as plt, w as win, H, d as doc, N as NAMESPACE, a as promiseResolve, b as bootstrapLazy } from './index-4b905869.js';
+import { B as BUILD, c as consoleDevInfo, p as plt, w as win, H, d as doc, N as NAMESPACE, a as promiseResolve, b as bootstrapLazy } from './index-8f8cb246.js';
 import { g as globalScripts } from './app-globals-0f993ce5.js';
 
 /*
- Stencil Client Patch Browser v2.0.0-1 | MIT Licensed | https://stenciljs.com
+ Stencil Client Patch Browser v2.0.3 | MIT Licensed | https://stenciljs.com
  */
-const noop = () => {
-    /* noop*/
-};
-const IS_DENO_ENV = typeof Deno !== 'undefined';
-const IS_NODE_ENV = !IS_DENO_ENV &&
-    typeof global !== 'undefined' &&
-    typeof require === 'function' &&
-    !!global.process &&
-    typeof __filename === 'string' &&
-    (!global.origin || typeof global.origin !== 'string');
-const OS_PLATFORM = IS_NODE_ENV ? process.platform : IS_DENO_ENV ? Deno.build.os : '';
-const requireFunc = IS_NODE_ENV ? require : noop;
-const getCurrentDirectory = IS_NODE_ENV ? process.cwd : IS_DENO_ENV ? Deno.cwd : () => '/';
 const getDynamicImportFunction = (namespace) => `__sc_import_${namespace.replace(/\s|-/g, '_')}`;
 const patchBrowser = () => {
     // NOTE!! This fn cannot use async/await!
@@ -69,7 +56,7 @@ const patchBrowser = () => {
         if (BUILD.dynamicImportShim && !win.customElements) {
             // module support, but no custom elements support (Old Edge)
             // @ts-ignore
-            return import(/* webpackChunkName: "polyfills-dom" */ './dom-13b87b71.js').then(() => opts);
+            return import(/* webpackChunkName: "polyfills-dom" */ './dom-3484e571.js').then(() => opts);
         }
     }
     return promiseResolve(opts);
