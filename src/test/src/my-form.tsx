@@ -2,6 +2,7 @@ import { Component, h, Host, Prop, State } from '@stencil/core';
 import {
   bind,
   bindBoolean,
+  bindNumber,
   controlBoolean,
   control,
   controlGroup,
@@ -23,6 +24,8 @@ import {
   styleUrl: 'my-form.css',
 })
 export class MyForm {
+  protected formEl: HTMLFormElement;
+
   @Prop() login = false;
   @Prop() fullName = 'Marty McFly';
   @Prop() email = '';
@@ -44,19 +47,36 @@ export class MyForm {
       this.login = true;
     }
   }
+
+  private buildFormData() {
+    if (!this.formEl.checkValidity()) {
+      return;
+    }
+    const formData = new FormData(this.formEl);
+    console.log('BF formData', formData);
+    console.log('BF Object.fromEntries(formData as any)', Object.fromEntries(formData as any));
+    this.json = JSON.stringify(Object.fromEntries(formData as any), null, 2);
+  }
+
   onSubmit = (ev: Event) => {
     ev.preventDefault();
     ev.stopPropagation();
 
-    const formData = new FormData(ev.currentTarget as HTMLFormElement);
-    this.json = JSON.stringify(Object.fromEntries(formData as any), null, 2);
-    console.warn('submit', this.json);
+    // const formData = new FormData(ev.currentTarget as HTMLFormElement);
+    // this.json = JSON.stringify(Object.fromEntries(formData as any), null, 2);
+    this.buildFormData();
+    console.info('submit', this.json);
   };
 
   render() {
     const fullName = bind(this, 'fullName');
 
-    const email = bind(this, 'email');
+    const email = bind(this, 'email', {
+      onKeyUp: (e) => {
+        this.buildFormData();
+        console.log('onKeyUp', this.json, e);
+      },
+    });
 
     const userName = bind(this, 'userName', {
       debounce: 500,
@@ -75,13 +95,13 @@ export class MyForm {
       },
     });
 
-    const validateAge = (event: { value: number }) => {
-      if (event.value < 18) {
-        return `Must be 18 or older, but you entered ${event.value}`;
+    const validateAge = ({ value }: { value: number }) => {
+      if (value < 18) {
+        return `Must be 18 or older, but you entered ${value}`;
       }
     };
 
-    const age = bind(this, 'age', {
+    const age = bindNumber(this, 'age', {
       validate: validateAge,
       onCommit({ value }) {
         console.log(`age commit: ${value}`);
@@ -148,7 +168,7 @@ export class MyForm {
 
     return (
       <Host>
-        <form onSubmit={this.onSubmit}>
+        <form onSubmit={this.onSubmit} ref={(el) => (this.formEl = el)}>
           <section>
             <div>
               <label {...labelFor(fullName)}>Name</label>
@@ -169,7 +189,7 @@ export class MyForm {
               }}
               {...descriptionFor(email)}
             >
-              (Purple means the input is "dirty" because the value has changed)
+              (Purple means the input is "dirty" because the value has changed) {this.email}
             </div>
             <div>
               <input id="my-email-id" name="my-email-name" type="email" required {...email()} />
