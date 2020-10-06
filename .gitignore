@@ -1,4 +1,6 @@
 www/
+dist
+docs
 
 *~
 *.sw[mnpcod]
