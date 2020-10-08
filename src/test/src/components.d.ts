@@ -6,6 +6,8 @@
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 export namespace Components {
+    interface DynamicForm {
+    }
     interface MyForm {
         "age": number;
         "busy": boolean;
@@ -23,6 +25,12 @@ export namespace Components {
     }
 }
 declare global {
+    interface HTMLDynamicFormElement extends Components.DynamicForm, HTMLStencilElement {
+    }
+    var HTMLDynamicFormElement: {
+        prototype: HTMLDynamicFormElement;
+        new (): HTMLDynamicFormElement;
+    };
     interface HTMLMyFormElement extends Components.MyForm, HTMLStencilElement {
     }
     var HTMLMyFormElement: {
@@ -30,10 +38,13 @@ declare global {
         new (): HTMLMyFormElement;
     };
     interface HTMLElementTagNameMap {
+        "dynamic-form": HTMLDynamicFormElement;
         "my-form": HTMLMyFormElement;
     }
 }
 declare namespace LocalJSX {
+    interface DynamicForm {
+    }
     interface MyForm {
         "age"?: number;
         "busy"?: boolean;
@@ -50,6 +61,7 @@ declare namespace LocalJSX {
         "volume"?: number;
     }
     interface IntrinsicElements {
+        "dynamic-form": DynamicForm;
         "my-form": MyForm;
     }
 }
@@ -57,6 +69,7 @@ export { LocalJSX as JSX };
 declare module "@stencil/core" {
     export namespace JSX {
         interface IntrinsicElements {
+            "dynamic-form": LocalJSX.DynamicForm & JSXBase.HTMLAttributes<HTMLDynamicFormElement>;
             "my-form": LocalJSX.MyForm & JSXBase.HTMLAttributes<HTMLMyFormElement>;
         }
     }

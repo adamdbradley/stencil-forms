@@ -1,0 +1,93 @@
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+form button {
+  position: relative;
+  cursor: pointer;
+  background: #ccc;
+  margin: 10px 0 0 0;
+  padding: 5px;
+  font-size: 16px;
+}
+
+form:invalid button {
+  background: #eee;
+  color: #aaa;
+}
+
+form:invalid button::after {
+  position: absolute;
+  padding-left: 20px;
+  content: 'form:invalid';
+  color: red;
+  white-space: nowrap;
+}
+
+form:valid button::after {
+  position: absolute;
+  padding-left: 20px;
+  content: 'form:valid';
+  color: green;
+  white-space: nowrap;
+}
+
+label,
+.group-label {
+  font-weight: bold;
+}
+
+[role='alert'] {
+  color: red;
+}
+
+input:valid {
+  border: 1px solid green;
+}
+
+input:invalid {
+  border: 1px solid red;
+}
+
+.is-validating {
+  background: rgba(255, 255, 0, 0.2);
+}
+
+.is-valid {
+  background: rgba(0, 128, 0, 0.2);
+}
+
+.is-invalid {
+  background: rgba(255, 0, 0, 0.1);
+}
+
+.actively-validating {
+  background-color: #ddd;
+  font-style: italic;
+}
+
+.is-dirty {
+  color: purple;
+}
+
+.is-touched {
+  color: blue;
+}
+
+pre {
+  background: #eee;
+  padding: 10px;
+}
+
+section {
+  padding: 10px;
+  border-bottom: 1px solid gray;
+}
+
+section:last-child {
+  border-bottom: none;
+}
+
+.counter {
+  font-size: 12px;
+}
