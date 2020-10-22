@@ -155,7 +155,7 @@ const ctrlElmRef = (
 ) => {
   // we just got a reference to the control input element
   let ctrlId = ctrlElm.getAttribute('id');
-  let ctrlName = ctrlElm.getAttribute('name');
+  let ctrlName = ctrlElm.getAttribute('name') || ctrlElm.name;
   let labellingElm = labellingElms[LabellingType.labelledby].get(ctrl);
 
   if (!ctrlId) {
