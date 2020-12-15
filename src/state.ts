@@ -83,6 +83,12 @@ export const setControlState = (initialValue: any, ctrlData: ControlData) => {
     );
   }
 
+  // bitflower test to reset the firstLoad state when the element was moved in the DOM
+  // Unfortunately this didn't work. My goal was to avoid the removed `if` in input-control.
+  // if (ctrlData.x === 0) {
+  //   ctrlStates[ctrlData.x].f = true;
+  // }
+
   return ctrlStates[ctrlData.x];
 };
 
@@ -108,4 +114,13 @@ export const getControlState = (ctrl: ReactiveFormControl): ControlState => {
 
   ctrlElm = ctrlElms.get(ctrl);
   return ctrlStates.get(ctrlElm!) || ({} as any);
+};
+
+export const getControlStatesForRenderingRef = (): ControlState[] => {
+  let renderingRef = getRenderingRef();
+  let renderingRefCtrlStates: ControlState[];
+
+  renderingRefCtrlStates = renderingRef[ControlStates];
+
+  return renderingRefCtrlStates;
 };
