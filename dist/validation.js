@@ -1,7 +1,6 @@
 import { ctrlElms, ctrlStates, getControlState } from './state';
 import { isFunction, isPromise, isString, setAttribute, showNativeReport } from './helpers';
 export const checkValidity = (ctrlData, ctrlState, ctrlElm, event, cb) => {
-    // console.log(`@stencil/forms checkValidity`, { ctrlData });
     if (ctrlElm) {
         const callbackId = ++ctrlState.c;
         if (ctrlElm.validity && event.value !== ctrlState.l) {
@@ -42,7 +41,13 @@ export const checkValidity = (ctrlData, ctrlState, ctrlElm, event, cb) => {
             }
         }
         else if (isFunction(cb)) {
-            // bitflower start
+            /**
+             * bitflower start
+             *
+             * @adam, this was my way of supporting components that don't implement the native Validation API.
+             * I know this duplicates code and so on but I first wanted to align with you on whether this is
+             * at all the way you want to go with this lib.
+             */
             ctrlState.l = event.value;
             if (isFunction(ctrlData.validate)) {
                 // doesn't have custom validate fn

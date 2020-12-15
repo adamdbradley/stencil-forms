@@ -89,7 +89,6 @@ const inputControlGroupItem = (selectedGroupValue, parentCtrl, parentCtrlData, c
         // ref for <input type="radio">
         ref: (childCtrlElm) => childCtrlElm && ctrlGroupItemElmRef(parentCtrl, ctrlState, childCtrlElm, value),
     };
-    // console.log(`@stencil/forms, changeEventName`, parentCtrlData.changeEventName);
     if (parentCtrlData.changeEventName) {
         props[parentCtrlData.changeEventName] = sharedEventHandler;
     }
