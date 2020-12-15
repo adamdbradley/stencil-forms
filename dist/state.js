@@ -83,9 +83,3 @@ export const getControlState = (ctrl) => {
     ctrlElm = ctrlElms.get(ctrl);
     return ctrlStates.get(ctrlElm) || {};
 };
-export const getControlStatesForRenderingRef = () => {
-    let renderingRef = getRenderingRef();
-    let renderingRefCtrlStates;
-    renderingRefCtrlStates = renderingRef[ControlStates];
-    return renderingRefCtrlStates;
-};

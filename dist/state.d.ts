@@ -31,4 +31,3 @@ export declare const instanceIds: WeakMap<any, number>;
 export declare const ctrlStates: WeakMap<ControlElement, ControlState>;
 export declare const setControlState: (initialValue: any, ctrlData: ControlData) => ControlState | null;
 export declare const getControlState: (ctrl: ReactiveFormControl) => ControlState;
-export declare const getControlStatesForRenderingRef: () => ControlState[];
