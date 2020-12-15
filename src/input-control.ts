@@ -44,9 +44,12 @@ export const inputControl = (value: any, ctrlData: ControlData) => {
       // and remember it so we can look up the form control by the element
       ref: (ctrlElm) => {
         if (ctrlElm) {
-          if (ctrlState?.f) {
-            setValueToControlElement(ctrlData, ctrlElm, value);
-          }
+          // if (ctrlState?.f || ctrlState?.d) {
+          // Set the value of the element in these scenarios:
+          // - it's the first load
+          // TODO - the element has been moved in the DOM (or other re-render causes) => we need a flag to see if this is the case!
+          setValueToControlElement(ctrlData, ctrlElm, value);
+          // }
           ctrlElmRef(ctrl, ctrlData, ctrlState, ctrlElm, false);
         }
       },
