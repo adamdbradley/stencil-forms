@@ -1,10 +1,11 @@
 import { ctrlElms, ctrlStates, getControlState } from './state';
 import { isFunction, isPromise, isString, setAttribute, showNativeReport } from './helpers';
 export const checkValidity = (ctrlData, ctrlState, ctrlElm, event, cb) => {
+    // console.log(`@stencil/forms checkValidity`, { ctrlData });
     if (ctrlElm) {
+        const callbackId = ++ctrlState.c;
         if (ctrlElm.validity && event.value !== ctrlState.l) {
             // need to do a new validation
-            const callbackId = ++ctrlState.c;
             ctrlState.l = event.value;
             if (ctrlElm.setCustomValidity) {
                 ctrlElm.setCustomValidity((ctrlState.e = ''));
@@ -41,6 +42,31 @@ export const checkValidity = (ctrlData, ctrlState, ctrlElm, event, cb) => {
             }
         }
         else if (isFunction(cb)) {
+            // bitflower start
+            ctrlState.l = event.value;
+            if (isFunction(ctrlData.validate)) {
+                // doesn't have custom validate fn
+                const results = ctrlData.validate(event);
+                if (isPromise(results)) {
+                    // results return a promise, let's wait on those
+                    ctrlState.m = isString(ctrlData.activelyValidatingMessage)
+                        ? ctrlData.activelyValidatingMessage
+                        : isFunction(ctrlData.activelyValidatingMessage)
+                            ? ctrlData.activelyValidatingMessage(event)
+                            : `Validating...`;
+                    if (ctrlElm.setCustomValidity) {
+                        ctrlElm.setCustomValidity(ctrlState.m);
+                    }
+                    results
+                        .then((promiseResults) => checkValidateResults(promiseResults, ctrlData, ctrlElm, event, callbackId, cb))
+                        .catch((err) => checkValidateResults(err, ctrlData, ctrlElm, event, callbackId, cb));
+                }
+                else {
+                    // results were not a promise
+                    checkValidateResults(results, ctrlData, ctrlElm, event, callbackId, cb);
+                }
+            }
+            // bitflower end
             // already validated this same value or element doesn't have validity
             cb(ctrlData, event);
         }
@@ -54,9 +80,9 @@ const checkValidateResults = (results, ctrlData, ctrlElm, event, callbackId, cb)
             if (ctrlElm.setCustomValidity) {
                 ctrlElm.setCustomValidity(msg);
             }
-            ctrlState.e = ctrlElm.validationMessage;
+            ctrlState.e = ctrlElm.validationMessage || msg;
             ctrlState.m = '';
-            if (!ctrlElm.validity.valid && showNativeReport(ctrlElm) && ctrlElm.reportValidity) {
+            if (ctrlElm.validity && !ctrlElm.validity.valid && showNativeReport(ctrlElm) && ctrlElm.reportValidity) {
                 ctrlElm.reportValidity();
             }
         }

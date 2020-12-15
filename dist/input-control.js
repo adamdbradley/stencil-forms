@@ -16,9 +16,13 @@ export const inputControl = (value, ctrlData) => {
             // and remember it so we can look up the form control by the element
             ref: (ctrlElm) => {
                 if (ctrlElm) {
-                    if (ctrlState === null || ctrlState === void 0 ? void 0 : ctrlState.f) {
-                        setValueToControlElement(ctrlData, ctrlElm, value);
-                    }
+                    // Set the value of the element in these scenarios:
+                    // - it's the first load
+                    // TODO - the element has been moved in the DOM (or other re-render causes) => we need a flag to see if this is the case!
+                    // console.log(`BF inputControl => ref`, { id: ctrlElm.getAttribute('id'), lastIndex: state.i, ctrlStates });
+                    // if (ctrlState?.f || ctrlState?.d) {
+                    setValueToControlElement(ctrlData, ctrlElm, value);
+                    // }
                     ctrlElmRef(ctrl, ctrlData, ctrlState, ctrlElm, false);
                 }
             },
@@ -86,6 +90,7 @@ const inputControlGroupItem = (selectedGroupValue, parentCtrl, parentCtrlData, c
         // ref for <input type="radio">
         ref: (childCtrlElm) => childCtrlElm && ctrlGroupItemElmRef(parentCtrl, ctrlState, childCtrlElm, value),
     };
+    // console.log(`@stencil/forms, changeEventName`, parentCtrlData.changeEventName);
     if (parentCtrlData.changeEventName) {
         props[parentCtrlData.changeEventName] = sharedEventHandler;
     }
@@ -94,7 +99,7 @@ const inputControlGroupItem = (selectedGroupValue, parentCtrl, parentCtrlData, c
 const ctrlElmRef = (ctrl, ctrlData, ctrlState, ctrlElm, isParentGroup) => {
     // we just got a reference to the control input element
     let ctrlId = ctrlElm.getAttribute('id');
-    let ctrlName = ctrlElm.getAttribute('name');
+    let ctrlName = ctrlElm.getAttribute('name') || ctrlElm.name;
     let labellingElm = labellingElms[0 /* labelledby */].get(ctrl);
     if (!ctrlId) {
         ctrlId = ctrlData.i;
