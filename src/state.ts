@@ -115,12 +115,3 @@ export const getControlState = (ctrl: ReactiveFormControl): ControlState => {
   ctrlElm = ctrlElms.get(ctrl);
   return ctrlStates.get(ctrlElm!) || ({} as any);
 };
-
-export const getControlStatesForRenderingRef = (): ControlState[] => {
-  let renderingRef = getRenderingRef();
-  let renderingRefCtrlStates: ControlState[];
-
-  renderingRefCtrlStates = renderingRef[ControlStates];
-
-  return renderingRefCtrlStates;
-};
