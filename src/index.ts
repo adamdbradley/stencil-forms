@@ -19,3 +19,5 @@ export type {
   ReactiveFormControlOptions,
   ReactiveFormEvent,
 } from './types';
+
+export { ctrlStates, ctrlElms, ctrlDatas, ctrls, getControlStatesForRenderingRef } from './state';
